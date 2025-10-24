@@ -2,11 +2,12 @@
 require_once __DIR__ . '/../../classes/User.php';
 
 $message = "";
+$message_class = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $user = new User();
 
-    // Use null coalescing operator ?? to safely handle missing keys
+    // Safely read input values
     $fname = trim($_POST['fname'] ?? '');
     $mname = trim($_POST['mname'] ?? '');
     $lname = trim($_POST['lname'] ?? '');
@@ -19,15 +20,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
-    // Basic validation
+    // ✅ Client-side validations
     if (empty($fname) || empty($lname) || empty($username) || empty($password) || empty($confirm_password)) {
         $message = "❌ Please fill in all required fields.";
+        $message_class = "error";
     } elseif ($password !== $confirm_password) {
         $message = "❌ Passwords do not match.";
-    } elseif ($user->usernameExists($username)) {
-        $message = "⚠️ Username already exists. Please choose another.";
+        $message_class = "error";
     } else {
-        $result = $user->registerPatient($fname, $mname, $lname, $dob, $gender, $contact, $email, $address, $username, $password);
+        // Run registration
+        $result = $user->registerPatient(
+            $fname, $mname, $lname, $dob, $gender,
+            $contact, $email, $address, $username, $password
+        );
+
+        // ✅ Check result message to determine style
+        if (strpos($result, 'successful') !== false) {
+            $message_class = "success";
+        } else {
+            $message_class = "error";
+        }
+
         $message = $result;
     }
 }
@@ -89,20 +102,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-top: 15px;
             text-align: center;
             font-weight: bold;
+            padding: 10px;
+            border-radius: 6px;
         }
         .success {
-            color: green;
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
         }
         .error {
-            color: red;
+            color: #721c24;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
         }
     </style>
 </head>
 <body>
 <div class="container">
     <h2>Patient Registration</h2>
+
     <?php if (!empty($message)): ?>
-        <div class="message <?= strpos($message, 'success') !== false ? 'success' : 'error' ?>">
+        <div class="message <?= $message_class ?>">
             <?= htmlspecialchars($message) ?>
         </div>
     <?php endif; ?>

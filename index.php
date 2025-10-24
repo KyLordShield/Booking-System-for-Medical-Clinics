@@ -285,7 +285,7 @@ body {
             <button type="submit" name="login_submit" class="login-button">Log in</button>
         </form>
 
-        <a href="register.php" class="register-link">REGISTER HERE</a>
+<a href="public/register/register.php" class="register-link">REGISTER HERE</a>
     </div>
 
     <div class="marketing-column">
