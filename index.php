@@ -1,11 +1,11 @@
 <?php
 session_start();
-require_once 'classes/Login.php'; // ✅ correct path for your setup
+require_once 'classes/Login.php'; 
 
 $login = new Login();
 $error = "";
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
 
@@ -15,7 +15,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['role'] = $auth['role'];
         $_SESSION['user_id'] = $auth['id'];
 
-        // Redirect to their dashboards
         switch ($auth['role']) {
             case 'admin':
                 header("Location: public/admin_dashboard.php");
@@ -39,72 +38,245 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Medical Booking Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #e8f0fe;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .login-box {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            width: 350px;
-        }
-        .login-box h2 {
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-        .login-box input {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-        .login-box button {
-            width: 100%;
-            padding: 10px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-        }
-        .error {
-            color: red;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Medicina - Booking System</title>
+<style>
+:root {
+    --color-dark-blue: #1C334A;
+    --color-light-blue: #70B8D9;
+    --color-input-bg: #EAF3F7;
+    --font-serif: "Georgia", "Times New Roman", Times, serif;
+    --font-sans: Arial, Helvetica, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--color-light-blue);
+    font-family: var(--font-sans);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+/* FLOATING OVAL HEADER */
+.header {
+    background-color: var(--color-dark-blue);
+    width: 85%;
+    max-width: 1000px;
+    height: 90px;
+    margin: 30px auto 50px auto;
+    border-radius: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    padding: 0 5%;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    color: white;
+    font-family: var(--font-serif);
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.logo img {
+    width: 45px;
+    height: 45px;
+    margin-right: 10px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* MAIN CONTAINER */
+.main-container {
+    flex-grow: 1;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 0 5%;
+    align-items: center;
+}
+
+/* LEFT COLUMN - LOGIN */
+.login-column {
+    flex: 1 1 350px;
+    max-width: 400px;
+    background: var(--color-light-blue);
+    padding: 20px;
+}
+
+.login-title {
+    font-family: var(--font-serif);
+    font-size: 36px;
+    margin-bottom: 20px;
+    color: var(--color-dark-blue);
+}
+
+.login-form label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    color: var(--color-dark-blue);
+    font-weight: bold;
+}
+
+.login-form input {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: var(--color-input-bg);
+    font-size: 16px;
+}
+
+/* REMEMBER ME LEFT ALIGN FIX */
+.remember-me {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Left align */
+    gap: 6px;
+    margin: 15px 0 25px 0;
+    color: var(--color-dark-blue);
+    font-size: 14px;
+}
+
+.login-button {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--color-dark-blue);
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-family: var(--font-serif);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.login-button:hover {
+    background-color: #254b6a;
+}
+
+.register-link {
+    display: block;
+    text-align: center;
+    margin-top: 15px;
+    color: var(--color-dark-blue);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.error-message {
+    color: red;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+/* RIGHT COLUMN */
+.marketing-column {
+    flex: 1 1 400px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 20px 60px; /* adds slight space to the right side */
+}
+
+.marketing-headline {
+    font-family: var(--font-serif);
+    font-size: 48px;
+    color: var(--color-dark-blue);
+    margin-bottom: 20px;
+}
+
+.marketing-subtext {
+    font-size: 18px;
+    color: var(--color-dark-blue);
+    line-height: 1.5;
+    margin-bottom: 40px;
+}
+
+.browse-button {
+    display: inline-block;
+    width: 250px;
+    text-align: center;
+    padding: 14px 20px;
+    background-color: white;
+    color: var(--color-dark-blue);
+    border: 2px solid var(--color-dark-blue);
+    border-radius: 50px;
+    text-decoration: none;
+    font-family: var(--font-serif);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.browse-button:hover {
+    background-color: var(--color-dark-blue);
+    color: white;
+}
+
+/* FLAT FOOTER */
+.footer {
+    background-color: var(--color-dark-blue);
+    height: 100px;
+    margin-top: 60px;
+}
+</style>
 </head>
 <body>
-    <div class="login-box">
-        <h2>Welcome to Medical Booking</h2>
 
+<header class="header">
+    <div class="logo">
+        <img src="assets/logo.png" alt="Medicina Logo">
+        <span>Medicina</span>
+    </div>
+</header>
+
+<div class="main-container">
+    <div class="login-column">
+        <h1 class="login-title">Log in</h1>
+        
         <?php if ($error): ?>
-            <div class="error"><?= htmlspecialchars($error) ?></div>
+            <div class="error-message"><?= htmlspecialchars($error) ?></div>
         <?php endif; ?>
 
-        <form method="POST" action="">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <button type="submit">Login</button>
+        <form method="POST" class="login-form">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+
+            <div class="remember-me">
+                <input type="checkbox" id="remember" name="remember">
+                <label for="remember">Remember me</label>
+            </div>
+
+            <button type="submit" name="login_submit" class="login-button">Log in</button>
         </form>
 
-        <p style="text-align:center;margin-top:1rem;">
-            Not registered? <a href="register.php">Create an account</a>
-        </p>
+        <a href="register.php" class="register-link">REGISTER HERE</a>
     </div>
+
+    <div class="marketing-column">
+        <h2 class="marketing-headline">
+            Booking System for <br>Medical Clinics
+        </h2>
+        <p class="marketing-subtext">
+            Easily manage clinic appointments and patient records in one seamless, secure platform.
+        </p>
+        <a href="#" class="browse-button">Log in to browse ▶</a>
+    </div>
+</div>
+
+<footer class="footer"></footer>
+
 </body>
 </html>
