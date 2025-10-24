@@ -19,8 +19,8 @@ class Login {
             if ($stmt->rowCount() > 0) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // Verify password
-                if (password_verify($password, $user['USER_PASSWORD'])) {
+                // ✅ For now, use plain text comparison (testing mode)
+                if ($password === $user['USER_PASSWORD']) {
                     // Update last login
                     $update = $this->conn->prepare("UPDATE USERS SET USER_LAST_LOGIN = NOW() WHERE USER_ID = :id");
                     $update->bindParam(':id', $user['USER_ID']);
