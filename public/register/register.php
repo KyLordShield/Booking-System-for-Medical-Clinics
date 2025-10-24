@@ -1,26 +1,34 @@
 <?php
-require_once __DIR__ . '/../../config/Database.php';
 require_once __DIR__ . '/../../classes/User.php';
-
-
-$database = new Database();
-$db = $database->connect();
-$user = new User($db);
 
 $message = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $fname = $_POST['fname'];
-    $lname = $_POST['lname'];
-    $email = $_POST['email'];
-    $contact = $_POST['contact'];
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    $user = new User();
 
-    if ($user->registerPatient($fname, $lname, $email, $contact, $username, $password)) {
-        $message = "<div class='alert alert-success'>Registration successful! You can now <a href='login.php'>login</a>.</div>";
+    // Use null coalescing operator ?? to safely handle missing keys
+    $fname = trim($_POST['fname'] ?? '');
+    $mname = trim($_POST['mname'] ?? '');
+    $lname = trim($_POST['lname'] ?? '');
+    $dob = $_POST['dob'] ?? null;
+    $gender = $_POST['gender'] ?? '';
+    $contact = trim($_POST['contact'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+    $username = trim($_POST['username'] ?? '');
+    $password = $_POST['password'] ?? '';
+    $confirm_password = $_POST['confirm_password'] ?? '';
+
+    // Basic validation
+    if (empty($fname) || empty($lname) || empty($username) || empty($password) || empty($confirm_password)) {
+        $message = "❌ Please fill in all required fields.";
+    } elseif ($password !== $confirm_password) {
+        $message = "❌ Passwords do not match.";
+    } elseif ($user->usernameExists($username)) {
+        $message = "⚠️ Username already exists. Please choose another.";
     } else {
-        $message = "<div class='alert alert-danger'>Registration failed.</div>";
+        $result = $user->registerPatient($fname, $mname, $lname, $dob, $gender, $contact, $email, $address, $username, $password);
+        $message = $result;
     }
 }
 ?>
@@ -29,54 +37,116 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Registration</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5f7;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 450px;
+            margin: 50px auto;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+        form label {
+            display: block;
+            margin-bottom: 6px;
+            color: #333;
+            font-weight: bold;
+        }
+        form input, form select, form textarea {
+            width: 100%;
+            padding: 8px 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        form button {
+            width: 100%;
+            background: #3498db;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        form button:hover {
+            background: #2980b9;
+        }
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .success {
+            color: green;
+        }
+        .error {
+            color: red;
+        }
+    </style>
 </head>
-<body class="bg-light">
-
-<div class="container mt-5">
-    <div class="col-md-6 mx-auto">
-        <div class="card p-4 shadow">
-            <h3 class="text-center mb-3">Register as a Patient</h3>
-            <?= $message ?>
-
-            <form method="POST" action="">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label>First Name</label>
-                        <input type="text" name="fname" class="form-control" required>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label>Last Name</label>
-                        <input type="text" name="lname" class="form-control" required>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label>Email</label>
-                    <input type="email" name="email" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Contact Number</label>
-                    <input type="text" name="contact" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Username</label>
-                    <input type="text" name="username" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Password</label>
-                    <input type="password" name="password" class="form-control" required>
-                </div>
-
-                <button type="submit" class="btn btn-primary w-100">Register</button>
-            </form>
+<body>
+<div class="container">
+    <h2>Patient Registration</h2>
+    <?php if (!empty($message)): ?>
+        <div class="message <?= strpos($message, 'success') !== false ? 'success' : 'error' ?>">
+            <?= htmlspecialchars($message) ?>
         </div>
-    </div>
-</div>
+    <?php endif; ?>
 
+    <form method="POST" action="">
+        <label for="fname">First Name *</label>
+        <input type="text" name="fname" value="<?= htmlspecialchars($_POST['fname'] ?? '') ?>" required>
+
+        <label for="mname">Middle Initial</label>
+        <input type="text" name="mname" maxlength="1" value="<?= htmlspecialchars($_POST['mname'] ?? '') ?>">
+
+        <label for="lname">Last Name *</label>
+        <input type="text" name="lname" value="<?= htmlspecialchars($_POST['lname'] ?? '') ?>" required>
+
+        <label for="dob">Date of Birth</label>
+        <input type="date" name="dob" value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>">
+
+        <label for="gender">Gender</label>
+        <select name="gender">
+            <option value="">--Select--</option>
+            <option value="Male" <?= (($_POST['gender'] ?? '') === 'Male') ? 'selected' : '' ?>>Male</option>
+            <option value="Female" <?= (($_POST['gender'] ?? '') === 'Female') ? 'selected' : '' ?>>Female</option>
+        </select>
+
+        <label for="contact">Contact Number</label>
+        <input type="text" name="contact" value="<?= htmlspecialchars($_POST['contact'] ?? '') ?>">
+
+        <label for="email">Email</label>
+        <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+
+        <label for="address">Address</label>
+        <textarea name="address" rows="2"><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
+
+        <label for="username">Username *</label>
+        <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+
+        <label for="password">Password *</label>
+        <input type="password" name="password" required>
+
+        <label for="confirm_password">Confirm Password *</label>
+        <input type="password" name="confirm_password" required>
+
+        <button type="submit">Register</button>
+    </form>
+</div>
 </body>
 </html>
