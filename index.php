@@ -18,16 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Redirect to their dashboards
         switch ($auth['role']) {
             case 'admin':
-                header("Location: dashboards/admin_dashboard.php");
+                header("Location: public/admin_dashboard.php");
                 break;
             case 'patient':
-                header("Location: dashboards/patient_dashboard.php");
+                header("Location: public/patient_dashboard.php");
                 break;
             case 'staff':
-                header("Location: dashboards/staff_dashboard.php");
+                header("Location: public/staff_dashboard.php");
                 break;
             case 'doctor':
-                header("Location: dashboards/doctor_dashboard.php");
+                header("Location: public/doctor_dashboard.php");
                 break;
             default:
                 $error = "User role not recognized.";
