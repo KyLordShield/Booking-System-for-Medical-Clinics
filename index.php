@@ -41,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link href="https://fonts.googleapis.com/css2?family=Kalnia:wght@400;600;700&display=swap" rel="stylesheet">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Medicina - Booking System</title>
@@ -82,7 +84,7 @@ body {
     display: flex;
     align-items: center;
     color: white;
-    font-family: var(--font-serif);
+    font-family: 'Kalnia', serif;
     font-size: 22px;
     font-weight: bold;
 }
@@ -107,14 +109,16 @@ body {
 /* LEFT COLUMN - LOGIN */
 .login-column {
     flex: 1 1 350px;
-    max-width: 400px;
+    max-width: 300px;
     background: var(--color-light-blue);
     padding: 20px;
+    margin-top: -40px; /* move the entire login section up */
+    margin-left: 40px;
 }
 
 .login-title {
     font-family: var(--font-serif);
-    font-size: 36px;
+    font-size: 40px;
     margin-bottom: 20px;
     color: var(--color-dark-blue);
 }
@@ -136,16 +140,29 @@ body {
     font-size: 16px;
 }
 
-/* REMEMBER ME LEFT ALIGN FIX */
 .remember-me {
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Left align */
-    gap: 6px;
+    gap: 4px; /* smaller spacing between checkbox and text */
     margin: 15px 0 25px 0;
     color: var(--color-dark-blue);
     font-size: 14px;
 }
+
+.remember-me input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-dark-blue); /* modern browsers */
+    margin: 0; /* remove weird spacing */
+    vertical-align: middle;
+}
+
+.remember-me label {
+    cursor: pointer;
+    user-select: none;
+    line-height: 1; /* keeps it tight vertically */
+}
+
 
 .login-button {
     width: 100%;
@@ -169,9 +186,10 @@ body {
     text-align: center;
     margin-top: 15px;
     color: var(--color-dark-blue);
-    text-decoration: none;
+    text-decoration: underline; /* ← add this */
     font-weight: bold;
 }
+
 
 .error-message {
     color: red;
@@ -179,28 +197,33 @@ body {
     margin-bottom: 10px;
 }
 
-/* RIGHT COLUMN */
 .marketing-column {
     flex: 1 1 400px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    padding: 20px 60px; /* adds slight space to the right side */
+    justify-content: flex-start; /* move text upward */
+    padding-left: 170px; /* space from login */
+    padding-right: 40px;
+    margin-top: -100px; /* lift the text slightly upward */
 }
 
 .marketing-headline {
     font-family: var(--font-serif);
-    font-size: 48px;
+    font-weight: 600; /* make it normal instead of bold */
+    font-size: 56px; /* larger title font */
+    line-height: 1.1; /* tighter line spacing */
     color: var(--color-dark-blue);
     margin-bottom: 20px;
 }
 
 .marketing-subtext {
-    font-size: 18px;
+    
+    font-size: 20px; /* slightly larger subtitle */
     color: var(--color-dark-blue);
-    line-height: 1.5;
+    line-height: 1.6;
     margin-bottom: 40px;
 }
+
 
 .browse-button {
     display: inline-block;

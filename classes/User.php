@@ -20,7 +20,7 @@ class User {
         return $stmt->rowCount() > 0;
     }
 
-    // Register a new patient + user
+    // Register a new patient + user (PLAIN TEXT VERSION FOR TESTING)
     public function registerPatient($fname, $mname, $lname, $dob, $gender, $contact, $email, $address, $username, $password) {
         try {
             $this->conn->beginTransaction();
@@ -43,15 +43,14 @@ class User {
 
             $pat_id = $this->conn->lastInsertId();
 
-            // Insert into USER
-            $hashed = password_hash($password, PASSWORD_DEFAULT);
+            // ⚠️ Plain text password insert (TEMPORARY)
             $sql2 = "INSERT INTO {$this->user_table}
                 (USER_NAME, USER_PASSWORD, PAT_ID, USER_IS_SUPERADMIN, USER_CREATED_AT)
                 VALUES (:username, :password, :pat_id, 0, NOW())";
             $stmt2 = $this->conn->prepare($sql2);
             $stmt2->execute([
                 ':username' => $username,
-                ':password' => $hashed,
+                ':password' => $password,  // <-- plain text
                 ':pat_id' => $pat_id
             ]);
 
