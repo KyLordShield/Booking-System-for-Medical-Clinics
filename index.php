@@ -1,40 +1,39 @@
 <?php
 session_start();
-require_once 'classes/Login.php'; 
+require_once 'classes/Login.php';
 
 $login = new Login();
-$error = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
-
-    $auth = $login->authenticate($username, $password);
+    $auth = $login->authenticate($_POST['username'], $_POST['password']);
 
     if ($auth) {
         $_SESSION['role'] = $auth['role'];
-        $_SESSION['user_id'] = $auth['id'];
+        $_SESSION['USER_ID'] = $auth['USER_ID'];
 
         switch ($auth['role']) {
             case 'admin':
                 header("Location: public/admin_dashboard.php");
-                break;
+                exit;
+
             case 'patient':
+                $_SESSION['PAT_ID'] = $auth['PAT_ID'];
                 header("Location: public/patient_dashboard.php");
-                break;
+                exit;
+
             case 'staff':
+                $_SESSION['STAFF_ID'] = $auth['STAFF_ID'];
                 header("Location: public/staff_dashboard.php");
-                break;
+                exit;
+
             case 'doctor':
+                $_SESSION['DOC_ID'] = $auth['DOC_ID'];
                 header("Location: public/doctor_dashboard.php");
-                break;
-            default:
-                $error = "User role not recognized.";
-                break;
+                exit;
         }
-        exit;
     } else {
-        $error = "Invalid username or password!";
+        echo "<script>alert('Invalid username or password!'); window.location.href='index.php';</script>";
+        exit;
     }
 }
 ?>
@@ -42,10 +41,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
 <html lang="en">
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Kalnia:wght@400;600;700&display=swap" rel="stylesheet">
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Medicina - Booking System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicina - Booking System</title>
 <style>
 :root {
     --color-dark-blue: #1C334A;
@@ -265,10 +263,6 @@ body {
 <div class="main-container">
     <div class="login-column">
         <h1 class="login-title">Log in</h1>
-        
-        <?php if ($error): ?>
-            <div class="error-message"><?= htmlspecialchars($error) ?></div>
-        <?php endif; ?>
 
         <form method="POST" class="login-form">
             <label for="username">Username</label>
@@ -285,7 +279,7 @@ body {
             <button type="submit" name="login_submit" class="login-button">Log in</button>
         </form>
 
-<a href="public/register/register.php" class="register-link">REGISTER HERE</a>
+        <a href="public/register/register.php" class="register-link">REGISTER HERE</a>
     </div>
 
     <div class="marketing-column">

@@ -19,22 +19,38 @@ class Login {
             if ($stmt->rowCount() > 0) {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-                // ✅ For now, use plain text comparison (testing mode)
+                // ⚠️ For testing: plain text password (replace later with password_verify)
                 if ($password === $user['USER_PASSWORD']) {
+
                     // Update last login
                     $update = $this->conn->prepare("UPDATE USERS SET USER_LAST_LOGIN = NOW() WHERE USER_ID = :id");
                     $update->bindParam(':id', $user['USER_ID']);
                     $update->execute();
 
-                    // Determine user type
+                    // Determine user role and return the proper IDs
                     if ($user['USER_IS_SUPERADMIN']) {
-                        return ['role' => 'admin', 'id' => $user['USER_ID']];
+                        return [
+                            'role' => 'admin',
+                            'USER_ID' => $user['USER_ID']
+                        ];
                     } elseif (!empty($user['PAT_ID'])) {
-                        return ['role' => 'patient', 'id' => $user['PAT_ID']];
+                        return [
+                            'role' => 'patient',
+                            'USER_ID' => $user['USER_ID'],
+                            'PAT_ID' => $user['PAT_ID']
+                        ];
                     } elseif (!empty($user['STAFF_ID'])) {
-                        return ['role' => 'staff', 'id' => $user['STAFF_ID']];
+                        return [
+                            'role' => 'staff',
+                            'USER_ID' => $user['USER_ID'],
+                            'STAFF_ID' => $user['STAFF_ID']
+                        ];
                     } elseif (!empty($user['DOC_ID'])) {
-                        return ['role' => 'doctor', 'id' => $user['DOC_ID']];
+                        return [
+                            'role' => 'doctor',
+                            'USER_ID' => $user['USER_ID'],
+                            'DOC_ID' => $user['DOC_ID']
+                        ];
                     } else {
                         return ['role' => 'unknown'];
                     }
