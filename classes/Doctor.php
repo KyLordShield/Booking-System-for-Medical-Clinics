@@ -10,11 +10,35 @@ class Doctor {
         $this->conn = $db->connect();
     }
 
-    public function getAllDoctors() {
-        $sql = "SELECT DOC_ID, DOC_FIRST_NAME, DOC_LAST_NAME FROM {$this->table} ORDER BY DOC_LAST_NAME ASC";
+    // Returns doctors with specialization name (if any)
+    public function getAllDoctorsWithSpecialization() {
+        $sql = "SELECT d.DOC_ID, d.DOC_FIRST_NAME, d.DOC_LAST_NAME, d.SPEC_ID, s.SPEC_NAME
+                FROM DOCTOR d
+                LEFT JOIN SPECIALIZATION s ON d.SPEC_ID = s.SPEC_ID
+                ORDER BY d.DOC_LAST_NAME ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    // Backwards-compatible simple method (if used elsewhere)
+    public function getAllDoctors() {
+        return $this->getAllDoctorsWithSpecialization();
+    }
+
+    // 🟦 Get doctors filtered by service (based on specialization)
+public function getDoctorsByService($serv_id) {
+    $sql = "SELECT d.DOC_ID, d.DOC_FIRST_NAME, d.DOC_LAST_NAME, s.SPEC_NAME
+            FROM doctor d
+            JOIN specialization s ON d.SPEC_ID = s.SPEC_ID
+            JOIN service sv ON s.SPEC_ID = sv.SPEC_ID
+            WHERE sv.SERV_ID = :serv_id
+            ORDER BY d.DOC_LAST_NAME ASC";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->bindParam(':serv_id', $serv_id);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }
 ?>
