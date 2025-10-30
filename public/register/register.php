@@ -79,7 +79,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <!-- #for header section -->
     <div class="header">
         <div class="logo">
-            <img src="logo.png" alt="Medicina Logo">
+             <a href="/Booking-System-For-Medical-Clinics/index.php">
+                <img src="logo.png" alt="Medicina Logo" style="height: 50px;">
+            </a>
             <h1>Medicina</h1>
         </div>
     </div>

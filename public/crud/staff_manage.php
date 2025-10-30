@@ -9,7 +9,7 @@ session_start();
      exit;
  }
 
-require_once dirname(__DIR__, 2) . '/config/Database.php';
+require_once __DIR__ . '/../../classes/Database.php';
 $db = new Database();
 $conn = $db->connect();
 
@@ -72,11 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                     WHERE (CONCAT(STAFF_FIRST_NAME, ' ', COALESCE(STAFF_MIDDLE_INIT,''), ' ', STAFF_LAST_NAME) LIKE :q
                            OR STAFF_CONTACT_NUM LIKE :q
                            OR STAFF_EMAIL LIKE :q)
-                    ORDER BY STAFF_ID ASC";
+                    ORDER BY STAFF_LAST_NAME ASC, STAFF_FIRST_NAME ASC";
             $stmt = $conn->prepare($sql);
             $stmt->execute([':q' => $q]);
         } else {
-            $sql = "SELECT * FROM staff ORDER BY STAFF_ID ASC";
+            $sql = "SELECT * FROM staff ORDER BY STAFF_LAST_NAME ASC, STAFF_FIRST_NAME ASC";
             $stmt = $conn->prepare($sql);
             $stmt->execute();
         }
@@ -106,6 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                   <td><?php echo esc($row['STAFF_UPDATED_AT']); ?></td>
                   <td>
                     <button class="action-btn edit-btn" data-id="<?php echo esc($row['STAFF_ID']); ?>">Edit</button>
+                    <button class="action-btn delete-btn" data-id="<?php echo esc($row['STAFF_ID']); ?>">Delete</button>
                   </td>
                 </tr>
                 <?php
