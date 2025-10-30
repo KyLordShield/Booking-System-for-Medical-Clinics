@@ -138,8 +138,9 @@ footer {
     </div>
     <div class="nav-links">
       <a class="active" href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
-      <a href="/Booking-System-For-Medical-Clinics/classes/Appointment.php">Appointment</a>
-      <a href="/Booking-System-For-Medical-Clinics/public/medical_records.php">Medical Records</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/schedule.php">Schedule</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/appointments.php">Appointment</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/medical_records.php">Medical Records</a>
       <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
     </div>
 </div>
@@ -155,7 +156,7 @@ footer {
         <p>Peter Armstrong</p>
         <p>Doctor’s ID_num: 101</p>
 
-        <a href="/booking-system/doctor/update_info.php">
+        <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/update_info.php">
           <button class="btn-update">UPDATE INFO</button>
         </a>
     </div>
