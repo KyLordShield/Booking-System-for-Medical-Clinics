@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $password = $_POST['password'] ?? '';
     $confirm_password = $_POST['confirm_password'] ?? '';
 
-    // ✅ Client-side validations
+    // ✅ Validations
     if (empty($fname) || empty($lname) || empty($username) || empty($password) || empty($confirm_password)) {
         $message = "❌ Please fill in all required fields.";
         $message_class = "error";
@@ -28,13 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $message = "❌ Passwords do not match.";
         $message_class = "error";
     } else {
-        // Run registration
+        // Register user
         $result = $user->registerPatient(
             $fname, $mname, $lname, $dob, $gender,
             $contact, $email, $address, $username, $password
         );
 
-        // ✅ Check result message to determine style
+        // ✅ Style message
         if (strpos($result, 'successful') !== false) {
             $message_class = "success";
         } else {
@@ -50,56 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width , initial-scale=1.0">
     <title>Patient Registration</title>
+    <link rel="stylesheet" href="register.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f5f7;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            width: 450px;
-            margin: 50px auto;
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 30px;
-        }
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #2c3e50;
-        }
-        form label {
-            display: block;
-            margin-bottom: 6px;
-            color: #333;
-            font-weight: bold;
-        }
-        form input, form select, form textarea {
-            width: 100%;
-            padding: 8px 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-        form button {
-            width: 100%;
-            background: #3498db;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        form button:hover {
-            background: #2980b9;
-        }
+        /* fallback message styles if not included in CSS file */
         .message {
-            margin-top: 15px;
+            margin-top: 10px;
             text-align: center;
             font-weight: bold;
             padding: 10px;
@@ -117,56 +74,104 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </style>
 </head>
+
 <body>
-<div class="container">
-    <h2>Patient Registration</h2>
-
-    <?php if (!empty($message)): ?>
-        <div class="message <?= $message_class ?>">
-            <?= htmlspecialchars($message) ?>
+    <!-- #for header section -->
+    <div class="header">
+        <div class="logo">
+            <img src="logo.png" alt="Medicina Logo">
+            <h1>Medicina</h1>
         </div>
-    <?php endif; ?>
+    </div>
 
-    <form method="POST" action="">
-        <label for="fname">First Name *</label>
-        <input type="text" name="fname" value="<?= htmlspecialchars($_POST['fname'] ?? '') ?>" required>
+    <!-- #for main registration container -->
+    <div class="register-container">
+        <h2 class="form-title">Register</h2>
 
-        <label for="mname">Middle Initial</label>
-        <input type="text" name="mname" maxlength="1" value="<?= htmlspecialchars($_POST['mname'] ?? '') ?>">
+        <!-- PHP message -->
+        <?php if (!empty($message)): ?>
+            <div class="message <?= $message_class ?>">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endif; ?>
 
-        <label for="lname">Last Name *</label>
-        <input type="text" name="lname" value="<?= htmlspecialchars($_POST['lname'] ?? '') ?>" required>
+        <!-- Registration form -->
+        <form method="POST" action="">
+            <div class="form-grid">
+                <!-- LEFT column -->
+                <div class="form-left">
+                    <label for="lname">Last Name *</label>
+                    <input type="text" name="lname" value="<?= htmlspecialchars($_POST['lname'] ?? '') ?>" required>
 
-        <label for="dob">Date of Birth</label>
-        <input type="date" name="dob" value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>">
+                    <label for="fname">First Name *</label>
+                    <input type="text" name="fname" value="<?= htmlspecialchars($_POST['fname'] ?? '') ?>" required>
 
-        <label for="gender">Gender</label>
-        <select name="gender">
-            <option value="">--Select--</option>
-            <option value="Male" <?= (($_POST['gender'] ?? '') === 'Male') ? 'selected' : '' ?>>Male</option>
-            <option value="Female" <?= (($_POST['gender'] ?? '') === 'Female') ? 'selected' : '' ?>>Female</option>
-        </select>
+                    <label for="mname">M.I</label>
+                    <input type="text" name="mname" maxlength="1" value="<?= htmlspecialchars($_POST['mname'] ?? '') ?>">
 
-        <label for="contact">Contact Number</label>
-        <input type="text" name="contact" value="<?= htmlspecialchars($_POST['contact'] ?? '') ?>">
+                    <div class="dob-sex">
+                        <div class="dob-field">
+                            <label for="dob">DOB</label>
+                            <input type="date" name="dob" value="<?= htmlspecialchars($_POST['dob'] ?? '') ?>">
+                        </div>
+                        <div class="sex-field">
+                            <label for="gender">Sex</label>
+                            <select name="gender">
+                                <option value="">--Select--</option>
+                                <option value="Male" <?= (($_POST['gender'] ?? '') === 'Male') ? 'selected' : '' ?>>Male</option>
+                                <option value="Female" <?= (($_POST['gender'] ?? '') === 'Female') ? 'selected' : '' ?>>Female</option>
+                            </select>
+                        </div>
+                    </div>
 
-        <label for="email">Email</label>
-        <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
+                    <label for="address">Address</label>
+                    <textarea name="address" rows="2"><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
+                </div>
 
-        <label for="address">Address</label>
-        <textarea name="address" rows="2"><?= htmlspecialchars($_POST['address'] ?? '') ?></textarea>
+                <!-- RIGHT column -->
+                <div class="form-right">
+                    <label for="contact">Contact No.</label>
+                    <input type="text" name="contact" value="<?= htmlspecialchars($_POST['contact'] ?? '') ?>">
 
-        <label for="username">Username *</label>
-        <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
+                    <label for="email">Email</label>
+                    <input type="email" name="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>">
 
-        <label for="password">Password *</label>
-        <input type="password" name="password" required>
+                    <label for="username">Username *</label>
+                    <input type="text" name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" required>
 
-        <label for="confirm_password">Confirm Password *</label>
-        <input type="password" name="confirm_password" required>
+                    <label for="password">Password *</label>
+                    <div class="password-container">
+                        <input type="password" name="password" id="password" required>
+                        <span class="toggle-password" onclick="togglePassword()">
+                            <img src="eye.png" alt="Show password" style="width: 20px; height: 20px;">
+                        </span>
+                    </div>
 
-        <button type="submit">Register</button>
-    </form>
-</div>
+                    <label for="confirm_password">Confirm Password *</label>
+                    <input type="password" name="confirm_password" required>
+                </div>
+
+                <!-- Register button -->
+                <div class="register-btn">
+                    <button type="submit">Register</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.querySelector('.toggle-password');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.innerHTML = '<img src="eye hide.png" alt="Hide password" style="width: 20px; height: 20px;">';
+            } else {
+                passwordInput.type = 'password';
+                icon.innerHTML = '<img src="eye.png" alt="Show password" style="width: 20px; height: 20px;">';
+            }
+        }
+    </script>
 </body>
 </html>

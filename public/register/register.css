@@ -1,0 +1,186 @@
+@import url('https://fonts.googleapis.com/css2?family=Kalnia:wght@500;700&family=Kameron:wght@400;600&display=swap');
+
+/* ===== Global Styles ===== */
+body {
+  font-family: 'Kameron', serif;
+  background-color: #74B3CE;   /* full background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Header ===== */
+.header {
+  background-color: #172A3A;
+  padding: 25px 60px;
+  border-top-right-radius: 40px;
+  border-bottom-right-radius: 40px;
+   border-top-left-radius: 40px;
+  border-bottom-left-radius: 40px;
+  width: 90%;
+  margin: 30px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.header .logo img {
+  width: 55px;
+  height: auto;
+  object-fit: contain; /* naay chance i delete(new add)*/
+}
+
+.header h1 {
+  font-family: 'Kalnia', serif;
+  font-size: 35px;  /*original size 34*/
+  color: #ffffff;
+  font-weight: 700;
+  margin: 0;
+}
+
+
+/* ===== Title ===== */
+.form-title {
+  text-align: left;   /*NEW ADDED*/
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 35px;
+  margin-bottom: px;
+}
+
+/* ===== Form Layout ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 50px 60px; 
+  align-items: start;
+}
+
+/* ===== Left and Right Columns ===== */
+.form-left, .form-right {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ===== Labels ===== */
+label {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+ margin-bottom: -0px; 
+ margin-top: 6px; /* pushes label slightly downward */
+}
+
+/* ===== Inputs, Select, and Textarea ===== */
+input, select, textarea {
+  background-color: #D6F3F4;
+  border: none;
+  border-radius: 7px;
+  padding: 12px;
+  font-family: 'Kameron', serif;
+  font-size: 14px;
+  outline: none;
+  color: #172A3A;
+  width: 100%;
+  max-width: 420px; /* longer horizontally */
+}
+
+/* Date & Sex inline layout */
+.dob-sex {
+  display: flex;
+  gap: 35px;
+}
+
+.dob-field, .sex-field {
+  flex: 1;
+}
+/* --- Register Button --- */
+.register-btn {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  margin-top: 20px;
+  margin-left:80px;
+}
+
+.register-btn button {
+  background-color: #172A3A;
+  color: white;
+  border: none;
+  padding: 30px 50px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.register-btn button:hover {
+  background-color: #0F1E2B;
+}
+
+
+.register-btn button:hover {
+  background-color: #23394b;
+  transform: scale(1.02);
+}
+
+
+
+/* password toggle button */
+.password-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px; /* space for the icon */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  cursor: pointer;
+  user-select: none;
+  color: #172A3A;
+  font-size: 18px;
+  transition: opacity 0.2s ease;
+}
+
+.toggle-password:hover {
+  opacity: 0.7;
+}
+
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 900px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .register-container {
+    margin-left: 0;
+    width: 90%;
+  }
+
+  .register-btn {
+    justify-content: flex-end;
+  }
+}
