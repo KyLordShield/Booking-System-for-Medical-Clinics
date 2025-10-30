@@ -146,7 +146,6 @@ footer {
     <div class="nav-links">
       <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
       <a href="staff_manage.php">Staff</a>
-      <a href="users_manage.php">Users</a>
       <a href="services.php">Services</a>
       <a href="status.php">Status</a>
       <a class="active" href="#">Payments</a>
@@ -158,16 +157,20 @@ footer {
 
 <main>
 
-  <div class="page-title">Payments</div>
-
-  <div class="top-controls">
+    <<div class="top-controls">
     <div class="search-box">
       <input type="text" placeholder="Search payment...">
     </div>
 
-    <a href="add_payment.php">
-      <button class="btn-add">+ Add Payment</button>
-    </a>
+    <div>
+    <a href="add_payment.php"><button class="btn-add">+ Add Payment</button></a>
+    <a href="add_payment_method.php"><button class="btn-add">+ Payment Method</button></a>
+    <a href="edit_payment_method.php"><button class="btn-add">Edit Method</button></a>
+    <a href="add_payment_status.php"><button class="btn-add">+ Payment Status</button></a>
+    <a href="edit_payment_status.php"><button class="btn-add">Edit Status</button></a>
+    </div>
+</div>
+
   </div>
 
   <div class="table-container">

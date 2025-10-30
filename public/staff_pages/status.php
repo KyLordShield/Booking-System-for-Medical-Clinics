@@ -147,7 +147,6 @@ footer {
     <div class="nav-links">
       <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
       <a href="staff_manage.php">Staff</a>
-      <a href="users_manage.php">Users</a>
       <a href="services.php">Services</a>
       <a class="active" href="#">Status</a>
       <a href="payments.php">Payments</a>
