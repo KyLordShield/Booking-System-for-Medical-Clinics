@@ -1,3 +1,7 @@
+<?php
+// ✅ TODO: Staff access check later
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +10,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+/* ✅ SAME DESIGN AS OTHER STAFF PAGES */
 :root {
   --primary: #002339;
   --secondary: #6da9c6;
@@ -20,8 +25,6 @@ body {
   flex-direction: column;
   min-height: 100vh;
 }
-
-/* NAVBAR */
 .navbar {
   background: var(--primary);
   padding: 20px 50px;
@@ -43,14 +46,15 @@ body {
 }
 .nav-links {
   display: flex;
-  gap: 35px;
+  margin-left: auto;
+  gap: 18px;
 }
 .nav-links a {
   color: var(--white);
   text-decoration: none;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: bold;
-  padding: 8px 18px;
+  padding: 6px 14px;
   border-radius: 30px;
   transition: .3s ease;
 }
@@ -58,80 +62,68 @@ body {
   background: var(--light);
   color: var(--primary);
 }
-
-/* MAIN CONTENT */
 main {
   flex: 1;
   padding: 40px 60px;
 }
-h2 {
-  margin-bottom: 20px;
-  font-size: 35px;
+.page-title {
+  font-size: 32px;
   font-weight: bold;
-  color: var(--primary);
+  margin-bottom: 25px;
 }
-.records-table {
-  width: 100%;
+.search-box {
+  margin-bottom: 20px;
+}
+.search-box input {
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: none;
+}
+.table-container {
   background: var(--white);
-  border-radius: 12px;
-  overflow: hidden;
-  border: 2px solid var(--primary);
+  padding: 20px;
+  border-radius: 20px;
 }
 table {
   width: 100%;
   border-collapse: collapse;
 }
-thead tr {
-  background: var(--primary);
-  color: var(--white);
-  font-size: 18px;
-}
 th, td {
-  padding: 14px;
-  text-align: center;
-  border-bottom: 1px solid #c4d3dd;
+  padding: 12px;
+  text-align: left;
+  border-bottom: 2px solid var(--secondary);
 }
-tbody tr:hover {
-  background: #bfe1eb;
-}
-.view-btn {
-  padding: 8px 18px;
-  border-radius: 20px;
+th {
   background: var(--primary);
   color: var(--white);
-  text-decoration: none;
-  font-size: 14px;
-  transition: .3s;
-}
-.view-btn:hover {
-  background: #00121f;
 }
 
-/* FOOTER */
+/* ✅ Consistent button style */
+.view-btn {
+  padding: 6px 12px;
+  background: var(--primary);
+  color: var(--white);
+  border-radius: 20px;
+  font-size: 12px;
+  text-decoration: none;
+}
+.view-btn:hover {
+  background: var(--secondary);
+}
+
 footer {
   background: var(--primary);
   color: var(--white);
   text-align: center;
-  padding: 15px 0;
-  margin-top: 20px;
+  padding: 20px 0;
   font-size: 14px;
-}
-
-/* RESPONSIVE */
-@media(max-width: 768px) {
-  main {
-    padding: 20px;
-  }
-  th, td {
-    font-size: 14px;
-  }
 }
 </style>
 </head>
 
 <body>
 
-<!-- NAV BAR -->
+<!-- ✅ NAVIGATION BAR -->
 <div class="navbar">
     <div class="navbar-brand">
       <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">
@@ -141,55 +133,44 @@ footer {
       <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
       <a href="staff_manage.php">Staff</a>
       <a href="users_manage.php">Users</a>
-      <a href="#">Services</a>
+      <a href="services.php">Services</a>
       <a href="status.php">Status</a>
       <a href="payments.php">Payments</a>
       <a href="specialization.php">Specialization</a>
-      <a class="active" href="smedical_records.php">Medical Records</a>
+      <a class="active" href="#">Medical Records</a>
       <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
     </div>
 </div>
 
-<!-- CONTENT -->
+<!-- ✅ CONTENT -->
 <main>
-  <h2>Medical Records</h2>
+  <div class="page-title">Medical Records</div>
 
-  <div class="records-table">
+  <div class="search-box">
+    <input type="text" placeholder="Search record / patient name">
+  </div>
+
+  <div class="table-container">
       <table>
           <thead>
               <tr>
-                  <th>Record No.</th>
+                  <th>Record ID</th>
                   <th>Patient Name</th>
                   <th>Diagnosis</th>
-                  <th>Perscription</th>
+                  <th>Prescription</th>
                   <th>Visit Date</th>
                   <th>Action</th>
               </tr>
           </thead>
-
           <tbody>
               <tr>
-                  <td>001</td>
-                  <td>Maria Santos</td>
-                  <td>Flu</td>
-                  <td>Antiviral Medication</td>
-                  <td>2025-10-05</td>
-                  <td><a class="view-btn" href="/booking-system/doctor/record_view.php?id=1">View</a></td>
-              </tr>
-              <tr>
-                  <td>002</td>
-                  <td>Pedro Cruz</td>
-                  <td>Stomach Pain</td>
-                  <td>Antacids</td>
-                  <td>2025-10-10</td>
-                  <td><a class="view-btn" href="/booking-system/doctor/record_view.php?id=2">View</a></td>
+                  <td colspan="6" style="text-align:center;">No medical records found...</td>
               </tr>
           </tbody>
       </table>
   </div>
 </main>
 
-<!-- FOOTER -->
 <footer>
   &copy; 2025 Medicina Clinic | All Rights Reserved
 </footer>
