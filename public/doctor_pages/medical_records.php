@@ -157,6 +157,7 @@ footer {
                   <th>Record No.</th>
                   <th>Patient Name</th>
                   <th>Diagnosis</th>
+                  <th>Perscription</th>
                   <th>Visit Date</th>
                   <th>Action</th>
               </tr>
@@ -167,6 +168,7 @@ footer {
                   <td>001</td>
                   <td>Maria Santos</td>
                   <td>Flu</td>
+                  <td>Antiviral Medication</td>
                   <td>2025-10-05</td>
                   <td><a class="view-btn" href="/booking-system/doctor/record_view.php?id=1">View</a></td>
               </tr>
@@ -174,6 +176,7 @@ footer {
                   <td>002</td>
                   <td>Pedro Cruz</td>
                   <td>Stomach Pain</td>
+                  <td>Antacids</td>
                   <td>2025-10-10</td>
                   <td><a class="view-btn" href="/booking-system/doctor/record_view.php?id=2">View</a></td>
               </tr>
