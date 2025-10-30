@@ -164,7 +164,7 @@ footer {
           </thead>
           <tbody>
               <tr>
-                  <td colspan="6" style="text-align:center;">No medical records found...</td>
+                <td colspan="6" style="text-align:center;">No medical records found...</td>
               </tr>
           </tbody>
       </table>
