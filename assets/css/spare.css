@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Kalnia:wght@500;700&family=Kameron:wght@400;600&display=swap');
+
+body {
+  font-family: 'Kameron', serif;
+  background-color: #74B3CE;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Header ===== */
+.header {
+  background-color: #172A3A;
+  padding: 25px 60px;
+  border-radius: 40px;
+  width: 90%;
+  margin: 30px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo img {
+  width: 55px;
+  height: auto;
+}
+
+.header h1 {
+  font-family: 'Kalnia', serif;
+  font-size: 30px;
+  color: #fff;
+  margin: 0;
+}
+
+/* ===== Welcome Section ===== */
+.welcome-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 40px auto;
+  gap: 60px;
+  flex-wrap: wrap;
+}
+
+.text-content {
+  color: black;
+  flex: 1;
+  min-width: 320px;
+}
+
+.text-content h2 {
+  font-size: 2.2rem;
+  margin-bottom: 20px;
+}
+
+.welcome-message p {
+  font-size: 1.1rem;
+  line-height: 1.7;
+}
+
+/* ===== Right side video ===== */
+.image-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.doctor-video {
+  width: 100%;
+  max-width: 550px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+/* ===== Info Section (Centered Properly) ===== */
+.info-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-top: 60px;
+}
+
+/* 3 big profile boxes */
+.info-boxes {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+/* Each profile box */
+.box {
+  background-color: #D6F3F4;
+  position: relative;
+  width: 250px;
+  height: 250px;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  transition: transform 0.3s ease;
+}
+
+.box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.box:hover {
+  transform: scale(1.05);
+}
+
+/* Overlay text on hover */
+.overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(23, 42, 58, 0.85);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.box:hover .overlay {
+  opacity: 1;
+}
+
+/* 3 smaller name boxes below */
+.name-boxes {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 60px;
+  flex-wrap: wrap;
+  margin-bottom: 60px;
+}
+
+.name-card {
+  background-color: #d6f0fa;
+  color: #000;
+  font-weight: 600;
+  padding: 15px 25px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  width: 180px;
+}
+
+/* ===== Centered Get Started Button ===== */
+.button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 100px;
+}
+
+.get-started {
+  background-color: #d6f0fa;
+  color: #000;
+  text-decoration: none;
+  padding: 15px 50px;
+  border-radius: 30px;
+  font-weight: 600;
+  transition: background 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.get-started:hover {
+  background-color: #b3e0f5;
+  transform: scale(1.05);
+}
+/* ===== Responsive Fixes ===== */
+@media (max-width: 992px) {
+  .welcome-section {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .text-content {
+    font-size: 1.5rem;
+  }
+
+  .doctor-video {
+    max-width: 100%;
+  }
+
+  .info-boxes,
+  .name-boxes {
+    gap: 25px;
+  }
+}
