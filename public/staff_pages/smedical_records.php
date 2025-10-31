@@ -1,178 +1,95 @@
-<?php
-// ✅ TODO: Staff access check later
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Medical Records</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Medical Records | Staff Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-/* ✅ SAME DESIGN AS OTHER STAFF PAGES */
-:root {
-  --primary: #002339;
-  --secondary: #6da9c6;
-  --light: #d0edf5;
-  --white: #fff;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: Georgia, serif;
-  background: var(--secondary);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-.navbar {
-  background: var(--primary);
-  padding: 20px 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 0 0 35px 35px;
-}
-.navbar-brand {
-  color: var(--white);
-  font-size: 28px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
-.navbar-brand img {
-  width: 45px;
-  margin-right: 10px;
-}
-.nav-links {
-  display: flex;
-  margin-left: auto;
-  gap: 18px;
-}
-.nav-links a {
-  color: var(--white);
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: bold;
-  padding: 6px 14px;
-  border-radius: 30px;
-  transition: .3s ease;
-}
-.nav-links a:hover, .nav-links a.active {
-  background: var(--light);
-  color: var(--primary);
-}
-main {
-  flex: 1;
-  padding: 40px 60px;
-}
-.page-title {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 25px;
-}
-.search-box {
-  margin-bottom: 20px;
-}
-.search-box input {
-  padding: 8px 15px;
-  border-radius: 20px;
-  border: none;
-}
-.table-container {
-  background: var(--white);
-  padding: 20px;
-  border-radius: 20px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 2px solid var(--secondary);
-}
-th {
-  background: var(--primary);
-  color: var(--white);
-}
+  <!-- ✅ Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-/* ✅ Consistent button style */
-.view-btn {
-  padding: 6px 12px;
-  background: var(--primary);
-  color: var(--white);
-  border-radius: 20px;
-  font-size: 12px;
-  text-decoration: none;
-}
-.view-btn:hover {
-  background: var(--secondary);
-}
-
-footer {
-  background: var(--primary);
-  color: var(--white);
-  text-align: center;
-  padding: 20px 0;
-  font-size: 14px;
-}
-</style>
+  <!-- ✅ Custom CSS -->
+  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
 
-<body>
+<body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<!-- ✅ NAVIGATION BAR -->
-<div class="navbar">
-    <div class="navbar-brand">
-      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">
+  <!-- ✅ NAVBAR -->
+  <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
+    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
+      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-11 mr-3">
       Medicina
     </div>
-    <div class="nav-links">
+
+    <div class="nav-links flex gap-4">
       <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-      <a href="staff_manage.php">Staff</a>
-      <a href="services.php">Services</a>
-      <a href="status.php">Status</a>
-      <a href="payments.php">Payments</a>
-      <a href="specialization.php">Specialization</a>
-      <a class="active" href="#">Medical Records</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/staff_manage.php">Staff</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/services.php">Services</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/status.php">Status</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/payments.php">Payments</a>
+      <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/specialization.php">Specialization</a>
+      <a class="active" href="/Booking-System-For-Medical-Clinics/public/staff_pages/medical_records.php">Medical Records</a>
       <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
     </div>
-</div>
-
-<!-- ✅ CONTENT -->
-<main>
-  <div class="page-title">Medical Records</div>
-
-  <div class="search-box">
-    <input type="text" placeholder="Search record / patient name">
   </div>
 
-  <div class="table-container">
-      <table>
-          <thead>
-              <tr>
-                  <th>Record ID</th>
-                  <th>Patient Name</th>
-                  <th>Diagnosis</th>
-                  <th>Prescription</th>
-                  <th>Visit Date</th>
-                  <th>Action</th>
-              </tr>
-          </thead>
-          <tbody>
-              <tr>
-                <td colspan="6" style="text-align:center;">No medical records found...</td>
-              </tr>
-          </tbody>
+  <!-- ✅ MAIN CONTENT -->
+  <main class="flex-1 px-10 py-10">
+    <h2 class="text-[36px] font-bold text-[var(--primary)] mb-6">Medical Records</h2>
+
+    <!-- Search Box -->
+    <div class="search-box mb-6">
+      <input type="text" placeholder="Search record / patient name"
+        class="w-full sm:w-[350px] px-4 py-2 rounded-full border-none focus:ring-2 focus:ring-[var(--primary)] outline-none text-[16px]">
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-md">
+      <table class="w-full border-collapse text-[var(--primary)]">
+        <thead>
+          <tr class="border-b border-gray-300">
+            <th class="py-3 px-4 text-left">Record ID</th>
+            <th class="py-3 px-4 text-left">Patient Name</th>
+            <th class="py-3 px-4 text-left">Diagnosis</th>
+            <th class="py-3 px-4 text-left">Prescription</th>
+            <th class="py-3 px-4 text-left">Visit Date</th>
+            <th class="py-3 px-4 text-left">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Example Record -->
+          <tr class="border-b border-gray-300 hover:bg-gray-50">
+            <td class="py-3 px-4">001</td>
+            <td class="py-3 px-4">Maria Santos</td>
+            <td class="py-3 px-4">Flu</td>
+            <td class="py-3 px-4">Antiviral Medication</td>
+            <td class="py-3 px-4">2025-10-05</td>
+            <td class="py-3 px-4">
+              <a href="#" class="view-btn px-4 py-1 rounded-full text-white bg-[var(--primary)] hover:bg-[var(--secondary)]">View</a>
+            </td>
+          </tr>
+          <tr class="border-b border-gray-300 hover:bg-gray-50">
+            <td class="py-3 px-4">002</td>
+            <td class="py-3 px-4">Pedro Cruz</td>
+            <td class="py-3 px-4">Stomach Pain</td>
+            <td class="py-3 px-4">Antacids</td>
+            <td class="py-3 px-4">2025-10-10</td>
+            <td class="py-3 px-4">
+              <a href="#" class="view-btn px-4 py-1 rounded-full text-white bg-[var(--primary)] hover:bg-[var(--secondary)]">View</a>
+            </td>
+          </tr>
+          <!-- Empty State -->
+          <tr class="hover:bg-gray-50">
+            <td colspan="6" class="py-6 text-center text-gray-500">No more records found...</td>
+          </tr>
+        </tbody>
       </table>
-  </div>
-</main>
+    </div>
+  </main>
 
-<footer>
-  &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
-
+  <!-- ✅ FOOTER -->
+  <footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 rounded-t-[35px] text-sm mt-6">
+    &copy; 2025 Medicina Clinic | All Rights Reserved
+  </footer>
 </body>
 </html>

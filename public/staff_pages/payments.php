@@ -1,197 +1,80 @@
-<?php
-// ✅ TODO: validate staff role session later
-?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Payments</title>
+<title>Payments | Staff Dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-/* ✅ SAME DESIGN AS OTHER STAFF PAGES */
-:root {
-  --primary: #002339;
-  --secondary: #6da9c6;
-  --light: #d0edf5;
-  --white: #fff;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: Georgia, serif;
-  background: var(--secondary);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-.navbar {
-  background: var(--primary);
-  padding: 20px 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 0 0 35px 35px;
-}
-.navbar-brand {
-  color: var(--white);
-  font-size: 28px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
-.navbar-brand img {
-  width: 45px;
-  margin-right: 10px;
-}
-.nav-links {
-  display: flex;
-  margin-left: auto;
-  gap: 18px;
-}
-.nav-links a {
-  color: var(--white);
-  text-decoration: none;
-  font-size: 15px;
-  font-weight: bold;
-  padding: 6px 14px;
-  border-radius: 30px;
-  transition: .3s ease;
-}
-.nav-links a:hover, .nav-links a.active {
-  background: var(--light);
-  color: var(--primary);
-}
-main {
-  flex: 1;
-  padding: 40px 60px;
-}
-.page-title {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 20px;
-}
-.top-controls {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
-}
-.search-box input {
-  padding: 8px 15px;
-  border-radius: 20px;
-  border: none;
-}
-.btn-add {
-  background: var(--primary);
-  color: var(--white);
-  padding: 10px 22px;
-  border: none;
-  border-radius: 25px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: .3s;
-}
-.btn-add:hover {
-  background: var(--light);
-  color: var(--primary);
-}
-.table-container {
-  background: var(--white);
-  padding: 20px;
-  border-radius: 20px;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-th, td {
-  padding: 12px;
-  text-align: left;
-  border-bottom: 2px solid var(--secondary);
-}
-th {
-  background: var(--primary);
-  color: var(--white);
-}
-.action-btn {
-  padding: 6px 12px;
-  background: var(--primary);
-  color: var(--white);
-  border-radius: 20px;
-  text-decoration: none;
-  font-size: 12px;
-  display: inline-block;
-}
-.action-btn:hover {
-  background: var(--secondary);
-}
-footer {
-  background: var(--primary);
-  color: var(--white);
-  text-align: center;
-  padding: 20px 0;
-  font-size: 14px;
-}
-</style>
+<!-- ✅ Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com"></script>
 
+<!-- ✅ Custom CSS -->
+<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
-<body>
+<body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<!-- ✅ NAVIGATION BAR -->
-<div class="navbar">
-    <div class="navbar-brand">
-      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">
-      Medicina
-    </div>
-    <div class="nav-links">
-      <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-      <a href="staff_manage.php">Staff</a>
-      <a href="services.php">Services</a>
-      <a href="status.php">Status</a>
-      <a class="active" href="#">Payments</a>
-      <a href="specialization.php">Specialization</a>
-      <a href="smedical_records.php">Medical Records</a>
-      <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-    </div>
-</div>
-
-<main>
-
-    <<div class="top-controls">
-    <div class="search-box">
-      <input type="text" placeholder="Search payment...">
-    </div>
-
-    <div>
-    <a href="add_payment.php"><button class="btn-add">+ Add Payment</button></a>
-    <a href="add_payment_method.php"><button class="btn-add">+ Payment Method</button></a>
-    <a href="edit_payment_method.php"><button class="btn-add">Edit Method</button></a>
-    <a href="add_payment_status.php"><button class="btn-add">+ Payment Status</button></a>
-    <a href="edit_payment_status.php"><button class="btn-add">Edit Status</button></a>
-    </div>
-</div>
-
+<!-- ✅ NAVBAR -->
+<div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
+  <div class="navbar-brand flex items-center text-white text-2xl font-bold">
+    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-11 mr-3">
+    Medicina
   </div>
 
-  <div class="table-container">
-    <table>
-      <tr>
-        <th>Payment ID</th>
-        <th>Appointment ID</th>
-        <th>Amount</th>
-        <th>Method</th>
-        <th>Status</th>
-        <th>Actions</th>
-      </tr>
-      <tr>
-        <td colspan="6" style="text-align:center;">No payment data...</td>
-      </tr>
+  <div class="nav-links flex gap-4">
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/staff_manage.php">Staff</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/services.php">Services</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/status.php">Status</a>
+    <a class="active" href="/Booking-System-For-Medical-Clinics/public/staff_pages/payments.php">Payments</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/specialization.php">Specialization</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/smedical_records.php">Medical Records</a>
+    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
+  </div>
+</div>
+
+<!-- ✅ MAIN CONTENT -->
+<main class="flex-1 px-10 py-10">
+  <h2 class="text-[36px] font-bold text-[var(--primary)] mb-6">Payments Management</h2>
+
+  <!-- Top Controls: Search + Buttons -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div class="search-box w-full sm:w-[300px]">
+      <input type="text" placeholder="Search payment..." class="w-full px-4 py-2 rounded-full border-none focus:ring-2 focus:ring-[var(--primary)] outline-none text-[16px]">
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <a href="add_payment.php"><button class="create-btn">+ Add Payment</button></a>
+      <a href="add_payment_method.php"><button class="create-btn">+ Payment Method</button></a>
+      <a href="edit_payment_method.php"><button class="create-btn">Edit Method</button></a>
+      <a href="add_payment_status.php"><button class="create-btn">+ Payment Status</button></a>
+      <a href="edit_payment_status.php"><button class="create-btn">Edit Status</button></a>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-md">
+    <table class="w-full border-collapse text-[var(--primary)]">
+      <thead>
+        <tr class="border-b border-gray-300">
+          <th class="py-3 px-4 text-left">Payment ID</th>
+          <th class="py-3 px-4 text-left">Appointment ID</th>
+          <th class="py-3 px-4 text-left">Amount</th>
+          <th class="py-3 px-4 text-left">Method</th>
+          <th class="py-3 px-4 text-left">Status</th>
+          <th class="py-3 px-4 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-b border-gray-300 hover:bg-gray-50">
+          <td colspan="6" class="py-6 text-center text-gray-500">No payment data...</td>
+        </tr>
+      </tbody>
     </table>
   </div>
-
 </main>
 
-<footer>
+<!-- ✅ FOOTER -->
+<footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 rounded-t-[35px] text-sm mt-6">
   &copy; 2025 Medicina Clinic | All Rights Reserved
 </footer>
 
