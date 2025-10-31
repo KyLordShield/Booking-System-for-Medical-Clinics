@@ -1,30 +1,47 @@
 <?php
-//session_start();
-//if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
-//    header("Location: ../index.php");
-//    exit;
-//}
-?>
+session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
+    header("Location: ../index.php");
+    exit;
+}
 
+require_once dirname(__DIR__, 1) . '/config/Database.php';
+$db = new Database();
+$conn = $db->connect();
+
+// ✅ Get current staff info
+$staff_id = intval($_SESSION['STAFF_ID']);
+
+$stmt = $conn->prepare("
+    SELECT STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME
+    FROM staff
+    WHERE STAFF_ID = ?
+");
+$stmt->execute([$staff_id]);
+$staff = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$first = htmlspecialchars($staff['STAFF_FIRST_NAME']);
+$mid = htmlspecialchars($staff['STAFF_MIDDLE_INIT']);
+$last = htmlspecialchars($staff['STAFF_LAST_NAME']);
+$middle = $mid ? "$mid. " : "";
+
+$fullName = "$first $middle$last";
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Staff Dashboard | Medicina</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- ✅ Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com"></script>
-
-<!-- ✅ Custom CSS -->
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
+
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<!-- ✅ NAVIGATION BAR -->
 <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
   <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-11 mr-3">
+    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">
     Medicina
   </div>
 
@@ -40,19 +57,16 @@
   </div>
 </div>
 
-<!-- ✅ MAIN CONTENT -->
 <main class="flex flex-1 items-center px-20 py-16 gap-14">
-  
-  <!-- Profile Card -->
+
   <div class="profile-card bg-[var(--light)] w-[250px] h-[250px] rounded-[40px] flex justify-center items-center shadow-md">
-    <img src="https://cdn-icons-png.flaticon.com/512/2922/2922561.png" alt="Staff Icon" class="w-[130px]">
+    <img src="https://cdn-icons-png.flaticon.com/512/2922/2922561.png" class="w-[130px]">
   </div>
 
-  <!-- Staff Info -->
   <div class="staff-info">
-    <h1 class="text-[45px] font-bold text-[var(--primary)]">Welcome Staff</h1>
-    <p class="text-[20px] mt-1 text-gray-800">Staff Name</p>
-    <p class="text-[18px] mt-1 text-gray-700">Staff ID: ####</p>
+    <h1 class="text-[45px] font-bold text-[var(--primary)]">Welcome <?= $last ?></h1>
+    <p class="text-[20px] mt-1 text-gray-800"><?= $fullName ?></p>
+    <p class="text-[18px] mt-1 text-gray-700">Staff ID: <?= $staff_id ?></p>
 
     <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/update_info.php">
       <button class="btn-update mt-5 bg-[var(--light)] px-8 py-2 rounded-full font-semibold hover:bg-[#bfe1eb] transition">
@@ -60,9 +74,9 @@
       </button>
     </a>
   </div>
+
 </main>
 
-<!-- ✅ FOOTER -->
 <footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 text-sm rounded-t-[35px]">
   &copy; 2025 Medicina Clinic | All Rights Reserved
 </footer>
