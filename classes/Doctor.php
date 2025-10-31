@@ -34,6 +34,36 @@ class Doctor {
         $stmt->execute($params);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    //DONT DElETE THIS FUNCTION THIS IS FOR FILTERING DOCTOR BY SERVICE
+    public function getDoctorsByService($serv_id) {
+    try {
+        // First, get the specialization linked to this service
+        $sql = "SELECT SPEC_ID FROM SERVICE WHERE SERV_ID = :serv_id";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':serv_id', $serv_id, PDO::PARAM_INT);
+        $stmt->execute();
+        $service = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$service) return [];
+
+        $spec_id = $service['SPEC_ID'];
+
+        // Now fetch doctors who have that specialization
+        $sql = "SELECT D.DOC_ID, D.DOC_FIRST_NAME, D.DOC_LAST_NAME, S.SPEC_NAME
+                FROM DOCTOR D
+                JOIN SPECIALIZATION S ON D.SPEC_ID = S.SPEC_ID
+                WHERE D.SPEC_ID = :spec_id
+                ORDER BY D.DOC_LAST_NAME ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':spec_id', $spec_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return [];
+    }
+}
+//ABOVE THIS DONT DElETE THIS FUNCTION THIS IS FOR FILTERING DOCTOR BY SERVICE 
 
     public function getById($id) {
         $stmt = $this->conn->prepare("
