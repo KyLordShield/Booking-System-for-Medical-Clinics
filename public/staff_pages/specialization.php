@@ -96,12 +96,23 @@ function esc($v) {
 
     <!-- ✅ Search + Add button -->
     <div class="flex justify-between mb-5">
-      <form method="get">
-        <input type="text" name="q" placeholder="Search specialization..."
-          value="<?= esc($search) ?>"
-          class="px-4 py-2 rounded-full w-60 focus:outline-none border">
-        <button class="btn bg-[var(--primary)] text-white px-6 py-2 rounded-full ml-2">Search</button>
-      </form>
+      <form method="get" class="flex items-center gap-2">
+  <input type="text" name="q" placeholder="Search specialization..."
+    value="<?= esc($search) ?>"
+    class="px-4 py-2 rounded-full w-60 border focus:outline-none" />
+
+  <button class="bg-[var(--primary)] text-white px-5 py-2 rounded-full hover:opacity-90 transition">
+    Search
+  </button>
+
+  <?php if ($search !== ""): ?>
+  <a href="specialization.php"
+    class="bg-gray-400 text-white px-5 py-2 rounded-full hover:opacity-80 transition">
+    Reset
+  </a>
+  <?php endif; ?>
+</form>
+
 
       <button onclick="openAddModal()"
         class="bg-[var(--primary)] text-white px-6 py-2 rounded-full hover:opacity-90">
