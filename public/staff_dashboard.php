@@ -68,7 +68,7 @@ $fullName = "$first $middle$last";
     <p class="text-[20px] mt-1 text-gray-800"><?= $fullName ?></p>
     <p class="text-[18px] mt-1 text-gray-700">Staff ID: <?= $staff_id ?></p>
 
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/update_info.php">
+    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/staff_update.php">
       <button class="btn-update mt-5 bg-[var(--light)] px-8 py-2 rounded-full font-semibold hover:bg-[#bfe1eb] transition">
         UPDATE INFO
       </button>

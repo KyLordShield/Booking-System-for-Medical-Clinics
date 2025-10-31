@@ -113,6 +113,7 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <button class="create-btn" onclick="openAddModal()">+ Add Staff</button>
 </div>
 
+
 <div class="table-container">
 <table>
 <thead>

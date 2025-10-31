@@ -10,6 +10,13 @@ class MedicalRecord {
         $this->conn = $db->connect();
     }
 
+    public function getAll() {
+        $sql = "SELECT * FROM {$this->table} ORDER BY MED_REC_ID ASC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
     // ✅ Get all medical records belonging to a doctor
     public function getRecordsByDoctor($doc_id, $search = null) {
         try {
