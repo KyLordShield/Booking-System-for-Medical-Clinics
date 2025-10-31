@@ -1,226 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Doctor Schedule</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8">
+  <title>Doctor Schedule | Medicina</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<style>
-:root {
-  --primary: #002339;
-  --secondary: #6da9c6;
-  --light: #d0edf5;
-  --white: #fff;
-}
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body {
-  font-family: Georgia, serif;
-  background: var(--secondary);
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+  <!-- ✅ Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-/* NAV */
-.navbar {
-  background: var(--primary);
-  padding: 20px 50px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 0 0 35px 35px;
-}
-.navbar-brand {
-  color: var(--white);
-  font-size: 28px;
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-}
-.navbar-brand img {
-  width: 45px;
-  margin-right: 10px;
-}
-.nav-links {
-  display: flex;
-  gap: 35px;
-}
-.nav-links a {
-  color: var(--white);
-  text-decoration: none;
-  font-size: 17px;
-  font-weight: bold;
-  padding: 9px 18px;
-  border-radius: 30px;
-  transition: .3s ease;
-}
-.nav-links a:hover,
-.nav-links a.active {
-  background: var(--light);
-  color: var(--primary);
-}
-
-/* MAIN */
-main {
-  flex: 1;
-  padding: 40px 60px;
-}
-h2 {
-  font-size: 35px;
-  font-weight: bold;
-  color: var(--primary);
-  margin-bottom: 25px;
-}
-
-/* ADD FORM */
-.form-container {
-  background: var(--white);
-  padding: 25px;
-  border-radius: 15px;
-  margin-bottom: 30px;
-  border: 2px solid var(--primary);
-}
-label {
-  font-size: 16px;
-  font-weight: bold;
-}
-input, select {
-  width: 100%;
-  padding: 10px;
-  margin: 8px 0 15px;
-  border-radius: 8px;
-  border: 1px solid #888;
-  font-size: 15px;
-}
-.add-btn {
-  background: var(--primary);
-  color: var(--white);
-  border: none;
-  width: 100%;
-  padding: 12px;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-.add-btn:hover {
-  background: #00121f;
-}
-
-/* TABLE */
-.table-container {
-  background: var(--white);
-  padding: 15px;
-  border-radius: 12px;
-  border: 2px solid var(--primary);
-}
-table { width: 100%; border-collapse: collapse; }
-thead tr {
-  background: var(--primary);
-  color: var(--white);
-}
-th, td {
-  padding: 12px;
-  text-align: center;
-  border-bottom: 1px solid #c4d3dd;
-}
-.delete-btn {
-  background: #b30000;
-  color: var(--white);
-  padding: 6px 15px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: bold;
-  text-decoration: none;
-}
-.delete-btn:hover {
-  background: #800000;
-}
-
-/* FOOTER */
-footer {
-  background: var(--primary);
-  color: var(--white);
-  text-align: center;
-  padding: 15px 0;
-}
-</style>
-
+  <!-- ✅ Custom CSS -->
+  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
-<body>
 
-<!-- NAVIGATION -->
-<div class="navbar">
-  <div class="navbar-brand">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">
-    Medicina
-  </div>
-  <div class="nav-links">
-    <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
+<body class="bg-[var(--secondary)] min-h-screen flex flex-col">
+
+  <!-- ✅ NAVIGATION -->
+  <div class="navbar flex justify-between items-center px-10 py-4 rounded-b-[35px] bg-[var(--primary)] shadow-lg">
+    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
+      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-10 mr-3">
+      Medicina
+    </div>
+    <div class="nav-links flex gap-6">
+      <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
       <a class="active" href="/Booking-System-For-Medical-Clinics/public/doctor_pages/schedule.php">Schedule</a>
       <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/appointments.php">Appointment</a>
       <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/medical_records.php">Medical Records</a>
       <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
+    </div>
   </div>
-</div>
 
-<main>
+  <!-- ✅ MAIN CONTENT -->
+  <main class="flex-1 p-10">
+    <h2 class="text-[38px] font-bold text-[var(--primary)] mb-6">Doctor Schedule</h2>
 
-<h2>Doctor Schedule</h2>
+    <!-- ADD SCHEDULE FORM -->
+    <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-md">
+      <form action="#" method="POST" class="flex flex-wrap gap-4 items-center">
+        <div class="flex flex-col">
+          <label class="text-[var(--primary)] font-semibold mb-1">Day</label>
+          <select name="day" required class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none">
+            <option value="Monday">Monday</option>
+            <option value="Tuesday">Tuesday</option>
+            <option value="Wednesday">Wednesday</option>
+            <option value="Thursday">Thursday</option>
+            <option value="Friday">Friday</option>
+            <option value="Saturday">Saturday</option>
+          </select>
+        </div>
 
-<!-- ADD SCHEDULE FORM -->
-<div class="form-container">
-  <form action="#" method="POST">
-    
-    <label>Day</label>
-    <select name="day">
-      <option value="Monday">Monday</option>
-      <option value="Tuesday">Tuesday</option>
-      <option value="Wednesday">Wednesday</option>
-      <option value="Thursday">Thursday</option>
-      <option value="Friday">Friday</option>
-      <option value="Saturday">Saturday</option>
-    </select>
+        <div class="flex flex-col">
+          <label class="text-[var(--primary)] font-semibold mb-1">Start Time</label>
+          <input type="time" name="start_time" required class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none">
+        </div>
 
-    <label>Start Time</label>
-    <input type="time" name="start_time" required>
+        <div class="flex flex-col">
+          <label class="text-[var(--primary)] font-semibold mb-1">End Time</label>
+          <input type="time" name="end_time" required class="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none">
+        </div>
 
-    <label>End Time</label>
-    <input type="time" name="end_time" required>
+        <button type="submit" class="create-btn bg-[var(--primary)] text-white px-6 py-2 rounded-xl hover:opacity-90 transition">
+          Add Schedule
+        </button>
+      </form>
+    </div>
 
-    <button class="add-btn">ADD SCHEDULE</button>
+    <!-- ✅ SCHEDULE TABLE -->
+    <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-md mt-8">
+      <table class="w-full border-collapse text-[var(--primary)]">
+        <thead>
+          <tr class="border-b border-gray-300">
+            <th class="py-3 px-4 text-left text-lg">Day</th>
+            <th class="py-3 px-4 text-left text-lg">Start</th>
+            <th class="py-3 px-4 text-left text-lg">End</th>
+            <th class="py-3 px-4 text-left text-lg">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-gray-300 hover:bg-gray-50">
+            <td class="py-3 px-4">Monday</td>
+            <td class="py-3 px-4">08:00 AM</td>
+            <td class="py-3 px-4">05:00 PM</td>
+            <td class="py-3 px-4">
+              <button class="btn bg-[#b30000] text-white px-4 py-1 rounded-lg hover:opacity-90 transition">Remove</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
 
-  </form>
-</div>
-
-<!-- SCHEDULE TABLE -->
-<div class="table-container">
-  <table>
-    <thead>
-      <tr>
-        <th>Day</th>
-        <th>Start</th>
-        <th>End</th>
-        <th>Action</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Monday</td>
-        <td>08:00 AM</td>
-        <td>05:00 PM</td>
-        <td><a href="#" class="delete-btn">Remove</a></td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-</main>
-
-<!-- FOOTER -->
-<footer>
-  &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
+  <!-- ✅ FOOTER -->
+  <footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 rounded-t-[35px] text-sm">
+    &copy; 2025 Medicina Clinic | All Rights Reserved
+  </footer>
 
 </body>
 </html>
