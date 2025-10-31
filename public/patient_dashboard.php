@@ -199,16 +199,15 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
 
 <!-- Existing JavaScript logic remains here -->
 <script>
-// Toggle Update Info Form
+// --------------------- TOGGLE UPDATE INFO FORM ---------------------
 const editBtn = document.getElementById('editInfo');
 const cancelBtn = document.getElementById('cancelEdit');
 const viewDiv = document.getElementById('viewInfo');
 const formDiv = document.getElementById('updateForm');
 
 editBtn.addEventListener('click', () => {
-    // Note: We are using JS to control the visibility of the modal/form
     viewDiv.style.display = 'none';
-    formDiv.style.display = 'flex'; // Use flex to center the modal
+    formDiv.style.display = 'flex'; // modal flex center
     editBtn.style.display = 'none';
 });
 
@@ -218,13 +217,31 @@ cancelBtn.addEventListener('click', () => {
     editBtn.style.display = 'inline-block';
 });
 
-// Cancel Appointment
+// --------------------- DISABLE CANCEL & UPDATE BUTTONS ON PAGE LOAD ---------------------
+document.querySelectorAll('tr').forEach(row => {
+    const statusCell = row.querySelector('td:nth-child(6)');
+    const cancelBtn = row.querySelector('.appt-cancel');
+    const updateBtn = row.querySelector('.appt-update');
+
+    if (statusCell && cancelBtn && updateBtn) {
+        const status = statusCell.textContent.trim();
+        if (status === 'Cancelled' || status === 'Completed') {
+            cancelBtn.disabled = true;
+            updateBtn.disabled = true;
+            cancelBtn.style.opacity = 0.5;
+            cancelBtn.style.cursor = 'not-allowed';
+            updateBtn.style.opacity = 0.5;
+            updateBtn.style.cursor = 'not-allowed';
+        }
+    }
+});
+
+// --------------------- CANCEL APPOINTMENT ---------------------
 document.querySelectorAll('.appt-cancel').forEach(btn => {
     btn.addEventListener('click', function() {
         const row = btn.closest('tr');
-        const apptId = btn.getAttribute('data-appt-id'); // Use the data attribute for reliability
-        
-        // Custom confirmation message box instead of window.confirm
+        const apptId = btn.getAttribute('data-appt-id');
+
         const isConfirmed = confirmCustom('Are you sure you want to cancel appointment ID ' + apptId + '?');
         if (!isConfirmed) return;
 
@@ -236,14 +253,13 @@ document.querySelectorAll('.appt-cancel').forEach(btn => {
         .then(res => res.text())
         .then(msg => {
             alertCustom(msg);
-            // Find the status cell (6th td)
             const statusCell = row.querySelector('td:nth-child(6)');
-            if (statusCell) {
-                 statusCell.textContent = 'Cancelled';
-            }
+            if (statusCell) statusCell.textContent = 'Cancelled';
+
             btn.disabled = true;
             btn.style.opacity = 0.5;
             btn.style.cursor = 'not-allowed';
+
             const updateBtn = row.querySelector('.appt-update');
             if (updateBtn) {
                 updateBtn.disabled = true;
@@ -251,24 +267,23 @@ document.querySelectorAll('.appt-cancel').forEach(btn => {
                 updateBtn.style.cursor = 'not-allowed';
             }
         })
-        .catch(err => alertCustom('Error cancelling appointment.'));
+        .catch(() => alertCustom('Error cancelling appointment.'));
     });
 });
 
-
-// Reschedule Appointment
+// --------------------- RESCHEDULE APPOINTMENT ---------------------
 document.querySelectorAll('.appt-update').forEach(btn => {
     btn.addEventListener('click', function() {
-        if (btn.disabled) return;
+        if (btn.disabled) return; // skip disabled
+
         const row = btn.closest('tr');
-        // Remove any existing reschedule row for cleanliness
-        document.querySelectorAll('.reschedule-row').forEach(r => r.remove()); 
-        
+        document.querySelectorAll('.reschedule-row').forEach(r => r.remove());
+
         const apptId = row.querySelector('td').textContent;
         const docId = row.dataset.docId;
 
         const rescheduleRow = document.createElement('tr');
-        rescheduleRow.classList.add('reschedule-row', 'bg-gray-100', 'border-b', 'border-gray-300'); // Added Tailwind classes
+        rescheduleRow.classList.add('reschedule-row', 'bg-gray-100', 'border-b', 'border-gray-300');
         rescheduleRow.innerHTML = `
             <td colspan="7" class="py-4 px-4">
                 <form class="reschedule-form flex flex-wrap gap-4 items-center justify-start text-gray-800">
@@ -296,9 +311,7 @@ document.querySelectorAll('.appt-update').forEach(btn => {
                 .then(res => res.json())
                 .then(times => {
                     timeSelect.innerHTML = '<option value="">-- Choose Time --</option>';
-                    if (times.length === 0) {
-                         timeSelect.innerHTML = '<option value="" disabled>No times available</option>';
-                    }
+                    if (times.length === 0) timeSelect.innerHTML = '<option value="" disabled>No times available</option>';
                     times.forEach(slot => {
                         const opt = document.createElement('option');
                         opt.value = slot.time;
@@ -316,8 +329,7 @@ document.querySelectorAll('.appt-update').forEach(btn => {
             const newDate = dateInput.value;
             const newTime = timeSelect.value;
             if (!newDate || !newTime) return alertCustom("Please select a new date and available time slot.");
-            
-            // Custom confirmation for reschedule
+
             if (!confirmCustom('Confirm reschedule to ' + newDate + ' at ' + newTime + '?')) return;
 
             fetch('../ajax/reschedule_appointment.php', {
@@ -335,15 +347,9 @@ document.querySelectorAll('.appt-update').forEach(btn => {
     });
 });
 
-/**
- * Custom alert function to replace window.alert
- */
+// --------------------- CUSTOM ALERT ---------------------
 function alertCustom(message) {
-    // In a real application, this would render a custom modal/notification
     console.log("ALERT: " + message);
-    // For this environment, we use a basic function that logs to console
-    // In the event of a critical failure or for debugging, this is helpful.
-    // For the user, they would ideally see an on-screen notification.
     const container = document.body;
     let alertBox = document.getElementById('custom-alert');
     if (!alertBox) {
@@ -352,33 +358,26 @@ function alertCustom(message) {
         alertBox.className = 'fixed top-5 right-5 z-50 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300';
         container.appendChild(alertBox);
     }
-    
-    // Simple logic for success/error/info display
-    let bgColor = 'bg-[var(--primary)]'; 
-    if (message.includes("Error") || message.includes("not found") || message.includes("denied")) {
-        bgColor = 'bg-red-600';
-    } else if (message.includes("successfully") || message.includes("done")) {
-        bgColor = 'bg-green-600';
-    }
+
+    let bgColor = 'bg-[var(--primary)]';
+    if (message.includes("Error") || message.includes("not found") || message.includes("denied")) bgColor = 'bg-red-600';
+    else if (message.includes("successfully") || message.includes("done")) bgColor = 'bg-green-600';
 
     alertBox.className = `fixed top-5 right-5 z-50 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300 ${bgColor}`;
     alertBox.textContent = message;
     alertBox.style.opacity = '1';
-    
+
     setTimeout(() => {
         alertBox.style.opacity = '0';
-    }, 5000); // Hide after 5 seconds
+    }, 5000);
 }
 
-/**
- * Custom confirm function to replace window.confirm
- * NOTE: Since we cannot display a modal easily without complex HTML/CSS/JS injection 
- * for a simple function, we must use the native confirm for now.
- */
+// --------------------- CUSTOM CONFIRM ---------------------
 function confirmCustom(message) {
-    return window.confirm(message); 
+    return window.confirm(message);
 }
 </script>
+
 
 </body>
 </html>
