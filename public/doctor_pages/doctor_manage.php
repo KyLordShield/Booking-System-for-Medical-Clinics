@@ -65,7 +65,12 @@ $specStmt->execute();
 $specializations = $specStmt->fetchAll(PDO::FETCH_ASSOC);
 
 /* ---------- FETCH LOGGED-IN DOCTOR DETAILS ---------- */
-$stmt = $conn->prepare("SELECT * FROM doctor WHERE DOC_ID=?");
+$stmt = $conn->prepare("
+    SELECT d.*, s.SPEC_NAME
+    FROM doctor d
+    LEFT JOIN specialization s ON d.SPEC_ID = s.SPEC_ID
+    WHERE d.DOC_ID = ?
+");
 $stmt->execute([$loggedDocId]);
 $myself = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -108,7 +113,7 @@ function esc($s){ return htmlspecialchars($s ?? '',ENT_QUOTES); }
         <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
       <a class="active" href="doctor_pages/doctor_manage.php">Doctor</a>
       <a href="schedule.php">Schedule</a>
-      <a href="ppointments.php">Appointment</a>
+      <a href="appointments.php">Appointment</a>
       <a href="medical_records.php">Medical Records</a>
       <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
     </div>
@@ -122,7 +127,7 @@ function esc($s){ return htmlspecialchars($s ?? '',ENT_QUOTES); }
             <tr><th>Name</th><td><?= esc($myself['DOC_FIRST_NAME'].' '.$myself['DOC_LAST_NAME']) ?></td></tr>
             <tr><th>Email</th><td><?= esc($myself['DOC_EMAIL']) ?></td></tr>
             <tr><th>Contact</th><td><?= esc($myself['DOC_CONTACT_NUM']) ?></td></tr>
-            <tr><th>Specialization</th><td><?= esc($myself['SPEC_ID']) ?></td></tr>
+            <tr><th>Specialization</th><td><?= esc($myself['SPEC_NAME']) ?></td></tr>
         </table>
         <br>
         <button class="btn" onclick='openEditModal(<?= json_encode($myself) ?>)'>Update My Info</button>
@@ -143,7 +148,7 @@ function esc($s){ return htmlspecialchars($s ?? '',ENT_QUOTES); }
     <div class="table-container">
         <table>
             <thead><tr>
-            <th>ID</th><th>Name</th><th>Spec</th><th>Contact</th><th>Email</th><th>Action</th>
+            <th>ID</th><th>Name</th><th>Specialization</th><th>Contact</th><th>Email</th><th>Action</th>
             </tr></thead>
             <tbody>
             <?php foreach($others as $d): ?>
