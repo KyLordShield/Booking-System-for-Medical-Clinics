@@ -59,7 +59,7 @@ class Patient {
 // 🟦 Fetch all patients
 public function getAllPatients() {
     try {
-        $sql = "SELECT * FROM {$this->table} ORDER BY PAT_LAST_NAME ASC";
+        $sql = "SELECT * FROM {$this->table} ORDER BY PAT_ID ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
