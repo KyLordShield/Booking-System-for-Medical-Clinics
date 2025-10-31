@@ -30,47 +30,54 @@ class Schedule {
 
     // Check if doctor is available at a specific date/time
     public function isDoctorAvailable($doc_id, $date, $time) {
-        try {
-            $schedules = $this->getScheduleByDoctor($doc_id);
-            if (!$schedules) return false;
+    try {
+        $schedules = $this->getScheduleByDoctor($doc_id);
+        if (!$schedules) return false;
 
-            $dayName = date('l', strtotime($date)); // Monday, Tuesday, etc.
+        $dayName = date('l', strtotime($date));
 
-            $apptTime = date('H:i:s', strtotime($time));  // normalize to HH:MM:SS
+        // Only use hour (ignore minutes/seconds)
+        $apptHour = (int)date('H', strtotime($time));
 
-            $withinSchedule = false;
-            foreach ($schedules as $sched) {
-                $schedDays = array_map('trim', explode(',', $sched['SCHED_DAYS']));
-                if (in_array($dayName, $schedDays)) {
-                    $startTime = date('H:i:s', strtotime($sched['SCHED_START_TIME']));
-                    $endTime   = date('H:i:s', strtotime($sched['SCHED_END_TIME']));
-                    if ($apptTime >= $startTime && $apptTime < $endTime) {
-                        $withinSchedule = true;
-                        break;
-                    }
-                }
+        $withinSchedule = false;
+
+        foreach ($schedules as $sched) {
+
+            // Allow multiple days: Monday, Tuesday, Friday
+            $schedDays = array_map('trim', explode(',', $sched['SCHED_DAYS']));
+            if (!in_array($dayName, $schedDays)) continue;
+
+            $startHour = (int)date('H', strtotime($sched['SCHED_START_TIME']));
+            $endHour   = (int)date('H', strtotime($sched['SCHED_END_TIME']));
+
+            // ✅ Hour-only range check
+            if ($apptHour >= $startHour && $apptHour < $endHour) {
+                $withinSchedule = true;
+                break;
             }
-
-            if (!$withinSchedule) return false;
-
-            // Check if the doctor already has an appointment
-            $sql = "SELECT * FROM APPOINTMENT
-                    WHERE DOC_ID = :doc_id
-                    AND APPT_DATE = :date
-                    AND APPT_TIME = :time
-                    AND STAT_ID != 3"; // exclude canceled
-            $stmt = $this->conn->prepare($sql);
-            $stmt->execute([
-                ':doc_id' => $doc_id,
-                ':date' => $date,
-                ':time' => $apptTime
-            ]);
-
-            return $stmt->fetch(PDO::FETCH_ASSOC) ? false : true;
-
-        } catch (PDOException $e) {
-            return false;
         }
+
+        if (!$withinSchedule) return false;
+
+        // ✅ Check if doctor already has appointment in same hour
+        $sql = "SELECT * FROM APPOINTMENT
+                WHERE DOC_ID = :doc_id
+                AND APPT_DATE = :date
+                AND HOUR(APPT_TIME) = :hour
+                AND STAT_ID != 3";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([
+            ':doc_id' => $doc_id,
+            ':date'   => $date,
+            ':hour'   => $apptHour
+        ]);
+
+        return $stmt->fetch() ? false : true;
     }
+    catch (PDOException $e) {
+        return false;
+    }
+}
+
 }
 ?>
