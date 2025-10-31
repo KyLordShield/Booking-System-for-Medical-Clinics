@@ -40,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
             $result = $appointmentObj->createAppointment($pat_id, $doc_id, $serv_id, $appt_date, $appt_time);
 
             if (strpos($result, '✅') !== false) {
+                // Use a simple success query param since we can't redirect with full control here
                 header("Location: ../patient_dashboard.php?success=1");
                 exit;
             } else {
@@ -53,56 +54,99 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Create Appointment</title>
-<style>
-body { font-family: Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 20px; }
-.container { max-width: 600px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-h1 { text-align: center; color: #333; }
-form { margin-top: 20px; }
-label { display: block; margin: 10px 0 5px; font-weight: bold; }
-input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
-button { width: 100%; padding: 12px; background-color: #28a745; color: #fff; border: none; border-radius: 5px; margin-top: 20px; cursor: pointer; font-size: 16px; }
-button:hover { background-color: #218838; }
-a { display: block; text-align: center; margin-top: 15px; color: #555; text-decoration: none; }
-a:hover { text-decoration: underline; }
-.message { text-align: center; margin-top: 15px; font-weight: bold; color: #d9534f; }
-</style>
+<title>Create Appointment | Medicina</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ✅ Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- ✅ Global Custom CSS -->
+<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
-<body>
-<div class="container">
-<h1>Create Appointment</h1>
+<!-- Applying dashboard body styles -->
+<body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<?php if ($message): ?>
-    <p class="message"><?= htmlspecialchars($message) ?></p>
-<?php endif; ?>
+    <!-- ✅ NAVIGATION BAR - APPLIED DASHBOARD STYLES -->
+    <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
+        <div class="navbar-brand flex items-center text-white text-2xl font-bold">
+            <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" alt="Medicina Logo" class="w-11 mr-3">
+            Medicina
+        </div>
 
-<form method="POST" id="appointmentForm">
-    <label for="SERV_ID">Select Service:</label>
-    <select name="SERV_ID" id="SERV_ID" required>
-        <option value="">-- Choose Service --</option>
-        <?php foreach ($services as $s): ?>
-            <option value="<?= $s['SERV_ID'] ?>"><?= htmlspecialchars($s['SERV_NAME']) ?></option>
-        <?php endforeach; ?>
-    </select>
+        <div class="nav-links flex gap-6">
+            <!-- Patient Navigation Links (Active link is 'Book Appointment') -->
+            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_dashboard.php">Home</a>
+            <a class="active text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_pages/create_appointment.php">Book Appointment</a>
+            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
+        </div>
+    </div>
 
-    <label for="DOC_ID">Select Doctor:</label>
-    <select name="DOC_ID" id="DOC_ID" required>
-        <option value="">-- Choose Doctor --</option>
-    </select>
+    <!-- ✅ MAIN CONTENT CONTAINER -->
+    <main class="flex flex-col flex-1 px-20 py-16 w-full items-center justify-start">
+        <!-- Form Container using dashboard card styling -->
+        <div class="appointment-form-container bg-[var(--light)] p-8 rounded-[25px] shadow-xl w-full max-w-lg">
+            <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-6">Book New Appointment</h1>
 
-    <label for="APPT_DATE">Date:</label>
-    <input type="date" name="APPT_DATE" id="APPT_DATE" min="<?= date('Y-m-d') ?>" required>
+            <?php if ($message): ?>
+                <!-- Alert box styling -->
+                <div class="p-4 mb-4 rounded-lg bg-red-100 text-red-800 font-medium text-center">
+                    <?= htmlspecialchars($message) ?>
+                </div>
+            <?php endif; ?>
 
-    <label for="APPT_TIME">Time:</label>
-    <select name="APPT_TIME" id="APPT_TIME" required>
-        <option value="">-- Choose Time --</option>
-    </select>
+            <form method="POST" id="appointmentForm" class="space-y-4">
+                
+                <div>
+                    <label for="SERV_ID" class="block mb-1 font-semibold text-gray-700">Select Service:</label>
+                    <select name="SERV_ID" id="SERV_ID" required 
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
+                        <option value="">-- Choose Service --</option>
+                        <?php foreach ($services as $s): ?>
+                            <option value="<?= $s['SERV_ID'] ?>"><?= htmlspecialchars($s['SERV_NAME']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-    <button type="submit" name="create_appt">Create Appointment</button>
-</form>
+                <div>
+                    <label for="DOC_ID" class="block mb-1 font-semibold text-gray-700">Select Doctor:</label>
+                    <select name="DOC_ID" id="DOC_ID" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
+                        <option value="">-- Choose Doctor --</option>
+                    </select>
+                </div>
 
-<a href="../patient_dashboard.php">⬅ Back to Dashboard</a>
-</div>
+                <div>
+                    <label for="APPT_DATE" class="block mb-1 font-semibold text-gray-700">Date:</label>
+                    <input type="date" name="APPT_DATE" id="APPT_DATE" min="<?= date('Y-m-d') ?>" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none">
+                </div>
+
+                <div>
+                    <label for="APPT_TIME" class="block mb-1 font-semibold text-gray-700">Time:</label>
+                    <select name="APPT_TIME" id="APPT_TIME" required
+                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
+                        <option value="">-- Choose Time --</option>
+                    </select>
+                </div>
+
+                <!-- Create Button using primary color style -->
+                <button type="submit" name="create_appt" 
+                    class="w-full p-3 mt-6 bg-[var(--primary)] text-white font-semibold rounded-lg hover:bg-sky-600 transition">
+                    📝 Create Appointment
+                </button>
+            </form>
+
+            <!-- Back link styled to match the dashboard's hover text -->
+            <a href="../patient_dashboard.php" class="block text-center mt-6 text-gray-600 font-medium hover:text-[var(--primary)] transition">
+                ⬅ Back to Dashboard
+            </a>
+        </div>
+    </main>
+    
+    <!-- ✅ FOOTER - APPLIED DASHBOARD STYLES -->
+    <footer class="bg-[var(--primary)] text-white text-center py-4 text-sm rounded-t-[35px] mt-auto">
+        &copy; 2025 Medicina Clinic | All Rights Reserved
+    </footer>
 
 <script>
 const serviceSelect = document.getElementById('SERV_ID');
