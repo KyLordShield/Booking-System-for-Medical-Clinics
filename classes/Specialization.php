@@ -11,7 +11,7 @@ class Specialization {
     }
 
     // 🟩 Get all specializations
-    public function getAllSpecializations() {
+    public function getAll() {
         try {
             $sql = "SELECT SPEC_ID, SPEC_NAME FROM {$this->table} ORDER BY SPEC_NAME ASC";
             $stmt = $this->conn->prepare($sql);

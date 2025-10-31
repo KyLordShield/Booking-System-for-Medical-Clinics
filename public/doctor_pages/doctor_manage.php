@@ -3,9 +3,11 @@ session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once dirname(__DIR__, 2) . '/config/Database.php';
-$db = new Database();
-$conn = $db->connect();
+require_once dirname(__DIR__, 2) . '/classes/Doctor.php';
+require_once dirname(__DIR__, 2) . '/classes/Specialization.php';
+
+$doctorObj = new Doctor();
+$specObj = new Specialization();
 
 $loggedRole = $_SESSION['role'] ?? "";
 $loggedDocId = $_SESSION['DOC_ID'] ?? null;
@@ -15,224 +17,287 @@ if ($loggedRole !== "doctor") {
     exit;
 }
 
-/* ---------- AJAX INSERT / UPDATE ---------- */
+/* ---------- AJAX INSERT / UPDATE (uses classes) ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     header('Content-Type: application/json');
 
     $id = $_POST['DOC_ID'] ?? "";
-    $first = trim($_POST['DOC_FIRST_NAME']);
-    $middle = trim($_POST['DOC_MIDDLE_INIT']);
-    $last = trim($_POST['DOC_LAST_NAME']);
-    $contact = trim($_POST['DOC_CONTACT_NUM']);
-    $email = trim($_POST['DOC_EMAIL']);
-    $spec = trim($_POST['SPEC_ID']);
+    $data = [
+        'first'   => trim($_POST['DOC_FIRST_NAME'] ?? ''),
+        'middle'  => trim($_POST['DOC_MIDDLE_INIT'] ?? ''),
+        'last'    => trim($_POST['DOC_LAST_NAME'] ?? ''),
+        'contact' => trim($_POST['DOC_CONTACT_NUM'] ?? ''),
+        'email'   => trim($_POST['DOC_EMAIL'] ?? ''),
+        'spec'    => trim($_POST['SPEC_ID'] ?? '')
+    ];
 
-    // block editing other doctors
+    // Validation (server-side)
+    $errors = [];
+    if ($data['first'] === '') $errors[] = 'First name required';
+    if ($data['last'] === '')  $errors[] = 'Last name required';
+    if ($data['contact'] === '') $errors[] = 'Contact required';
+    if ($data['email'] === '' || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email required';
+    if ($data['spec'] === '') $errors[] = 'Specialization required';
+
+    if (!empty($errors)) {
+        echo json_encode(['success' => false, 'errors' => $errors]);
+        exit;
+    }
+
+    // Block editing others (doctors can only update themselves)
     if ($loggedRole === "doctor" && $id !== "" && $id != $loggedDocId) {
-        echo json_encode(['success'=>false,'message'=>'Not allowed to update others']);
+        echo json_encode(['success' => false, 'message' => 'Not allowed to update other doctors']);
         exit;
     }
 
     try {
-        if ($id === "") { // Add new doctor
-            $stmt = $conn->prepare("INSERT INTO doctor
-                (DOC_FIRST_NAME, DOC_MIDDLE_INIT, DOC_LAST_NAME, DOC_CONTACT_NUM, DOC_EMAIL, DOC_CREATED_AT, DOC_UPDATED_AT, SPEC_ID)
-                VALUES (?,?,?,?,?,NOW(),NOW(),?)");
-            $stmt->execute([$first,$middle,$last,$contact,$email,$spec]);
-            echo json_encode(['success'=>true,'message'=>'Doctor added']);
-        } else { // Update self only
-            $stmt = $conn->prepare("UPDATE doctor SET
-                DOC_FIRST_NAME=?, DOC_MIDDLE_INIT=?, DOC_LAST_NAME=?, DOC_CONTACT_NUM=?, DOC_EMAIL=?, SPEC_ID=?, DOC_UPDATED_AT=NOW()
-                WHERE DOC_ID=?");
-            $stmt->execute([$first,$middle,$last,$contact,$email,$spec,$id]);
-            echo json_encode(['success'=>true,'message'=>'Profile updated']);
+        if ($id === "") {
+            $ok = $doctorObj->insert($data);
+            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Doctor added' : 'Insert failed']);
+        } else {
+            $ok = $doctorObj->update($id, $data);
+            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Profile updated' : 'Update failed']);
         }
-    } catch(PDOException $e){
-        echo json_encode(['success'=>false,'message'=>$e->getMessage()]);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
     exit;
 }
 
 /* ---------- AJAX DELETE BLOCKED FOR DOCTORS ---------- */
 if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    echo json_encode(['success'=>false,'message'=>'Doctors cannot delete accounts']);
+    // doctors cannot delete
+    echo json_encode(['success' => false, 'message' => 'Doctors cannot delete accounts']);
     exit;
 }
 
-/* ---------- FETCH SPECIALIZATIONS ---------- */
-$specStmt = $conn->prepare("SELECT SPEC_ID, SPEC_NAME FROM specialization ORDER BY SPEC_NAME ASC");
-$specStmt->execute();
-$specializations = $specStmt->fetchAll(PDO::FETCH_ASSOC);
+/* ---------- Data for page (use classes) ---------- */
+$specializations = $specObj->getAll();
 
-/* ---------- FETCH LOGGED-IN DOCTOR DETAILS ---------- */
-$stmt = $conn->prepare("
-    SELECT d.*, s.SPEC_NAME
-    FROM doctor d
-    LEFT JOIN specialization s ON d.SPEC_ID = s.SPEC_ID
-    WHERE d.DOC_ID = ?
-");
-$stmt->execute([$loggedDocId]);
-$myself = $stmt->fetch(PDO::FETCH_ASSOC);
+// Logged-in doctor's full record (includes SPEC_NAME if class returns it)
+$myself = $doctorObj->getById($loggedDocId);
 
-/* ---------- FETCH OTHER DOCTORS (excluding self) ---------- */
+// Search param for other doctors
 $search = trim($_GET['q'] ?? '');
-$sql = "SELECT d.*, s.SPEC_NAME FROM doctor d
-        LEFT JOIN specialization s ON d.SPEC_ID=s.SPEC_ID
-        WHERE d.DOC_ID != ?";
+// Get other doctors excluding self
+$others = $doctorObj->getAll($loggedDocId, $search);
 
-$params = [$loggedDocId];
-
-if ($search !== "") {
-    $sql .= " AND (d.DOC_FIRST_NAME LIKE ? OR d.DOC_LAST_NAME LIKE ? OR d.DOC_EMAIL LIKE ?)";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-    $params[] = "%$search%";
-}
-
-$sql .= " ORDER BY d.DOC_ID ASC";
-$stmt = $conn->prepare($sql);
-$stmt->execute($params);
-$others = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-function esc($s){ return htmlspecialchars($s ?? '',ENT_QUOTES); }
+// helper
+function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Doctor Management</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
 <body>
 
 <div class="navbar">
     <div class="navbar-brand">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">Medicina
+        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="logo">Medicina
     </div>
     <div class="nav-links">
         <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
-      <a class="active" href="doctor_pages/doctor_manage.php">Doctor</a>
-      <a href="schedule.php">Schedule</a>
-      <a href="appointments.php">Appointment</a>
-      <a href="medical_records.php">Medical Records</a>
-      <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
+        <a class="active" href="doctor_manage.php">Doctor</a>
+        <a href="schedule.php">Schedule</a>
+        <a href="appointments.php">Appointment</a>
+        <a href="medical_records.php">Medical Records</a>
+        <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
     </div>
 </div>
 
 <main>
     <h2>My Profile</h2>
-    <div class="table-container">
+
+    <div class="table-container" style="margin-bottom:18px;">
         <table>
             <tr><th>ID</th><td><?= esc($myself['DOC_ID']) ?></td></tr>
-            <tr><th>Name</th><td><?= esc($myself['DOC_FIRST_NAME'].' '.$myself['DOC_LAST_NAME']) ?></td></tr>
+            <tr>
+                <th>Name</th>
+                <td>
+                    <?php
+                        $mid = trim($myself['DOC_MIDDLE_INIT'] ?? '');
+                        $midDot = $mid !== '' ? esc($mid) . '. ' : '';
+                        echo esc($myself['DOC_FIRST_NAME'] ?? '') . ' ' . $midDot . esc($myself['DOC_LAST_NAME'] ?? '');
+                    ?>
+                </td>
+            </tr>
             <tr><th>Email</th><td><?= esc($myself['DOC_EMAIL']) ?></td></tr>
             <tr><th>Contact</th><td><?= esc($myself['DOC_CONTACT_NUM']) ?></td></tr>
-            <tr><th>Specialization</th><td><?= esc($myself['SPEC_NAME']) ?></td></tr>
+            <tr><th>Specialization</th><td><?= esc($myself['SPEC_NAME'] ?? $myself['SPEC_ID'] ?? '') ?></td></tr>
         </table>
+
         <br>
-        <button class="btn" onclick='openEditModal(<?= json_encode($myself) ?>)'>Update My Info</button>
+        <!-- Edit only own profile -->
+        <button class="btn" onclick='openEditModal(<?= json_encode($myself, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>Update My Info</button>
     </div>
 
     <br><hr><br>
 
     <h2>Other Doctors</h2>
 
-    <div class="top-controls">
-        <form method="get">
-            <input name="q" placeholder="Search doctors" value="<?=esc($search)?>">
-            <button class="btn">Search</button>
+    <div class="top-controls" style="align-items:center; margin-bottom:12px;">
+        <form method="get" style="display:flex; gap:8px; align-items:center;">
+            <input name="q" placeholder="Search doctors by name, email, contact" value="<?=esc($search)?>">
+            <button class="btn" type="submit">Search</button>
         </form>
-        <button class="btn" onclick="openAddModal()">+ Add Doctor</button>
+
+        <button class="create-btn" onclick="openAddModal()">+ Add Doctor</button>
     </div>
 
     <div class="table-container">
         <table>
-            <thead><tr>
-            <th>ID</th><th>Name</th><th>Specialization</th><th>Contact</th><th>Email</th><th>Action</th>
-            </tr></thead>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Name</th><th>Specialization</th><th>Contact</th><th>Email</th><th>Action</th>
+                </tr>
+            </thead>
             <tbody>
-            <?php foreach($others as $d): ?>
-            <tr>
-                <td><?= esc($d['DOC_ID']) ?></td>
-                <td><?= esc($d['DOC_FIRST_NAME'].' '.$d['DOC_LAST_NAME']) ?></td>
-                <td><?= esc($d['SPEC_NAME']) ?></td>
-                <td><?= esc($d['DOC_CONTACT_NUM']) ?></td>
-                <td><?= esc($d['DOC_EMAIL']) ?></td>
-                <td>
-                    <button class="btn" onclick='openViewModal(<?= json_encode($d) ?>)'>View</button>
-                </td>
-            </tr>
-        <?php endforeach; ?>
+                <?php if (empty($others)): ?>
+                    <tr><td colspan="6" style="text-align:center;">No doctors found</td></tr>
+                <?php else: ?>
+                    <?php foreach($others as $d): 
+                        $mid = trim($d['DOC_MIDDLE_INIT'] ?? '');
+                        $midDot = $mid !== '' ? esc($mid) . '. ' : '';
+                        $full = esc($d['DOC_FIRST_NAME']) . ' ' . $midDot . esc($d['DOC_LAST_NAME']);
+                    ?>
+                    <tr>
+                        <td><?= esc($d['DOC_ID']) ?></td>
+                        <td><?= $full ?></td>
+                        <td><?= esc($d['SPEC_NAME'] ?? $d['SPEC_ID'] ?? '') ?></td>
+                        <td><?= esc($d['DOC_CONTACT_NUM']) ?></td>
+                        <td><?= esc($d['DOC_EMAIL']) ?></td>
+                        <td>
+                            <!-- view only for others -->
+                            <button class="btn" onclick='openViewModal(<?= json_encode($d, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>View</button>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </tbody>
         </table>
     </div>
 </main>
 
-<!-- ✅ MODAL -->
-<div class="modal" id="doctorModal">
-  <div class="modal-content">
+<!-- MODAL (used for Add & Edit own profile; when viewing others we use view modal alert) -->
+<!-- MODAL (Add / Edit / View) -->
+<div class="modal" id="doctorModal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-labelledby="modalTitle">
     <span class="close-btn" onclick="closeModal()">&times;</span>
-    <h2 id="modalTitle">Edit Profile</h2>
+    <h2 id="modalTitle">Doctor Details</h2>
 
     <form id="doctorForm">
       <input type="hidden" id="DOC_ID" name="DOC_ID">
 
-      <label>First Name</label><input id="DOC_FIRST_NAME" name="DOC_FIRST_NAME">
-      <label>Middle Init</label><input id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT">
-      <label>Last Name</label><input id="DOC_LAST_NAME" name="DOC_LAST_NAME">
-      <label>Email</label><input id="DOC_EMAIL" name="DOC_EMAIL">
-      <label>Contact</label><input id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM">
+      <label>First Name</label>
+      <input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME" required>
+
+      <label>Middle Init</label>
+      <input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT" maxlength="2">
+
+      <label>Last Name</label>
+      <input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME" required>
+
+      <label>Email</label>
+      <input type="email" id="DOC_EMAIL" name="DOC_EMAIL" required>
+
+      <label>Contact Number</label>
+      <input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM" required>
+
       <label>Specialization</label>
-      <select id="SPEC_ID" name="SPEC_ID">
+      <select id="SPEC_ID" name="SPEC_ID" required>
         <?php foreach($specializations as $sp): ?>
-            <option value="<?=$sp['SPEC_ID']?>"><?=$sp['SPEC_NAME']?></option>
-        <?php endforeach;?>
+            <option value="<?= esc($sp['SPEC_ID']) ?>"><?= esc($sp['SPEC_NAME']) ?></option>
+        <?php endforeach; ?>
       </select>
 
-      <button type="submit" class="btn">Save</button>
+      <button type="submit" class="btn" id="saveButton">Save</button>
     </form>
   </div>
 </div>
 
+
 <footer>&copy; 2025 Medicina Clinic</footer>
 
 <script>
-function showModal(){document.getElementById('doctorModal').style.display='flex';}
-function closeModal(){document.getElementById('doctorModal').style.display='none';}
+function showModal(){ 
+    document.getElementById('doctorModal').style.display = 'flex'; 
+}
+function closeModal(){ 
+    document.getElementById('doctorModal').style.display = 'none'; 
+}
+
+// Helper to enable/disable form
+function setFormDisabled(disabled) {
+    document.querySelectorAll('#doctorForm input, #doctorForm select').forEach(el => {
+        el.disabled = disabled;
+    });
+    document.getElementById('saveButton').style.display = disabled ? 'none' : 'block';
+}
 
 function openAddModal(){
+    document.getElementById('modalTitle').innerText = 'Add Doctor';
     document.getElementById('doctorForm').reset();
-    document.getElementById('DOC_ID').value="";
-    document.getElementById('modalTitle').innerText="Add Doctor";
+    document.getElementById('DOC_ID').value = "";
+
+    setFormDisabled(false);
     showModal();
 }
 
-function openEditModal(d){
-    document.getElementById('modalTitle').innerText="Edit My Profile";
-    for(const k in d){if(document.getElementById(k))document.getElementById(k).value=d[k];}
+function openEditModal(data){
+    document.getElementById('modalTitle').innerText = 'Edit My Profile';
+    fillForm(data);
+
+    setFormDisabled(false);
     showModal();
 }
 
-function openViewModal(d){
-    alert(
-        "Doctor: "+d.DOC_FIRST_NAME+" "+d.DOC_LAST_NAME+
-        "\nEmail: "+d.DOC_EMAIL+
-        "\nContact: "+d.DOC_CONTACT_NUM+
-        "\nSpecialization: "+d.SPEC_NAME
-    );
+function openViewModal(data){
+    document.getElementById('modalTitle').innerText = 'View Doctor Details';
+    fillForm(data);
+
+    setFormDisabled(true);
+    showModal();
 }
 
-document.getElementById('doctorForm').addEventListener('submit', async e=>{
+function fillForm(d){
+    document.getElementById('DOC_ID').value = d.DOC_ID || '';
+    document.getElementById('DOC_FIRST_NAME').value = d.DOC_FIRST_NAME || '';
+    document.getElementById('DOC_MIDDLE_INIT').value = d.DOC_MIDDLE_INIT || '';
+    document.getElementById('DOC_LAST_NAME').value = d.DOC_LAST_NAME || '';
+    document.getElementById('DOC_EMAIL').value = d.DOC_EMAIL || '';
+    document.getElementById('DOC_CONTACT_NUM').value = d.DOC_CONTACT_NUM || '';
+    document.getElementById('SPEC_ID').value  = d.SPEC_ID || '';
+}
+
+// Submit Add / Update
+document.getElementById('doctorForm').addEventListener('submit', async function(e){
     e.preventDefault();
-    const res = await fetch(location.pathname,{
-        method:"POST",
-        headers:{"X-Requested-With":"XMLHttpRequest"},
-        body:new FormData(e.target)
+    const form = new FormData(this);
+
+    const res = await fetch(location.pathname, {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: form
     });
-    const j = await res.json();
-    alert(j.message);
-    if(j.success) location.reload();
+
+    const json = await res.json();
+    alert(json.message);
+
+    if(json.success){
+        closeModal();
+        location.reload();
+    }
 });
+
+// Click backdrop to close
+document.getElementById('doctorModal').addEventListener('click', function(e){
+    if(e.target === this) closeModal();
+});
+
 </script>
 
 </body>
