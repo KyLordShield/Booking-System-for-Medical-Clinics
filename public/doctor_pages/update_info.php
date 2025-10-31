@@ -22,6 +22,7 @@
     </div>
     <div class="nav-links flex gap-6">
       <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
+      <a href="doctor_manage.php">Doctor</a>
       <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/appointments.php">Appointment</a>
       <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/medical_records.php">Medical Records</a>
       <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/schedule.php">Schedule</a>
