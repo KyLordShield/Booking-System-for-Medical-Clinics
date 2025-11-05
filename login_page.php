@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     if ($auth) {
         $_SESSION['role'] = $auth['role'];
         $_SESSION['USER_ID'] = $auth['USER_ID'];
+        $_SESSION['USER_IS_SUPERADMIN'] = $auth['USER_IS_SUPERADMIN'];
 
         switch ($auth['role']) {
             case 'admin':
@@ -30,12 +31,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
                 $_SESSION['DOC_ID'] = $auth['DOC_ID'];
                 header("Location: public/doctor_dashboard.php");
                 exit;
+
+            default:
+                echo "<script>alert('Unknown role detected!'); window.location.href='login_page.php';</script>";
+                exit;
         }
     } else {
         echo "<script>alert('Invalid username or password!'); window.location.href='login_page.php';</script>";
         exit;
     }
 }
+?>
+
 ?>
 <!DOCTYPE html>
 <html lang="en">

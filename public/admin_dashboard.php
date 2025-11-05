@@ -191,7 +191,8 @@ footer {
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/services.php">Services</a>
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/schedule.php">Schedules</a>
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/medical_records.php">Medical Records</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/status.php">Status</a>
+        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
+        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>
       </div>
     </div>
 
