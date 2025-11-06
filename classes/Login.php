@@ -28,10 +28,11 @@ class Login {
                     $update->execute();
 
                     // Determine user role and return the proper IDs
-                    if ($user['USER_IS_SUPERADMIN']) {
+                    if (!empty($user['USER_IS_SUPERADMIN']) && $user['USER_IS_SUPERADMIN'] == 1) {
                         return [
                             'role' => 'admin',
-                            'USER_ID' => $user['USER_ID']
+                            'USER_ID' => $user['USER_ID'],
+                            'USER_IS_SUPERADMIN' => $user['USER_IS_SUPERADMIN']
                         ];
                     } elseif (!empty($user['PAT_ID'])) {
                         return [

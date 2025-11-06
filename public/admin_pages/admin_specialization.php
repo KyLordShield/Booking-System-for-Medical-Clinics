@@ -1,8 +1,12 @@
 <?php
 session_start();
-
-if (empty($_SESSION['USER_IS_SUPERADMIN']) || $_SESSION['USER_IS_SUPERADMIN'] !== 1) {
-    header("Location: ../index.php");
+// ---------- 1. AUTH CHECK ----------
+if (
+    empty($_SESSION['USER_IS_SUPERADMIN']) ||
+    $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
+    $_SESSION['role'] !== 'admin'
+) {
+    header("Location: ../../index.php");
     exit;
 }
 
@@ -82,9 +86,9 @@ function esc($v) {
 
     <div class="nav-links flex gap-4">
      <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_specialization.php">Specialization</a>
+     <a class="active" href="#">Specialization</a>
     <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
-    <a class="active" href="#">Status</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
     <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
     <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_medical_records.php">Medical Records</a>
     <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>

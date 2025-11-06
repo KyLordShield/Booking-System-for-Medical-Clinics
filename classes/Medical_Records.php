@@ -11,11 +11,20 @@ class MedicalRecord {
     }
 
     public function getAll() {
-        $sql = "SELECT * FROM {$this->table} ORDER BY MED_REC_ID ASC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
+    $sql = "SELECT 
+                mr.*, 
+                a.APPT_ID,
+                COALESCE(CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_LAST_NAME), CONCAT('Appt#', a.APPT_ID)) AS patient_name
+            FROM {$this->table} mr
+            LEFT JOIN appointment a ON mr.APPT_ID = a.APPT_ID
+            LEFT JOIN patient p ON a.PAT_ID = p.PAT_ID
+            ORDER BY mr.MED_REC_ID ASC";
+    
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
     
     // ✅ Get all medical records belonging to a doctor
     public function getRecordsByDoctor($doc_id, $search = null) {

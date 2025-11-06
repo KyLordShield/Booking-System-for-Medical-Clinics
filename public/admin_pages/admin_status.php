@@ -1,5 +1,16 @@
 <?php
 session_start();
+// ---------- 1. AUTH CHECK ----------
+if (
+    empty($_SESSION['USER_IS_SUPERADMIN']) ||
+    $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
+    $_SESSION['role'] !== 'admin'
+) {
+   header("Location: ../../index.php");
+    exit;
+}
+
+
 require_once __DIR__ . '/../../classes/Status.php';
 $status = new Status();
 
