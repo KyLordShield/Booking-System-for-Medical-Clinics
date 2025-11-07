@@ -9,6 +9,22 @@ class Appointment {
         $database = new Database();
         $this->conn = $database->connect();
     }
+public function getAll() {
+    $sql = "SELECT a.*, 
+                   CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_LAST_NAME) AS PATIENT_NAME,
+                   CONCAT(d.DOC_FIRST_NAME, ' ', d.DOC_LAST_NAME) AS DOCTOR_NAME,
+                   s.STAT_NAME AS APPT_STATUS
+            FROM appointment a
+            LEFT JOIN patient p ON a.PAT_ID = p.PAT_ID
+            LEFT JOIN doctor d ON a.DOC_ID = d.DOC_ID
+            LEFT JOIN status s ON a.STAT_ID = s.STAT_ID
+            ORDER BY a.APPT_DATE DESC, a.APPT_TIME DESC";
+
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 
     // Get all appointments for a specific patient
     public function getAppointmentsByPatient($pat_id) {
