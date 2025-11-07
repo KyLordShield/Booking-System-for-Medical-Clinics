@@ -13,11 +13,14 @@ if (empty($_SESSION['csrf_token'])) {
 }
 $csrf = $_SESSION['csrf_token'];
 
-/* ---------- 3. INCLUDE SERVICE CLASS ---------- */
+/* ---------- 3. INCLUDE CLASSES ---------- */
 require_once '../../classes/Service.php';
-$serviceObj = new Service();
+require_once '../../classes/Specialization.php';
 
-/* ---------- 4. AJAX HANDLER (MUST BE FIRST) ---------- */
+$serviceObj = new Service();
+$specializationObj = new Specialization();
+
+/* ---------- 4. AJAX HANDLER ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header('Content-Type: application/json');
 
@@ -34,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $name = trim($_POST['name'] ?? '');
         $description = $_POST['description'] ?? '';
         $price = (float)($_POST['price'] ?? 0);
+        $spec_id = (int)($_POST['spec_id'] ?? 0);
 
         if (empty($name)) {
             echo json_encode(['success' => false, 'msg' => 'Service name is required']);
@@ -43,8 +47,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             echo json_encode(['success' => false, 'msg' => 'Price cannot be negative']);
             exit;
         }
+        if ($spec_id <= 0) {
+            echo json_encode(['success' => false, 'msg' => 'Please select a specialization']);
+            exit;
+        }
 
-        $result = $serviceObj->createService($name, $description, $price);
+        $result = $serviceObj->createService($name, $description, $price, $spec_id);
         echo json_encode(['success' => $result !== false]);
         exit;
     }
@@ -55,13 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $name = trim($_POST['name'] ?? '');
         $description = $_POST['description'] ?? '';
         $price = (float)($_POST['price'] ?? 0);
+        $spec_id = (int)($_POST['spec_id'] ?? 0);
 
-        if ($id <= 0 || empty($name) || $price < 0) {
+        if ($id <= 0 || empty($name) || $price < 0 || $spec_id <= 0) {
             echo json_encode(['success' => false, 'msg' => 'Invalid data']);
             exit;
         }
 
-        $result = $serviceObj->updateService($id, $name, $description, $price);
+        $result = $serviceObj->updateService($id, $name, $description, $price, $spec_id);
         echo json_encode(['success' => $result]);
         exit;
     }
@@ -83,8 +92,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     exit;
 }
 
-/* ---------- 5. LOAD SERVICES FOR PAGE RENDER ---------- */
+/* ---------- 5. LOAD DATA FOR PAGE ---------- */
 $services = $serviceObj->getAllServices();
+$specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_NAME
 ?>
 
 <!DOCTYPE html>
@@ -144,10 +154,11 @@ $services = $serviceObj->getAllServices();
                 <div class="service-card bg-white p-5 rounded-[20px] shadow-md hover:shadow-lg transition flex justify-between items-center" data-id="<?= $service['SERV_ID'] ?>">
                     <div>
                         <h3 class="text-xl font-bold mb-1 text-[var(--primary)]"><?= htmlspecialchars($service['SERV_NAME']) ?></h3>
+                        <p class="text-gray-600 mb-1"><?= htmlspecialchars($service['SPEC_NAME'] ?? 'No specialization') ?></p>
                         <p class="text-gray-600 mb-2 description"><?= htmlspecialchars($service['SERV_DESCRIPTION'] ?? '') ?></p>
                         <p class="text-gray-600 mb-2 price">Price: ₱<?= number_format($service['SERV_PRICE'], 2) ?></p>
                         <div class="flex gap-2">
-                            <button onclick="openEditModal(<?= $service['SERV_ID'] ?>)" class="px-3 py-1 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-dark)]">Edit</button>
+                            <button onclick="openEditModal(<?= $service['SERV_ID'] ?>, <?= $service['SPEC_ID'] ?? 0 ?>)" class="px-3 py-1 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-dark)]">Edit</button>
                             <button onclick="openDeleteModal(<?= $service['SERV_ID'] ?>)" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
                         </div>
                     </div>
@@ -176,6 +187,14 @@ $services = $serviceObj->getAllServices();
                 <label class="block mb-2">Price</label>
                 <input type="number" step="0.01" name="price" required class="w-full px-3 py-2 border rounded mb-4">
 
+                <label class="block mb-2">Specialization</label>
+                <select name="spec_id" required class="w-full px-3 py-2 border rounded mb-4">
+                    <option value="">-- Select Specialization --</option>
+                    <?php foreach ($specializations as $spec): ?>
+                        <option value="<?= $spec['SPEC_ID'] ?>"><?= htmlspecialchars($spec['SPEC_NAME']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeModal('addModal')" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
                     <button type="submit" class="px-4 py-2 bg-[var(--primary)] text-white rounded">Add Service</button>
@@ -201,6 +220,14 @@ $services = $serviceObj->getAllServices();
 
                 <label class="block mb-2">Price</label>
                 <input type="number" step="0.01" name="price" required class="w-full px-3 py-2 border rounded mb-4">
+
+                <label class="block mb-2">Specialization</label>
+                <select name="spec_id" required class="w-full px-3 py-2 border rounded mb-4">
+                    <option value="">-- Select Specialization --</option>
+                    <?php foreach ($specializations as $spec): ?>
+                        <option value="<?= $spec['SPEC_ID'] ?>"><?= htmlspecialchars($spec['SPEC_NAME']) ?></option>
+                    <?php endforeach; ?>
+                </select>
 
                 <div class="flex justify-end gap-2">
                     <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 bg-gray-300 rounded">Cancel</button>
@@ -237,7 +264,6 @@ $services = $serviceObj->getAllServices();
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
 function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
-// Close modal on outside click
 document.querySelectorAll('.modal').forEach(modal => {
     modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal.id); });
 });
@@ -251,30 +277,29 @@ document.getElementById('searchInput').addEventListener('keyup', function() {
     });
 });
 
-// Open Edit Modal + Populate
-function openEditModal(id) {
+// Populate Edit Modal
+function openEditModal(id, specId) {
     const card = document.querySelector(`.service-card[data-id="${id}"]`);
     const name = card.querySelector('h3').textContent;
     const desc = card.querySelector('.description').textContent;
-    const priceText = card.querySelector('.price').textContent;
-    const price = priceText.replace('Price: ₱', '').replace(/,/g, '');
+    const price = card.querySelector('.price').textContent.replace('Price: ₱', '').replace(/,/g, '');
 
     const form = $('#editForm');
     form.find('[name=id]').val(id);
     form.find('[name=name]').val(name);
     form.find('[name=description]').val(desc);
     form.find('[name=price]').val(price);
+    form.find('[name=spec_id]').val(specId);
 
     openModal('editModal');
 }
 
-// Open Delete Modal
 function openDeleteModal(id) {
     $('#deleteForm [name=id]').val(id);
     openModal('deleteModal');
 }
 
-// Submit all forms via AJAX
+// AJAX for forms
 $('#addForm, #editForm, #deleteForm').on('submit', function(e) {
     e.preventDefault();
     const form = $(this);
@@ -290,6 +315,5 @@ $('#addForm, #editForm, #deleteForm').on('submit', function(e) {
     });
 });
 </script>
-
 </body>
 </html>
