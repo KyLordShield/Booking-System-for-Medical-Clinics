@@ -1,8 +1,13 @@
 <?php
 session_start();
 
-/* ---------- 1. AUTH CHECK ---------- */
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
+// ✅ Only admin can access
+// ---------- 1. AUTH CHECK ----------
+if (
+    empty($_SESSION['USER_IS_SUPERADMIN']) ||
+    $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
+    $_SESSION['role'] !== 'admin'
+) {
     header("Location: ../../index.php");
     exit;
 }
@@ -109,21 +114,22 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
 </head>
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<!-- NAVBAR -->
+<!-- ✅ NAVBAR -->
 <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-11 mr-3">Medicina
-    </div>
-    <div class="nav-links flex gap-4 text-white">
-        <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-        <a href="staff_manage.php">Staff</a>
-        <a class="active bg-white text-[var(--primary)] px-3 py-1 rounded" href="#">Services</a>
-        <a href="status.php">Status</a>
-        <a href="payments.php">Payments</a>
-        <a href="specialization.php">Specialization</a>
-        <a href="smedical_records.php">Medical Records</a>
-        <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-    </div>
+  <div class="navbar-brand flex items-center text-white text-2xl font-bold">
+    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">Medicina
+  </div>
+
+  <div class="nav-links flex gap-4">
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_specialization.php">Specialization</a>
+    <a class="active" href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_medical_records.php">Medical Records</a>
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>
+    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
+  </div>
 </div>
 
 <main class="flex-1 px-10 py-10">

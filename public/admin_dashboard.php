@@ -129,7 +129,7 @@ try {
       <div class="dropdown-content" role="menu">
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_specialization.php">Specializations</a>
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedule.php">Schedules</a>
+        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_medical_records.php">Medical Records</a>
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
         <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>

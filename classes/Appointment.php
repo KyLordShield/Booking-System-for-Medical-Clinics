@@ -9,15 +9,19 @@ class Appointment {
         $database = new Database();
         $this->conn = $database->connect();
     }
-public function getAll() {
+
+    /* ---------- ADMIN FETCH ---------- */
+    public function getAll() {
     $sql = "SELECT a.*, 
                    CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_LAST_NAME) AS PATIENT_NAME,
                    CONCAT(d.DOC_FIRST_NAME, ' ', d.DOC_LAST_NAME) AS DOCTOR_NAME,
-                   s.STAT_NAME AS APPT_STATUS
+                   s.STAT_NAME AS APPT_STATUS,
+                   sv.SERV_NAME AS SERVICE_NAME
             FROM appointment a
             LEFT JOIN patient p ON a.PAT_ID = p.PAT_ID
             LEFT JOIN doctor d ON a.DOC_ID = d.DOC_ID
             LEFT JOIN status s ON a.STAT_ID = s.STAT_ID
+            LEFT JOIN service sv ON a.SERV_ID = sv.SERV_ID
             ORDER BY a.APPT_DATE DESC, a.APPT_TIME DESC";
 
     $stmt = $this->conn->prepare($sql);
@@ -26,7 +30,47 @@ public function getAll() {
 }
 
 
-    // Get all appointments for a specific patient
+    /* ---------- ADMIN ADD ---------- */
+    public function add($data) {
+        $pat_id = $data['PAT_ID'];
+        $doc_id = $data['DOC_ID'];
+        $serv_id = $data['SERV_ID'];
+        $date = $data['APPT_DATE'];
+        $time = $data['APPT_TIME'];
+
+        // Reuse your existing createAppointment logic
+        $result = $this->createAppointment($pat_id, $doc_id, $serv_id, $date, $time);
+        // Return true/false for admin
+        return str_starts_with($result, "✅");
+    }
+
+    /* ---------- ADMIN UPDATE ---------- */
+    public function update($id, $data) {
+        try {
+            $sql = "UPDATE {$this->table}
+                    SET PAT_ID = :pat_id,
+                        DOC_ID = :doc_id,
+                        SERV_ID = :serv_id,
+                        APPT_DATE = :date,
+                        APPT_TIME = :time
+                    WHERE APPT_ID = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':id' => $id,
+                ':pat_id' => $data['PAT_ID'],
+                ':doc_id' => $data['DOC_ID'],
+                ':serv_id' => $data['SERV_ID'],
+                ':date' => $data['APPT_DATE'],
+                ':time' => $data['APPT_TIME']
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /* ---------- EXISTING METHODS BELOW ---------- */
+
     public function getAppointmentsByPatient($pat_id) {
         try {
             $sql = "SELECT 
@@ -52,80 +96,60 @@ public function getAll() {
         }
     }
 
-    // Create new appointment with validations
-// Create new appointment with validations
-public function createAppointment($pat_id, $doc_id, $serv_id, $date, $time) {
-    try {
-        // Normalize input
-        $date = substr($date, 0, 10); // YYYY-MM-DD
-        $time = substr($time, 0, 5);  // HH:MM
+    public function createAppointment($pat_id, $doc_id, $serv_id, $date, $time) {
+        try {
+            $date = substr($date, 0, 10);
+            $time = substr($time, 0, 5);
 
-        // 1) Check duplicates
-        $sqlCheck1 = "SELECT APPT_ID FROM {$this->table} WHERE PAT_ID = :pat_id AND APPT_DATE = :date AND APPT_TIME = :time LIMIT 1";
-        $stmt = $this->conn->prepare($sqlCheck1);
-        $stmt->execute([':pat_id' => $pat_id, ':date' => $date, ':time' => $time]);
-        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
-            return "⚠ You already have an appointment at that date and time.";
+            // 1. Check duplicates
+            $sqlCheck1 = "SELECT APPT_ID FROM {$this->table} WHERE PAT_ID = :pat_id AND APPT_DATE = :date AND APPT_TIME = :time LIMIT 1";
+            $stmt = $this->conn->prepare($sqlCheck1);
+            $stmt->execute([':pat_id' => $pat_id, ':date' => $date, ':time' => $time]);
+            if ($stmt->fetch()) return "⚠ You already have an appointment at that date and time.";
+
+            $sqlCheck2 = "SELECT APPT_ID FROM {$this->table} WHERE DOC_ID = :doc_id AND APPT_DATE = :date AND APPT_TIME = :time LIMIT 1";
+            $stmt = $this->conn->prepare($sqlCheck2);
+            $stmt->execute([':doc_id' => $doc_id, ':date' => $date, ':time' => $time]);
+            if ($stmt->fetch()) return "⚠ The selected doctor already has an appointment at that date and time.";
+
+            // 2. Generate APPT_ID
+            $yearMonth = date('Y-m', strtotime($date));
+            $sqlSeq = "SELECT APPT_ID FROM {$this->table} WHERE APPT_ID LIKE :ym ORDER BY APPT_ID DESC LIMIT 1";
+            $stmt = $this->conn->prepare($sqlSeq);
+            $stmt->execute([':ym' => $yearMonth . '-%']);
+            $last = $stmt->fetch(PDO::FETCH_ASSOC);
+            $seq = $last ? intval(explode('-', $last['APPT_ID'])[2]) + 1 : 1;
+            $appt_id = $yearMonth . '-' . str_pad($seq, 7, '0', STR_PAD_LEFT);
+
+            // 3. Get STAT_ID for Scheduled
+            $sqlStatus = "SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Scheduled' LIMIT 1";
+            $stmtStatus = $this->conn->prepare($sqlStatus);
+            $stmtStatus->execute();
+            $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
+            $scheduledId = $status['STAT_ID'] ?? null;
+            if (!$scheduledId) return "❌ Error: 'Scheduled' status not found.";
+
+            // 4. Insert
+            $sql = "INSERT INTO {$this->table} 
+                    (APPT_ID, APPT_DATE, APPT_TIME, PAT_ID, DOC_ID, SERV_ID, STAT_ID)
+                    VALUES (:id, :date, :time, :pat_id, :doc_id, :serv_id, :stat_id)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':id' => $appt_id,
+                ':date' => $date,
+                ':time' => $time,
+                ':pat_id' => $pat_id,
+                ':doc_id' => $doc_id,
+                ':serv_id' => $serv_id,
+                ':stat_id' => $scheduledId
+            ]);
+
+            return "✅ Appointment created successfully! (ID: {$appt_id})";
+        } catch (PDOException $e) {
+            return "❌ Error creating appointment: " . $e->getMessage();
         }
-
-        $sqlCheck2 = "SELECT APPT_ID FROM {$this->table} WHERE DOC_ID = :doc_id AND APPT_DATE = :date AND APPT_TIME = :time LIMIT 1";
-        $stmt = $this->conn->prepare($sqlCheck2);
-        $stmt->execute([':doc_id' => $doc_id, ':date' => $date, ':time' => $time]);
-        if ($stmt->fetch(PDO::FETCH_ASSOC)) {
-            return "⚠ The selected doctor already has an appointment at that date and time.";
-        }
-
-        // 2) Generate APPT_ID in format YYYY-MM-0000001
-        $yearMonth = date('Y-m', strtotime($date)); // e.g., 2025-01
-
-        // Get last appointment number for this month
-        $sqlSeq = "SELECT APPT_ID FROM {$this->table} WHERE APPT_ID LIKE :ym ORDER BY APPT_ID DESC LIMIT 1";
-        $stmt = $this->conn->prepare($sqlSeq);
-        $stmt->execute([':ym' => $yearMonth . '-%']);
-        $last = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        if ($last) {
-            // Extract the last sequence number
-            $parts = explode('-', $last['APPT_ID']);
-            $seq = intval($parts[2]) + 1;
-        } else {
-            $seq = 1;
-        }
-
-        $seqPadded = str_pad($seq, 7, '0', STR_PAD_LEFT); // e.g., 0000001
-        $appt_id = $yearMonth . '-' . $seqPadded;
-
-        // 3) Get STAT_ID for "Scheduled"
-        $sqlStatus = "SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Scheduled' LIMIT 1";
-        $stmtStatus = $this->conn->prepare($sqlStatus);
-        $stmtStatus->execute();
-        $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
-        $scheduledId = $status['STAT_ID'] ?? null; // fallback if not found
-
-        if (!$scheduledId) {
-            return "❌ Error: 'Scheduled' status not found in STATUS table.";
-        }
-
-        // 4) Insert into database with correct STAT_ID
-        $sql = "INSERT INTO {$this->table} (APPT_ID, APPT_DATE, APPT_TIME, PAT_ID, DOC_ID, SERV_ID, STAT_ID)
-                VALUES (:id, :date, :time, :pat_id, :doc_id, :serv_id, :stat_id)";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([
-            ':id' => $appt_id,
-            ':date' => $date,
-            ':time' => $time,
-            ':pat_id' => $pat_id,
-            ':doc_id' => $doc_id,
-            ':serv_id' => $serv_id,
-            ':stat_id' => $scheduledId
-        ]);
-
-        return "✅ Appointment created successfully! (ID: {$appt_id})";
-
-    } catch (PDOException $e) {
-        return "❌ Error creating appointment: " . $e->getMessage();
     }
-}
+
 
 
 
