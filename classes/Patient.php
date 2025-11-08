@@ -23,8 +23,8 @@ class Patient {
         }
     }
 
-    // 🟩 Update patient info (used by Manage Info)
-    public function updatePatient($pat_id, $fname, $mname, $lname, $dob, $gender, $contact, $email, $address) {
+    // 🟩 Update patient info
+    public function updatePatient($pat_id, $data) {
         try {
             $sql = "UPDATE {$this->table}
                     SET PAT_FIRST_NAME = :fname,
@@ -39,51 +39,82 @@ class Patient {
                     WHERE PAT_ID = :pat_id";
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
-                ':fname' => $fname,
-                ':mname' => $mname,
-                ':lname' => $lname,
-                ':dob' => $dob,
-                ':gender' => $gender,
-                ':contact' => $contact,
-                ':email' => $email,
-                ':address' => $address,
+                ':fname' => $data['first'],
+                ':mname' => $data['middle'],
+                ':lname' => $data['last'],
+                ':dob' => $data['dob'],
+                ':gender' => $data['gender'],
+                ':contact' => $data['contact'],
+                ':email' => $data['email'],
+                ':address' => $data['address'],
                 ':pat_id' => $pat_id
             ]);
-            return $stmt->rowCount() > 0 ? "✅ Patient information updated successfully!" : "⚠️ No changes made.";
+            return $stmt->rowCount() > 0;
         } catch (PDOException $e) {
-            return "❌ Update failed: " . $e->getMessage();
+            throw new Exception($e->getMessage());
         }
     }
 
-    
-// 🟦 Fetch all patients
-public function getAllPatients() {
-    try {
-        $sql = "SELECT * FROM {$this->table} ORDER BY PAT_ID ASC";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        return [];
+    // 🟩 Insert new patient
+    public function insertPatient($data) {
+        try {
+            $sql = "INSERT INTO {$this->table} 
+                    (PAT_FIRST_NAME, PAT_MIDDLE_INIT, PAT_LAST_NAME, PAT_DOB, PAT_GENDER, PAT_CONTACT_NUM, PAT_EMAIL, PAT_ADDRESS, PAT_CREATED_AT, PAT_UPDATED_AT)
+                    VALUES (:first, :middle, :last, :dob, :gender, :contact, :email, :address, NOW(), NOW())";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([
+                ':first' => $data['first'],
+                ':middle' => $data['middle'],
+                ':last' => $data['last'],
+                ':dob' => $data['dob'],
+                ':gender' => $data['gender'],
+                ':contact' => $data['contact'],
+                ':email' => $data['email'],
+                ':address' => $data['address']
+            ]);
+            return $this->conn->lastInsertId();
+        } catch (PDOException $e) {
+            throw new Exception($e->getMessage());
+        }
     }
-}
 
-// 🟩 Search patients by first or last name
-public function searchPatients($keyword) {
-    try {
-        $sql = "SELECT * FROM {$this->table} 
-                WHERE PAT_FIRST_NAME LIKE :kw OR PAT_LAST_NAME LIKE :kw
-                ORDER BY PAT_LAST_NAME ASC";
-        $stmt = $this->conn->prepare($sql);
-        $kw = "%{$keyword}%";
-        $stmt->bindParam(':kw', $kw);
-        $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    } catch (PDOException $e) {
-        return [];
+    // 🟩 Delete patient
+    public function deletePatient($pat_id) {
+        try {
+            $sql = "DELETE FROM {$this->table} WHERE PAT_ID = :pat_id";
+            $stmt = $this->conn->prepare($sql);
+            return $stmt->execute([':pat_id' => $pat_id]);
+        } catch (PDOException $e) {
+            throw new Exception($e->getMessage());
+        }
     }
-}
 
+    // 🟦 Fetch all patients
+    public function getAllPatients() {
+        try {
+            $sql = "SELECT * FROM {$this->table} ORDER BY PAT_ID ASC";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 
+    // 🟩 Search patients by first or last name
+    public function searchPatients($keyword) {
+        try {
+            $sql = "SELECT * FROM {$this->table} 
+                    WHERE PAT_FIRST_NAME LIKE :kw OR PAT_LAST_NAME LIKE :kw
+                    ORDER BY PAT_LAST_NAME ASC";
+            $stmt = $this->conn->prepare($sql);
+            $kw = "%{$keyword}%";
+            $stmt->bindParam(':kw', $kw);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
 ?>
