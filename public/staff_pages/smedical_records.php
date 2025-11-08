@@ -55,9 +55,9 @@ $records = $recordObj->getAll();
     </div>
 
     <div class="overflow-x-auto rounded-xl shadow-lg">
-        <table class="w-full bg-white text-left">
-            <thead class="bg-gray-200 text-gray-700 font-semibold">
-                <tr>
+        <table class="w-full bg-[var(--light)] text-left">
+            <thead>
+                <tr class="border-b text-left font-bold bg-[var(--light)]">
                     <th class="p-3">Record ID</th>
                     <th class="p-3">Diagnosis</th>
                     <th class="p-3">Prescription</th>
