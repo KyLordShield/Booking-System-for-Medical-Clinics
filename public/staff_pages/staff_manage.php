@@ -17,6 +17,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     $contact = trim($_POST['STAFF_CONTACT_NUM']);
     $email = trim($_POST['STAFF_EMAIL']);
 
+    // ✅ VALIDATION STARTS HERE
+$errors = [];
+
+// ✅ Contact must be 11 digits
+if (!preg_match('/^\d{11}$/', $contact)) {
+    $errors[] = "Contact must be exactly 11 digits";
+}
+
+// ✅ Email must be Gmail only (you can change the pattern later)
+if (!preg_match('/^[a-zA-Z0-9._%+-]+@gmail\.com$/', $email)) {
+    $errors[] = "Email must be a valid Gmail address ending with @gmail.com";
+}
+
+// ❌ If validation fails — stop and return an error JSON
+if (!empty($errors)) {
+    echo json_encode(["success" => false, "message" => implode(", ", $errors)]);
+    exit;
+}
+
     if ($id === "") {
         $query = "INSERT INTO staff 
         (STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME, STAFF_CONTACT_NUM, STAFF_EMAIL, STAFF_CREATED_AT, STAFF_UPDATED_AT)
@@ -164,10 +183,10 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <input type="text" id="lname" name="STAFF_LAST_NAME" required>
 
 <label>Contact</label>
-<input type="text" id="phone" name="STAFF_CONTACT_NUM" required>
+<input type="text" id="phone" name="STAFF_CONTACT_NUM" pattern="\d{11}" maxlength="11" required>
 
 <label>Email</label>
-<input type="email" id="email" name="STAFF_EMAIL" required>
+<input type="email" id="email" name="STAFF_EMAIL"  pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 
 <button class="btn" type="submit">Save</button>
 </form>
