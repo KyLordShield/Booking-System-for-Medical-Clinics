@@ -11,7 +11,9 @@ class Payment extends Database
                 p.APPT_ID,
                 p.PYMT_AMOUNT_PAID,
                 p.PYMT_DATE,
+                p.PYMT_METH_ID,
                 m.PYMT_METH_NAME,
+                p.PYMT_STAT_ID,
                 s.PYMT_STAT_NAME
             FROM PAYMENT p
             LEFT JOIN PAYMENT_METHOD m ON p.PYMT_METH_ID = m.PYMT_METH_ID
@@ -22,6 +24,7 @@ class Payment extends Database
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
 
 
     // Add payment
@@ -77,23 +80,25 @@ class Payment extends Database
 
 
     // Update payment
-    public function updatePayment($id, $amount, $date, $method_id, $status_id)
-    {
-        $sql = "UPDATE PAYMENT 
-                SET PYMT_AMOUNT_PAID = :amount, 
-                    PYMT_DATE = :date, 
-                    PYMT_METH_ID = :method_id, 
-                    PYMT_STAT_ID = :status_id
-                WHERE PYMT_ID = :id";
-        $stmt = $this->connect()->prepare($sql);
-        return $stmt->execute([
-            ':amount' => $amount,
-            ':date' => $date,
-            ':method_id' => $method_id,
-            ':status_id' => $status_id,
-            ':id' => $id
-        ]);
-    }
+public function updatePayment($id, $amount, $date, $method_id, $status_id)
+{
+    $sql = "UPDATE PAYMENT 
+            SET PYMT_AMOUNT_PAID = :amount, 
+                PYMT_DATE = :date,
+                PYMT_METH_ID = :method_id, 
+                PYMT_STAT_ID = :status_id
+            WHERE PYMT_ID = :id";
+    $stmt = $this->connect()->prepare($sql);
+    return $stmt->execute([
+        ':amount' => $amount,
+        ':date' => $date,
+        ':method_id' => $method_id,
+        ':status_id' => $status_id,
+        ':id' => $id
+    ]);
+}
+
+
 
     // Delete payment
     public function deletePayment($id)

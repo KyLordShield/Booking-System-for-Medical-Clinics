@@ -68,10 +68,10 @@ $statuses = $status->getAllStatuses();
   </div>
 
   <!-- ✅ Table -->
-  <div class="table-container bg-white p-6 rounded-[25px] shadow-md overflow-x-auto">
+  <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-md overflow-x-auto">
     <table class="w-full border-collapse text-[var(--primary)] min-w-[800px]">
       <thead>
-        <tr class="border-b border-gray-300 bg-gray-50">
+        <tr class="border-b border-gray-300 bg-[var(--light)]">
           <th class="py-3 px-4 text-left">Payment ID</th>
           <th class="py-3 px-4 text-left">Appointment ID</th>
           <th class="py-3 px-4 text-left">Amount</th>
