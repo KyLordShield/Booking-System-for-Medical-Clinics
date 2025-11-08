@@ -2,7 +2,15 @@
 session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-
+// ---------- 1. AUTH CHECK ----------
+if (
+    empty($_SESSION['USER_IS_SUPERADMIN']) ||
+    $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
+    $_SESSION['role'] !== 'admin'
+) {
+   header("Location: ../../index.php");
+    exit;
+}
 require_once dirname(__DIR__, 2) . '/classes/Doctor.php';
 require_once dirname(__DIR__, 2) . '/classes/Specialization.php';
 

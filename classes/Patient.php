@@ -116,5 +116,32 @@ class Patient {
             return [];
         }
     }
+
+
+
+   // 🟩 Takes all Patients with user accounts for admin page manage user
+   public function getAllWithUsers() {
+    $sql = "SELECT p.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD
+            FROM PATIENT p
+            LEFT JOIN USERS u ON p.PAT_ID = u.PAT_ID
+            ORDER BY p.PAT_ID DESC";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+// Get all patients who don't have a user account yet
+public function getPatientsWithoutUser() {
+    $sql = "SELECT p.*
+            FROM PATIENT p
+            LEFT JOIN USERS u ON p.PAT_ID = u.PAT_ID
+            WHERE u.USER_ID IS NULL
+            ORDER BY p.PAT_ID ASC";
+    $stmt = $this->conn->prepare($sql);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
 }
 ?>

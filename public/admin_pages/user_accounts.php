@@ -1,164 +1,319 @@
+<?php
+session_start();
+
+// ✅ Restrict access to Admin only
+if (
+    empty($_SESSION['USER_IS_SUPERADMIN']) ||
+    $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
+    $_SESSION['role'] !== 'admin'
+) {
+    header("Location: ../../index.php");
+    exit;
+}
+
+// ✅ Include database + classes
+require_once '../../classes/User.php';
+require_once '../../classes/Patient.php';
+require_once '../../classes/Doctor.php';
+require_once '../../classes/Staff.php';
+
+// ✅ Fetch all data with users
+$userObj = new User();
+$patientObj = new Patient();
+$doctorObj = new Doctor();
+$staffObj = new Staff();
+
+$patients = $patientObj->getAllWithUsers(); 
+$doctors = $doctorObj->getAllWithUsers(); 
+$staffs = $staffObj->getAllWithUsers();
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Manage Users | Medicina Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <!-- ✅ Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- ✅ External Style -->
-  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css"> 
-  <!-- adjust path if style.css is in another folder -->
-
-  <script>
-    function showTab(tabName) {
-      document.querySelectorAll('.table-container').forEach(c => c.style.display = 'none');
-      document.querySelector('#' + tabName).style.display = 'block';
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-    }
-    window.onload = () => showTab('patients');
-
-    function openModal() {
-      document.getElementById('createModal').style.display = 'flex';
-    }
-    function closeModal() {
-      document.getElementById('createModal').style.display = 'none';
-    }
-  </script>
+  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
 
 <body class="font-serif bg-[var(--secondary)] flex flex-col min-h-screen">
 
-  <!-- NAVBAR -->
-  <div class="navbar">
-    <div class="navbar-brand">
-      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Logo">
-      Medicina Admin
-    </div>
+<!-- ✅ NAVBAR -->
+<div class="navbar">
+  <div class="navbar-brand">
+    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Logo">
+    Medicina Admin
+  </div>
+  <div class="nav-links">
+    <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
+    <a class="active" href="#">Manage Users</a>
+    <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
+  </div>
+</div>
 
-    <div class="nav-links">
-      <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-      <a class="active" href="#">Manage Users</a>
-      <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
-    </div>
+<!-- ✅ MAIN -->
+<main class="flex-1 p-16">
+  <h1 class="text-center text-[var(--primary)] text-4xl font-bold mb-8">Manage Users</h1>
+
+  <!-- ✅ Toggle Filter -->
+  <div class="text-right mb-5">
+    <label>
+      <input type="checkbox" id="filterUsersOnly" checked>
+      Show only entities with User accounts
+    </label>
+    <button class="create-btn" onclick="openModal()">+ Create User</button>
   </div>
 
-  <!-- MAIN -->
-  <main class="flex-1 p-16">
-    <h1 class="text-center text-[var(--primary)] text-4xl font-bold mb-8">Manage Users</h1>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="patients" onclick="showTab('patients')">Patients</button>
+    <button class="tab-btn" data-tab="doctors" onclick="showTab('doctors')">Doctors</button>
+    <button class="tab-btn" data-tab="staff" onclick="showTab('staff')">Staff</button>
+  </div>
 
-    <div class="text-right mb-5">
-      <button class="create-btn" onclick="openModal()">+ Create User</button>
-    </div>
+  <!-- ✅ PATIENTS TABLE -->
+  <div id="patients" class="table-container">
+    <h2 style="color:#002339; margin-bottom:15px;">Patients List</h2>
+    <table>
+      <tr>
+        <th>ID</th><th>Name</th><th>Email</th><th>Username</th><th>Password</th><th>Action</th>
+      </tr>
+      <?php foreach ($patients as $p): ?>
+      <tr class="<?= empty($p['USER_ID']) ? 'no-user' : 'has-user' ?>">
+        <td><?= htmlspecialchars($p['PAT_ID']) ?></td>
+        <td><?= htmlspecialchars($p['PAT_FIRST_NAME'] . ' ' . $p['PAT_LAST_NAME']) ?></td>
+        <td><?= htmlspecialchars($p['PAT_EMAIL'] ?? '—') ?></td>
+        <td><?= htmlspecialchars($p['USER_NAME'] ?? '—') ?></td>
+        <td>
+          <span class="password-field" data-password="<?= htmlspecialchars($p['USER_PASSWORD'] ?? '') ?>">••••••</span>
+          <?php if(!empty($p['USER_PASSWORD'])): ?>
+          <button type="button" class="toggle-pwd">Show</button>
+          <?php endif; ?>
+        </td>
+        <td>
+          <button type="button" class="btn edit-btn" 
+                  data-userid="<?= $p['USER_ID'] ?? '' ?>" 
+                  data-username="<?= htmlspecialchars($p['USER_NAME'] ?? '') ?>" 
+                  data-password="<?= htmlspecialchars($p['USER_PASSWORD'] ?? '') ?>" 
+                  onclick="openEditModal(this)">Edit</button>
 
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="patients" onclick="showTab('patients')">Patients</button>
-      <button class="tab-btn" data-tab="doctors" onclick="showTab('doctors')">Doctors</button>
-      <button class="tab-btn" data-tab="staff" onclick="showTab('staff')">Staff</button>
-    </div>
+          <form method="POST" action="create_user.php" style="display:inline;" 
+                onsubmit="return confirm('Are you sure you want to delete this user?');">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="user_id" value="<?= $p['USER_ID'] ?? '' ?>">
+            <button type="submit" class="btn">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    </table>
+  </div>
 
-    <!-- PATIENTS TABLE -->
-    <div id="patients" class="table-container">
-      <h2 style="color:#002339; margin-bottom:15px;">Patients List</h2>
-      <table>
-        <tr>
-          <th>ID</th><th>Name</th><th>Email</th><th>Username</th><th>Password</th><th>Action</th>
-        </tr>
-        <tr>
-          <td>1</td><td>Maria Cruz</td><td>maria@gmail.com</td><td>mariacruz</td><td>••••••</td>
-          <td><button class="btn">Edit</button> <button class="btn">Delete</button></td>
-        </tr>
-      </table>
-    </div>
+  <!-- ✅ DOCTORS TABLE -->
+  <div id="doctors" class="table-container hidden">
+    <h2 style="color:#002339; margin-bottom:15px;">Doctors List</h2>
+    <table>
+      <tr>
+        <th>ID</th><th>Name</th><th>Specialization</th><th>Email</th><th>Username</th><th>Password</th><th>Action</th>
+      </tr>
+      <?php foreach ($doctors as $d): ?>
+      <tr class="<?= empty($d['USER_ID']) ? 'no-user' : 'has-user' ?>">
+        <td><?= htmlspecialchars($d['DOC_ID']) ?></td>
+        <td><?= htmlspecialchars($d['DOC_FIRST_NAME'] . ' ' . $d['DOC_LAST_NAME']) ?></td>
+        <td><?= htmlspecialchars($d['SPEC_NAME'] ?? '—') ?></td>
+        <td><?= htmlspecialchars($d['DOC_EMAIL'] ?? '—') ?></td>
+        <td><?= htmlspecialchars($d['USER_NAME'] ?? '—') ?></td>
+        <td>
+          <span class="password-field" data-password="<?= htmlspecialchars($d['USER_PASSWORD'] ?? '') ?>">••••••</span>
+          <?php if(!empty($d['USER_PASSWORD'])): ?>
+          <button type="button" class="toggle-pwd">Show</button>
+          <?php endif; ?>
+        </td>
+        <td>
+          <button type="button" class="btn edit-btn" 
+                  data-userid="<?= $d['USER_ID'] ?? '' ?>" 
+                  data-username="<?= htmlspecialchars($d['USER_NAME'] ?? '') ?>" 
+                  data-password="<?= htmlspecialchars($d['USER_PASSWORD'] ?? '') ?>" 
+                  onclick="openEditModal(this)">Edit</button>
 
-    <!-- DOCTORS TABLE -->
-    <div id="doctors" class="table-container hidden">
-      <h2 style="color:#002339; margin-bottom:15px;">Doctors List</h2>
-      <table>
-        <tr>
-          <th>ID</th><th>Name</th><th>Specialization</th><th>Username</th><th>Password</th><th>Action</th>
-        </tr>
-        <tr>
-          <td>1</td><td>Dr. Ana Lim</td><td>Cardiology</td><td>dralim</td><td>••••••</td>
-          <td><button class="btn">Edit</button> <button class="btn">Delete</button></td>
-        </tr>
-      </table>
-    </div>
+          <form method="POST" action="create_user.php" style="display:inline;" 
+                onsubmit="return confirm('Are you sure you want to delete this user?');">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="user_id" value="<?= $d['USER_ID'] ?? '' ?>">
+            <button type="submit" class="btn">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    </table>
+  </div>
 
-    <!-- STAFF TABLE -->
-    <div id="staff" class="table-container hidden">
-      <h2 style="color:#002339; margin-bottom:15px;">Staff List</h2>
-      <table>
-        <tr>
-          <th>ID</th><th>Name</th><th>Role</th><th>Username</th><th>Password</th><th>Action</th>
-        </tr>
-        <tr>
-          <td>1</td><td>Jane Dela Cruz</td><td>Receptionist</td><td>janedc</td><td>••••••</td>
-          <td><button class="btn">Edit</button> <button class="btn">Delete</button></td>
-        </tr>
-      </table>
-    </div>
-  </main>
+  <!-- ✅ STAFF TABLE -->
+  <div id="staff" class="table-container hidden">
+    <h2 style="color:#002339; margin-bottom:15px;">Staff List</h2>
+    <table>
+      <tr>
+        <th>ID</th><th>Name</th><th>Email</th><th>Username</th><th>Password</th><th>Action</th>
+      </tr>
+      <?php foreach ($staffs as $s): ?>
+      <tr class="<?= empty($s['USER_ID']) ? 'no-user' : 'has-user' ?>">
+        <td><?= htmlspecialchars($s['STAFF_ID']) ?></td>
+        <td><?= htmlspecialchars($s['STAFF_FIRST_NAME'] . ' ' . $s['STAFF_LAST_NAME']) ?></td>
+        <td><?= htmlspecialchars($s['STAFF_EMAIL'] ?? '—') ?></td>
+        <td><?= htmlspecialchars($s['USER_NAME'] ?? '—') ?></td>
+        <td>
+          <span class="password-field" data-password="<?= htmlspecialchars($s['USER_PASSWORD'] ?? '') ?>">••••••</span>
+          <?php if(!empty($s['USER_PASSWORD'])): ?>
+          <button type="button" class="toggle-pwd">Show</button>
+          <?php endif; ?>
+        </td>
+        <td>
+          <button type="button" class="btn edit-btn" 
+                  data-userid="<?= $s['USER_ID'] ?? '' ?>" 
+                  data-username="<?= htmlspecialchars($s['USER_NAME'] ?? '') ?>" 
+                  data-password="<?= htmlspecialchars($s['USER_PASSWORD'] ?? '') ?>" 
+                  onclick="openEditModal(this)">Edit</button>
 
-  <!-- CREATE USER MODAL -->
+          <form method="POST" action="create_user.php" style="display:inline;" 
+                onsubmit="return confirm('Are you sure you want to delete this user?');">
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="user_id" value="<?= $s['USER_ID'] ?? '' ?>">
+            <button type="submit" class="btn">Delete</button>
+          </form>
+        </td>
+      </tr>
+      <?php endforeach; ?>
+    </table>
+  </div>
+
+  <!-- ✅ CREATE USER MODAL -->
   <div id="createModal" class="modal">
     <div class="modal-content">
       <span class="close-btn" onclick="closeModal()">&times;</span>
       <h2>Create User</h2>
       <form method="POST" action="create_user.php">
-        <label>Last Name</label>
-        <input type="text" name="lname" required>
-
-        <label>First Name</label>
-        <input type="text" name="fname" required>
-
-        <label>M.I</label>
-        <input type="text" name="mname" maxlength="1">
-
-        <label>DOB</label>
-        <input type="date" name="dob">
-
-        <label>Sex</label>
-        <select name="gender">
-          <option value="">--Select--</option>
-          <option>Male</option>
-          <option>Female</option>
-        </select>
-
-        <label>Address</label>
-        <textarea name="address" rows="2"></textarea>
-
-        <label>Contact No.</label>
-        <input type="text" name="contact">
-
-        <label>Email</label>
-        <input type="email" name="email">
-
-        <label>Username</label>
-        <input type="text" name="username" required>
-
-        <label>Password</label>
-        <input type="password" name="password" required>
-
+        <input type="hidden" name="action" value="create">
         <label>Role</label>
-        <select name="role" required>
+        <select name="role" id="role" onchange="loadEntities(this.value)" required>
           <option value="">--Select Role--</option>
           <option value="Patient">Patient</option>
           <option value="Doctor">Doctor</option>
           <option value="Staff">Staff</option>
         </select>
 
+        <label>Select Entity</label>
+        <select name="entity_id" id="entityDropdown" required>
+          <option value="">--Select--</option>
+        </select>
+
+        <label>Username</label>
+        <input type="text" name="username" required>
+        <label>Password</label>
+        <input type="password" name="password" required>
         <button type="submit">Create User</button>
       </form>
     </div>
   </div>
 
-  <footer>
-    &copy; 2025 Medicina Clinic | All Rights Reserved
-  </footer>
+ <!-- EDIT USER MODAL -->
+<div id="editModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeEditModal()">&times;</span>
+    <h2>Edit User</h2>
+    <form method="POST" action="create_user.php" id="editUserForm">
+      <input type="hidden" name="action" value="edit">
+      <input type="hidden" name="user_id" id="edit_user_id">
+      
+      <label>Username</label>
+      <input type="text" name="username" id="edit_username" required>
+      
+      <label>Password</label>
+      <input type="text" name="password" id="edit_password" required>
+      
+      <button type="submit">Update User</button>
+    </form>
+  </div>
+</div>
 
+</main>
+
+<!-- ✅ JS -->
+<script>
+function showTab(tabName) {
+  document.querySelectorAll('.table-container').forEach(c => c.style.display = 'none');
+  document.querySelector('#' + tabName).style.display = 'block';
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+window.onload = () => showTab('patients');
+
+function openModal() { document.getElementById('createModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('createModal').style.display = 'none'; }
+
+function openEditModal(btn) {
+  const userId = btn.dataset.userid;
+  const username = btn.dataset.username;
+  const password = btn.dataset.password;
+
+  if (!userId) {
+    alert("Error: User ID is missing! Cannot edit.");
+    return;
+  }
+
+  document.getElementById('edit_user_id').value = userId;
+  document.getElementById('edit_username').value = username;
+  document.getElementById('edit_password').value = password;
+
+  document.getElementById('edit_password').type = 'text';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() { document.getElementById('editModal').style.display = 'none'; }
+
+function loadEntities(role) {
+  const dropdown = document.getElementById('entityDropdown');
+  dropdown.innerHTML = '<option>Loading...</option>';
+  fetch(`/Booking-System-For-Medical-Clinics/ajax/fetch_entities.php?role=${role}`)
+  .then(res => res.json())
+  .then(data => {
+    dropdown.innerHTML = '<option value="">--Select--</option>';
+    data.forEach(item => dropdown.innerHTML += `<option value="${item.id}">${item.name}</option>`);
+  })
+  .catch(console.error);
+}
+
+document.querySelectorAll('.toggle-pwd').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const span = btn.previousElementSibling;
+    if (span.textContent === '••••••') {
+      span.textContent = span.dataset.password;
+      btn.textContent = 'Hide';
+    } else {
+      span.textContent = '••••••';
+      btn.textContent = 'Show';
+    }
+  });
+});
+
+// ✅ Filter toggle
+const filterCheckbox = document.getElementById('filterUsersOnly');
+filterCheckbox.addEventListener('change', () => {
+  const showOnly = filterCheckbox.checked;
+  document.querySelectorAll('.table-container table tr').forEach(row => {
+    if(row.querySelector('td')) {
+      if(showOnly && row.classList.contains('no-user')) {
+        row.style.display = 'none';
+      } else {
+        row.style.display = '';
+      }
+    }
+  });
+});
+</script>
+
+<footer>
+  &copy; 2025 Medicina Clinic | All Rights Reserved
+</footer>
 </body>
 </html>
