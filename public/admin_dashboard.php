@@ -105,41 +105,9 @@ try {
 <body>
 
 <!-- NAVBAR -->
-<div class="navbar">
-  <div class="navbar-brand">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Logo">
-    Medicina Admin
-  </div>
-
-  <div class="nav-links">
-    <a class="active" href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/user_accounts.php">User Accounts</a>
-
-    <div class="dropdown">
-      <a href="#" class="dropdown-toggle" aria-expanded="false">People ▾</a>
-      <div class="dropdown-content" role="menu">
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/staff.php">Staff</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/patients.php">Patients</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/doctors.php">Doctors</a>
-      </div>
-    </div>
-
-    <div class="dropdown">
-      <a href="#" class="dropdown-toggle" aria-expanded="false">Clinic ▾</a>
-      <div class="dropdown-content" role="menu">
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_specialization.php">Specializations</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_medical_records.php">Medical Records</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>
-      </div>
-    </div>
-
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_appointments.php">Appointments</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
-  </div>
-</div>
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <!-- MAIN CONTENT -->
 <main>
@@ -171,9 +139,8 @@ try {
 </main>
 
 <!-- FOOTER -->
-<footer>
-  &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
+  <?php include dirname(__DIR__) . "/partials/footer.php"; ?>
+
 
 <!-- JS: toggles .open on dropdown when its toggle is clicked; closes when clicking outside -->
 <script>

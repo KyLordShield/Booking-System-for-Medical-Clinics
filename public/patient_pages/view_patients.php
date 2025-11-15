@@ -30,16 +30,9 @@ if ($search) {
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
     <!-- ✅ NAVBAR (Mock Staff Navbar for consistency) -->
-    <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-        <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-            <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-11 mr-3">
-            Medicina
-        </div>
-        <!-- Note: Navigation links would typically go here -->
-        <div class="nav-links">
-            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_dashboard.php">Home</a>
-        </div>
-    </div>
+        <!-- ✅ HEADER LINK -->
+        <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+        <!-- ✅ HEADER LINK -->
 
     <!-- ✅ MAIN CONTENT -->
     <main class="flex-1 px-10 py-10">
@@ -109,9 +102,8 @@ if ($search) {
     </main>
 
     <!-- ✅ FOOTER -->
-    <footer class="bg-[var(--primary)] text-white text-center py-4 text-sm rounded-t-[35px] mt-6">
-        &copy; 2025 Medicina Clinic | All Rights Reserved
-    </footer>
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 </body>
 </html>

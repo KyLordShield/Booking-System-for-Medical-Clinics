@@ -114,23 +114,10 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
 </head>
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<!-- ✅ NAVBAR -->
-<div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-  <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">Medicina
-  </div>
-
-  <div class="nav-links flex gap-4">
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_specialization.php">Specialization</a>
-    <a class="active" href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_medical_records.php">Medical Records</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-  </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <main class="flex-1 px-10 py-10">
     <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
@@ -262,9 +249,10 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
     </div>
 </main>
 
-<footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 rounded-t-[35px] text-sm mt-6">
-    &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 <script>
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }

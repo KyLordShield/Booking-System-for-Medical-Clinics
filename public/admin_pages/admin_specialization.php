@@ -78,23 +78,11 @@ function esc($v) {
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-  <!-- ✅ NAVBAR -->
-  <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">Medicina
-    </div>
-
-    <div class="nav-links flex gap-4">
-     <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-     <a class="active" href="#">Specialization</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_medical_records.php">Medical Records</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-    </div>
-  </div>
+  
+  <!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
   <!-- ✅ MAIN -->
   <main class="px-10 py-10 flex-1">
@@ -168,6 +156,11 @@ function esc($v) {
       </table>
     </div>
   </main>
+
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
   <!-- ✅ Modal: Add/Edit Specialization -->
   <div id="specModal" class="modal hidden">

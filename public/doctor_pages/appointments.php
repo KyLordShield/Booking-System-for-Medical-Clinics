@@ -63,20 +63,8 @@ foreach ($appointments as $appt) {
 <body class="bg-[var(--secondary)] flex flex-col min-h-screen font-[Georgia]">
 
   <!-- ✅ NAVBAR -->
-  <div class="navbar flex justify-between items-center bg-[var(--primary)] px-10 py-4 rounded-b-[35px] shadow-lg">
-    <div class="navbar-brand flex items-center text-[var(--white)] text-2xl font-bold">
-      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-10 mr-3">
-      Medicina
-    </div>
-    <div class="nav-links flex gap-6">
-      <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
-      <a href="doctor_manage.php">Doctor</a>
-      <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/schedule.php">Schedule</a>
-      <a class="active" href="/Booking-System-For-Medical-Clinics/public/doctor_pages/appointments.php">Appointments</a>
-      <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/medical_records.php">Medical Records</a>
-      <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
-    </div>
-  </div>
+   <!--  HEADER LINK -->
+  <?php  include dirname(__DIR__, 2) . '/partials/header.php'?>
 
   <!-- ✅ MAIN CONTENT -->
   <main class="flex-1 p-10">
@@ -180,9 +168,7 @@ foreach ($appointments as $appt) {
   </main>
 
   <!-- ✅ FOOTER -->
-  <footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 rounded-t-[35px] text-sm mt-6">
-    &copy; 2025 Medicina Clinic | All Rights Reserved
-  </footer>
+  <?php include dirname(__DIR__, 2) . '/partials/footer.php'?>
 
   <!-- ✅ JS for Tabs -->
   <script>

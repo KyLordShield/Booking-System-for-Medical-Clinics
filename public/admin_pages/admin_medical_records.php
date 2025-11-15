@@ -112,22 +112,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </head>
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col">
 
-<!-- NAVBAR (matches admin layout) -->
-<div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-  <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">Medicina
-  </div>
-  <div class="nav-links flex gap-4">
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_specialization.php">Specialization</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_services.php">Services</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_status.php">Status</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_schedules.php">Schedules</a>
-    <a class="active" href="#">Medical Records</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/admin_payments.php">Payments</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-  </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <main class="flex-1 p-10">
   <h2 class="text-[38px] font-bold text-[var(--primary)] mb-4">Medical Records</h2>
@@ -214,9 +202,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   </div>
 </div>
 
-<footer class="bg-[var(--primary)] text-white text-center py-4 rounded-t-[35px]">
-  &copy; 2025 Medicina Clinic
-</footer>
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 <script>
 const recordModal=document.getElementById('recordModal');

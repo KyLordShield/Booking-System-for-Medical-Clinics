@@ -96,16 +96,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </head>
 <body>
 
-<div class="navbar">
-    <div class="navbar-brand">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">Medicina
-    </div>
-    <div class="nav-links">
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-        <a class="active" href="patients_admin.php">Patients</a>
-        <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
-    </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <main>
 <h2>Patient Management (Admin)</h2>
@@ -156,6 +150,11 @@ $name = esc($p['PAT_FIRST_NAME']).' '.$midDot.esc($p['PAT_LAST_NAME']);
 </table>
 </div>
 </main>
+
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 <!-- Modal -->
 <div class="modal" id="patientModal">

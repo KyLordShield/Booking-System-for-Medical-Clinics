@@ -66,20 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
 <!-- Applying dashboard body styles -->
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-    <!-- ✅ NAVIGATION BAR - APPLIED DASHBOARD STYLES -->
-    <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-        <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-            <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" alt="Medicina Logo" class="w-11 mr-3">
-            Medicina
-        </div>
-
-        <div class="nav-links flex gap-6">
-            <!-- Patient Navigation Links (Active link is 'Book Appointment') -->
-            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_dashboard.php">Home</a>
-            <a class="active text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_pages/create_appointment.php">Book Appointment</a>
-            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-        </div>
-    </div>
+   <!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
     <!-- ✅ MAIN CONTENT CONTAINER -->
     <main class="flex flex-col flex-1 px-20 py-16 w-full items-center justify-start">
@@ -144,9 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
     </main>
     
     <!-- ✅ FOOTER - APPLIED DASHBOARD STYLES -->
-    <footer class="bg-[var(--primary)] text-white text-center py-4 text-sm rounded-t-[35px] mt-auto">
-        &copy; 2025 Medicina Clinic | All Rights Reserved
-    </footer>
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 <script>
 const serviceSelect = document.getElementById('SERV_ID');

@@ -89,21 +89,11 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
 
-<div class="navbar">
-    <div class="navbar-brand">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">Medicina
-    </div>
-    <div class="nav-links">
-        <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-      <a class="active" href="#">Staff</a>
-      <a href="services.php">Services</a>
-      <a href="status.php">Status</a>
-      <a href="payments.php">Payments</a>
-      <a href="specialization.php">Specialization</a>
-      <a href="smedical_records.php">Medical Records</a>
-      <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-    </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
+
 
 <main>
 <h2>Staff Management</h2>
@@ -181,7 +171,11 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 </div>
 
-<footer>&copy; 2025 Medicina Clinic | All Rights Reserved</footer>
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+<!-- ✅ FOOTER LINK -->
+
 
 <script>
 function openAddModal() {

@@ -227,20 +227,11 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </head>
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col">
 
-<!-- NAVBAR (same as before) -->
-<div class="navbar flex justify-between items-center px-10 py-4 rounded-b-[35px] bg-[var(--primary)] shadow-lg">
-  <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-10 mr-3">Medicina
-  </div>
-  <div class="nav-links flex gap-6">
-    <a href="/Booking-System-For-Medical-Clinics/public/doctor_dashboard.php">Home</a>
-    <a href="doctor_manage.php">Doctor</a>
-    <a href="schedule.php">Schedule</a>
-    <a href="appointments.php">Appointment</a>
-    <a class="active" href="medical_records.php">Medical Records</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-  </div>
-</div>
+
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <main class="flex-1 p-10">
   <h2 class="text-[38px] font-bold text-[var(--primary)] mb-4">Medical Records</h2>
@@ -325,9 +316,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
   </div>
 </div>
 
-<footer class="bg-[var(--primary)] text-white text-center py-4 rounded-t-[35px]">
-  &copy; 2025 Medicina Clinic
-</footer>
+
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 <script>
 const recordModal = document.getElementById('recordModal');

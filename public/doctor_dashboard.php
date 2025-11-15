@@ -45,24 +45,8 @@ $fullName = "$first $middle$last";
 </head>
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
-
-  <!-- ✅ NAVIGATION BAR -->
-  <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-      <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">
-      Medicina
-    </div>
-
-    <div class="nav-links flex gap-6">
-      <a class="active" href="doctor_dashboard.php">Home</a>
-      <a href="doctor_pages/doctor_manage.php">Doctor</a>
-      <a href="doctor_pages/schedule.php">Schedule</a>
-      <a href="doctor_pages/appointments.php">Appointment</a>
-      <a href="doctor_pages/medical_records.php">Medical Records</a>
-      <a href="../index.php">Log out</a>
-    </div>
-  </div>
-
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__) . "/partials/header.php"; ?>
   <!-- ✅ MAIN CONTENT -->
   <main class="flex flex-1 items-center px-20 py-16">
   
@@ -86,9 +70,7 @@ $fullName = "$first $middle$last";
   </main>
 
   <!-- ✅ FOOTER -->
-  <footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 text-sm rounded-t-[35px]">
-    &copy; 2025 Medicina Clinic | All Rights Reserved
-  </footer>
+ <?php include dirname(__DIR__) . "/partials/footer.php"; ?>
 
 </body>
 </html>

@@ -52,21 +52,8 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
 <!-- Applying doctor's dashboard body styles -->
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-    <!-- ✅ NAVIGATION BAR - APPLIED DOCTOR'S STYLES -->
-    <div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-        <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-            <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" alt="Medicina Logo" class="w-11 mr-3">
-            Medicina
-        </div>
-
-        <div class="nav-links flex gap-6">
-            <!-- Patient Navigation Links -->
-            <a class="active text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_dashboard.php">Home</a>
-             <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_pages/view_patients.php">Patients</a>
-            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/public/patient_pages/create_appointment.php">Book Appointment</a>
-            <a class="text-white font-semibold hover:text-[#bfe1eb] transition" href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-        </div>
-    </div>
+  <!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__) . "/partials/header.php"; ?>
 
     <!-- ✅ MAIN CONTENT - APPLIED DOCTOR'S STYLES -->
     <main class="flex flex-col flex-1 px-20 py-16 w-full"> 
@@ -193,9 +180,8 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
     </main>
 
     <!-- ✅ FOOTER - APPLIED DOCTOR'S STYLES -->
-    <footer class="bg-[var(--primary)] text-white text-center py-4 text-sm rounded-t-[35px]">
-        &copy; 2025 Medicina Clinic | All Rights Reserved
-    </footer>
+   
+  <?php include dirname(__DIR__) . "/partials/footer.php"; ?>
 
 <!-- Existing JavaScript logic remains here -->
 <script>

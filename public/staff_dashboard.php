@@ -39,23 +39,7 @@ $fullName = "$first $middle$last";
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-  <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">
-    Medicina
-  </div>
-
-  <div class="nav-links flex flex-wrap gap-4">
-    <a class="active" href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/staff_manage.php">Staff</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/services.php">Services</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/status.php">Status</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/payments.php">Payments</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/specialization.php">Specialization</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/smedical_records.php">Medical Records</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-  </div>
-</div>
+<?php include dirname(__DIR__) . "/partials/header.php"; ?>
 
 <main class="flex flex-1 items-center px-20 py-16 gap-14">
 
@@ -77,9 +61,7 @@ $fullName = "$first $middle$last";
 
 </main>
 
-<footer class="bg-[var(--primary)] text-[var(--white)] text-center py-4 text-sm rounded-t-[35px]">
-  &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
+<?php include dirname(__DIR__) . "/partials/footer.php"; ?>
 
 </body>
 </html>

@@ -55,6 +55,22 @@ body {
   color: var(--primary);
 }
 
+.dropdown {
+    position: relative;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background: var(--primary);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
 /* MAIN CONTENT */
 main {
   flex: 1;
@@ -280,3 +296,105 @@ footer {
   .modal form { grid-template-columns: 1fr; }
   .tabs { justify-content: center; } /* Tabs center again on mobile for better look */
 }
+
+
+
+
+.custom-header {
+    background-color: #172A3A;
+    padding: 25px 40px;
+    border-radius: 40px;
+    width: 98%;
+    margin: 30px auto 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 80px;
+    min-height: 80px;  /* added to prevent collapsing */
+}
+
+.custom-header .logo {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-height: 60px;  /* added to give space for image */
+}
+
+.custom-header .logo img {
+    display: block !important;
+    width: 80px !important;
+    height: auto !important;
+    max-width: none !important;
+}
+
+.custom-header .logo h1 {
+    font-family: 'Kalnia', serif;
+    font-size: 38px;
+    color: #ffffff;
+    font-weight: 700;
+    margin: 0;
+}
+
+
+
+
+.custom-header .nav-links {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.custom-header .nav-links a {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 8px 16px;
+  border-radius: 25px;
+  transition: 0.3s ease;
+}
+
+.custom-header .nav-links a:hover,
+.custom-header .nav-links a.active {
+  background-color: #ffffff;
+  color: #172A3A;
+}
+
+.custom-header .dropdown {
+  position: relative;
+}
+
+.custom-header .dropdown-content {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #172A3A;
+  padding: 10px;
+  border-radius: 10px;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.custom-header .dropdown:hover .dropdown-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-header .dropdown-content a {
+  padding: 5px 10px;
+}
+
+
+
+/* ======FOOTER=====*/
+.footer {
+  width: 100%;
+  text-align: center;
+  padding: 20px 0;
+  margin-top: 40px;
+  background: #172A3A;
+  color: white;
+  font-size: 14px;
+  border-radius: 0; /* removes all rounded edges */
+}
+

@@ -40,18 +40,10 @@ $staffs = $staffObj->getAllWithUsers();
 
 <body class="font-serif bg-[var(--secondary)] flex flex-col min-h-screen">
 
-<!-- ✅ NAVBAR -->
-<div class="navbar">
-  <div class="navbar-brand">
-    <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Logo">
-    Medicina Admin
-  </div>
-  <div class="nav-links">
-    <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-    <a class="active" href="#">Manage Users</a>
-    <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
-  </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <!-- ✅ MAIN -->
 <main class="flex-1 p-16">
@@ -312,8 +304,9 @@ filterCheckbox.addEventListener('change', () => {
 });
 </script>
 
-<footer>
-  &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 </body>
 </html>

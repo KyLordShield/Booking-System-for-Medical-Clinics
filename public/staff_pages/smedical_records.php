@@ -22,22 +22,7 @@ $records = $recordObj->getAll();
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-<div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" class="w-11 mr-3">
-        Medicina
-    </div>
-    <div class="nav-links flex gap-4">
-        <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-        <a href="staff_manage.php">Staff</a>
-        <a href="services.php">Services</a>
-        <a href="status.php">Status</a>
-        <a href="payments.php">Payments</a>
-        <a href="specialization.php">Specialization</a>
-        <a class="active" href="#">Medical Records</a>
-        <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-    </div>
-</div>
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main class="flex-1 px-10 py-10">
 
@@ -85,9 +70,9 @@ $records = $recordObj->getAll();
 
 </main>
 
-<footer class="bg-[var(--primary)] text-white text-center py-4 rounded-t-[35px] text-sm mt-6">
-    &copy; 2025 Medicina Clinic | All Rights Reserved
-</footer>
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 <script>
 document.getElementById('searchInput').addEventListener('keyup', function() {

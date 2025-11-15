@@ -107,21 +107,9 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body>
 
-<div class="navbar flex justify-between items-center px-10 py-5 bg-[var(--primary)] rounded-b-[35px] shadow-lg">
-    <div class="navbar-brand flex items-center text-white text-2xl font-bold">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png" alt="Medicina Logo" class="w-11 mr-3">Medicina
-    </div>
-    <div class="nav-links flex gap-4 text-white">
-        <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
-        <a class="active bg-white text-[var(--primary)] px-3 py-1 rounded" href="staff_manage.php">Staff</a>
-        <a  href="services.php">Services</a>
-        <a href="status.php">Status</a>
-        <a href="payments.php">Payments</a>
-        <a href="specialization.php">Specialization</a>
-        <a href="smedical_records.php">Medical Records</a>
-        <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
-    </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
 <h2>Staff Management</h2>
@@ -169,6 +157,9 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </main>
 
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 <!-- ✅ MODAL -->
 <div class="modal" id="staffModal">
 <div class="modal-content">
@@ -198,7 +189,7 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </div>
 </div>
 
-<footer>&copy; 2025 Medicina Clinic | All Rights Reserved</footer>
+
 
 <script>
 function openAddModal() {

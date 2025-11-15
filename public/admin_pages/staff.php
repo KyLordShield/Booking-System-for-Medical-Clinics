@@ -105,16 +105,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </head>
 <body>
 
-<div class="navbar">
-    <div class="navbar-brand">
-        <img src="https://cdn-icons-png.flaticon.com/512/3209/3209999.png">Medicina
-    </div>
-    <div class="nav-links">
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_dashboard.php">Dashboard</a>
-        <a class="active" href="#">Staff</a>
-        <a href="/Booking-System-For-Medical-Clinics/index.php">Logout</a>
-    </div>
-</div>
+<!-- NAVBAR -->
+<!-- ✅ HEADER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<!-- ✅ HEADER LINK -->
 
 <main>
 <h2>Staff Management (Admin)</h2>
@@ -195,7 +189,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </div>
 </div>
 
-<footer>&copy; 2025 Medicina Clinic | All Rights Reserved</footer>
+
+<!-- ✅ FOOTER LINK -->
+  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
 
 <script>
 function openAddModal() {
