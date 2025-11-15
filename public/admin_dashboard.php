@@ -26,7 +26,7 @@ try {
         SELECT COUNT(*) AS total 
         FROM APPOINTMENT a
         JOIN STATUS s ON a.STAT_ID = s.STAT_ID
-        WHERE s.STAT_NAME = 'Pending'
+        WHERE s.STAT_NAME = 'Scheduled'
     ");
 
     $total_doctors = $stmt_doctors->fetch(PDO::FETCH_ASSOC)['total'] ?? 0;

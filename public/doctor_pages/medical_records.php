@@ -272,7 +272,6 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
               <div class="table-actions">
                 <button class="btn" onclick='openViewModal(<?= json_encode($r, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>View</button>
                 <button class="btn" onclick='openEditModal(<?= json_encode($r, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>Edit</button>
-                <button class="btn" style="background:#a30000" onclick="deleteRecord(<?= (int)$r['MED_REC_ID'] ?>)">Delete</button>
               </div>
             </td>
           </tr>
