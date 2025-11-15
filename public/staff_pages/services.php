@@ -16,9 +16,11 @@ $csrf = $_SESSION['csrf_token'];
 /* ---------- 3. INCLUDE CLASSES ---------- */
 require_once '../../classes/Service.php';
 require_once '../../classes/Specialization.php';
+require_once '../../classes/Appointment.php'; // added for view appointments
 
 $serviceObj = new Service();
 $specializationObj = new Specialization();
+$appointmentObj = new Appointment(); // instance for fetching appointments
 
 /* ---------- 4. AJAX HANDLER ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
@@ -88,6 +90,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
 
+    // VIEW APPOINTMENTS
+    if ($action === 'view_appointments') {
+        $servId = (int)($_POST['id'] ?? 0);
+        if ($servId <= 0) {
+            echo json_encode(['success' => false, 'msg' => 'Invalid service ID']);
+            exit;
+        }
+
+        $appointments = $appointmentObj->getAppointmentsByService($servId);
+        // ensure always return array for JS
+        if (!is_array($appointments)) $appointments = [];
+        echo json_encode(['success' => true, 'data' => $appointments]);
+        exit;
+    }
+
     echo json_encode(['success' => false, 'msg' => 'Invalid action']);
     exit;
 }
@@ -110,8 +127,7 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
 <!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main class="flex-1 px-10 py-10">
     <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
@@ -147,6 +163,7 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
                         <div class="flex gap-2">
                             <button onclick="openEditModal(<?= $service['SERV_ID'] ?>, <?= $service['SPEC_ID'] ?? 0 ?>)" class="px-3 py-1 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-dark)]">Edit</button>
                             <button onclick="openDeleteModal(<?= $service['SERV_ID'] ?>)" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
+                            <button onclick="viewAppointments(<?= $service['SERV_ID'] ?>)" class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600">View Appointments</button>
                         </div>
                     </div>
                     <div>
@@ -241,10 +258,21 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
             </form>
         </div>
     </div>
+
+    <!-- VIEW APPOINTMENTS MODAL -->
+    <div id="viewAppointmentsModal" class="modal hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+        <div class="bg-white p-6 rounded-xl w-11/12 max-w-3xl max-h-[80vh] overflow-y-auto">
+            <h2 class="text-xl font-bold mb-4">Appointments</h2>
+            <div id="appointmentsList" class="text-gray-700"></div>
+            <div class="flex justify-end mt-4">
+                <button type="button" onclick="closeModal('viewAppointmentsModal')" class="px-4 py-2 bg-gray-300 rounded">Close</button>
+            </div>
+        </div>
+    </div>
 </main>
 
 <!-- ✅ FOOTER LINK -->
-  <?php include dirname(__DIR__) . "/partials/footer.php"; ?>
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 <script>
 function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
@@ -285,7 +313,7 @@ function openDeleteModal(id) {
     openModal('deleteModal');
 }
 
-// AJAX for forms
+// AJAX for forms (Add / Edit / Delete)
 $('#addForm, #editForm, #deleteForm').on('submit', function(e) {
     e.preventDefault();
     const form = $(this);
@@ -300,6 +328,41 @@ $('#addForm, #editForm, #deleteForm').on('submit', function(e) {
         alert('Request failed. Check console.');
     });
 });
+
+// VIEW APPOINTMENTS
+function viewAppointments(serviceId) {
+    $.post('', { action: 'view_appointments', id: serviceId, csrf: '<?= $csrf ?>' }, function(res) {
+        if (res.success) {
+            let html = '';
+            if (!res.data || res.data.length === 0) {
+                html = '<p class="text-gray-500">No appointments for this service.</p>';
+            } else {
+                html = '<table class="w-full text-left border-collapse">';
+                html += '<thead><tr class="bg-gray-200"><th class="p-2 border">Patient</th><th class="p-2 border">Doctor</th><th class="p-2 border">Date</th><th class="p-2 border">Time</th><th class="p-2 border">Status</th></tr></thead>';
+                html += '<tbody>';
+                res.data.forEach(a => {
+                    const patientName = a.PATIENT_NAME || ( (a.PAT_FIRST_NAME || '') + ' ' + (a.PAT_LAST_NAME || '') ).trim() || '-';
+                    const doctorName = a.DOCTOR_NAME || ( (a.DOC_FIRST_NAME || '') + ' ' + (a.DOC_LAST_NAME || '') ).trim() || '-';
+                    const status = a.APPT_STATUS || a.STATUS_NAME || '-';
+                    html += `<tr>
+                        <td class="p-2 border">${patientName}</td>
+                        <td class="p-2 border">${doctorName}</td>
+                        <td class="p-2 border">${a.APPT_DATE}</td>
+                        <td class="p-2 border">${a.APPT_TIME}</td>
+                        <td class="p-2 border">${status}</td>
+                    </tr>`;
+                });
+                html += '</tbody></table>';
+            }
+            $('#appointmentsList').html(html);
+            openModal('viewAppointmentsModal');
+        } else {
+            alert('Error fetching appointments: ' + (res.msg || 'Unknown error'));
+        }
+    }, 'json').fail(function() {
+        alert('Failed to fetch appointments. Check console.');
+    });
+}
 </script>
 </body>
 </html>

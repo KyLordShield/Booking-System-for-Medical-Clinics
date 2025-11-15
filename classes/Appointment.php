@@ -243,6 +243,33 @@ public function getAppointmentByIdAndPatient($appt_id, $pat_id) {
 }
 
 
+// THIS IS THE METHOD TO VIEW APPOINTMENTS BY SERVICE
+public function getAppointmentsByService($serv_id) {
+    try {
+        $sql = "SELECT 
+                    a.APPT_ID,
+                    a.APPT_DATE,
+                    a.APPT_TIME,
+                    CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_MIDDLE_INIT, ' ', p.PAT_LAST_NAME) AS PATIENT_NAME,
+                    CONCAT(d.DOC_FIRST_NAME, ' ', d.DOC_LAST_NAME) AS DOCTOR_NAME,
+                    s.STAT_NAME AS APPT_STATUS
+                FROM {$this->table} a
+                LEFT JOIN PATIENT p ON a.PAT_ID = p.PAT_ID
+                LEFT JOIN DOCTOR d ON a.DOC_ID = d.DOC_ID
+                LEFT JOIN STATUS s ON a.STAT_ID = s.STAT_ID
+                WHERE a.SERV_ID = :serv_id
+                ORDER BY a.APPT_DATE DESC, a.APPT_TIME DESC";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->bindParam(':serv_id', $serv_id);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        return ['error' => $e->getMessage()];
+    }
+}
+
+
+
 
 }
 ?>

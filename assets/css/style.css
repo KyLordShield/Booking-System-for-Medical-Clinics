@@ -361,6 +361,7 @@ footer {
 
 .custom-header .dropdown {
   position: relative;
+  gap: 30px;
 }
 
 .custom-header .dropdown-content {
@@ -369,8 +370,8 @@ footer {
   top: 100%;
   left: 0;
   background-color: #172A3A;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 20px;
+  border-radius: 20px;
   flex-direction: column;
   z-index: 100;
 }
