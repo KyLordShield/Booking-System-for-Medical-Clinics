@@ -50,13 +50,17 @@ $staffs = $staffObj->getAllWithUsers();
   <h1 class="text-center text-[var(--primary)] text-4xl font-bold mb-8">Manage Users</h1>
 
   <!-- ✅ Toggle Filter -->
-  <div class="text-right mb-5">
-    <label>
-      <input type="checkbox" id="filterUsersOnly" checked>
-      Show only entities with User accounts
-    </label>
-    <button class="create-btn" onclick="openModal()">+ Create User</button>
-  </div>
+  <<div class="text-right mb-5 flex items-center justify-end gap-4">
+  <span class="text-sm font-medium">Show only entities with User accounts</span>
+
+  <label class="switch">
+    <input type="checkbox" id="filterUsersOnly" checked>
+    <span class="slider round"></span>
+  </label>
+
+  <button class="create-btn" onclick="openModal()">+ Create User</button>
+</div>
+
 
   <div class="tabs">
     <button class="tab-btn active" data-tab="patients" onclick="showTab('patients')">Patients</button>
@@ -289,19 +293,29 @@ document.querySelectorAll('.toggle-pwd').forEach(btn => {
 });
 
 // ✅ Filter toggle
-const filterCheckbox = document.getElementById('filterUsersOnly');
-filterCheckbox.addEventListener('change', () => {
-  const showOnly = filterCheckbox.checked;
-  document.querySelectorAll('.table-container table tr').forEach(row => {
-    if(row.querySelector('td')) {
-      if(showOnly && row.classList.contains('no-user')) {
+document.addEventListener("DOMContentLoaded", () => {
+  const filterCheckbox = document.getElementById('filterUsersOnly');
+
+  function applyFilter() {
+    const showOnly = filterCheckbox.checked;
+
+    document.querySelectorAll('.table-container table tr').forEach(row => {
+      if (!row.querySelector('td')) return; // skip header row
+      if (showOnly && row.classList.contains('no-user')) {
         row.style.display = 'none';
       } else {
         row.style.display = '';
       }
-    }
-  });
+    });
+  }
+
+  // Listen to the checkbox change
+  filterCheckbox.addEventListener('change', applyFilter);
+
+  // Apply filter on page load
+  applyFilter();
 });
+
 </script>
 
 
