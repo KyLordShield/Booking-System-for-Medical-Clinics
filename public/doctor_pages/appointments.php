@@ -3,7 +3,9 @@ session_start();
 require_once __DIR__ . '/../../classes/Appointment.php';
 require_once __DIR__ . '/../../config/Database.php';
 
-// ✅ Restrict to Doctor Role Only
+// ---------------------------------------------------------
+// ROLE CHECK
+// ---------------------------------------------------------
 if (!isset($_SESSION['DOC_ID']) || $_SESSION['role'] !== 'doctor') {
     header("Location: /Booking-System-For-Medical-Clinics/index.php");
     exit;
@@ -14,40 +16,68 @@ $conn = (new Database())->connect();
 $today = date('Y-m-d');
 
 // ---------------------------------------------------------
-// ✅ AUTO-UPDATE MISSED APPOINTMENTS (Past date & still Scheduled)
+// GET STATUS IDs
 // ---------------------------------------------------------
-$updateMissedSQL = "
-    UPDATE APPOINTMENT 
-    SET STAT_ID = (SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Missed')
-    WHERE DOC_ID = :doc_id
-      AND APPT_DATE < :today
-      AND STAT_ID = (SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Scheduled')
-";
-$stmtMissed = $conn->prepare($updateMissedSQL);
-$stmtMissed->execute([':doc_id' => $doctorId, ':today' => $today]);
+$statusRows = $conn->query("SELECT STAT_NAME, STAT_ID FROM STATUS")->fetchAll(PDO::FETCH_KEY_PAIR);
+
+$scheduledId = $statusRows['Scheduled'] ?? null;
+$pendingId   = $statusRows['Pending'] ?? null;
+$missedId    = $statusRows['Missed'] ?? null;
+
+$idsToCheck = [];
+if ($scheduledId) $idsToCheck[] = $scheduledId;
+if ($pendingId)   $idsToCheck[] = $pendingId;
 
 // ---------------------------------------------------------
-// ✅ FETCH ALL APPOINTMENTS
+// AUTO-UPDATE MISSED (correct IN() handling)
 // ---------------------------------------------------------
-$sql = "SELECT 
-            A.APPT_ID, 
-            A.APPT_DATE, 
-            A.APPT_TIME,
-            CONCAT(P.PAT_FIRST_NAME, ' ', P.PAT_LAST_NAME) AS PATIENT_NAME,
-            S.SERV_NAME,
-            ST.STAT_NAME
-        FROM APPOINTMENT A
-        JOIN PATIENT P ON A.PAT_ID = P.PAT_ID
-        JOIN SERVICE S ON A.SERV_ID = S.SERV_ID
-        JOIN STATUS ST ON A.STAT_ID = ST.STAT_ID
-        WHERE A.DOC_ID = :doc_id
-        ORDER BY A.APPT_DATE ASC, A.APPT_TIME ASC";
+if ($missedId && !empty($idsToCheck)) {
+
+    // Build the IN (?) placeholder list
+    $placeholders = implode(',', array_fill(0, count($idsToCheck), '?'));
+
+    $updateMissedSQL = "
+        UPDATE APPOINTMENT
+        SET STAT_ID = ?
+        WHERE APPT_DATE < ?
+          AND STAT_ID IN ($placeholders)
+    ";
+
+    $stmt = $conn->prepare($updateMissedSQL);
+
+    // Merge values: missedId + today + all IDs to check
+    $params = array_merge([$missedId, $today], $idsToCheck);
+
+    $stmt->execute($params);
+}
+
+// ---------------------------------------------------------
+// FETCH ALL APPOINTMENTS WITH STATUS NAME
+// ---------------------------------------------------------
+$sql = "
+    SELECT 
+        A.APPT_ID,
+        A.APPT_DATE,
+        A.APPT_TIME,
+        CONCAT(P.PAT_FIRST_NAME, ' ', P.PAT_LAST_NAME) AS PATIENT_NAME,
+        S.SERV_NAME,
+        ST.STAT_NAME
+    FROM APPOINTMENT A
+    LEFT JOIN PATIENT P ON A.PAT_ID = P.PAT_ID
+    LEFT JOIN SERVICE S ON A.SERV_ID = S.SERV_ID
+    LEFT JOIN STATUS ST ON A.STAT_ID = ST.STAT_ID
+    WHERE A.DOC_ID = :docId
+    ORDER BY A.APPT_DATE ASC, A.APPT_TIME ASC
+";
+
 $stmt = $conn->prepare($sql);
-$stmt->bindParam(':doc_id', $doctorId);
+$stmt->bindParam(':docId', $doctorId);
 $stmt->execute();
 $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// ✅ Separate appointments
+// ---------------------------------------------------------
+// SORT APPOINTMENTS
+// ---------------------------------------------------------
 $todayAppointments = [];
 $upcomingAppointments = [];
 $completedAppointments = [];
@@ -55,8 +85,9 @@ $missedAppointments = [];
 $cancelledAppointments = [];
 
 foreach ($appointments as $appt) {
-    $date = $appt['APPT_DATE'];
-    $status = $appt['STAT_NAME'];
+    $dateObj  = new DateTime($appt['APPT_DATE']);
+    $todayObj = new DateTime($today);
+    $status   = $appt['STAT_NAME'];
 
     if ($status === 'Completed') {
         $completedAppointments[] = $appt;
@@ -64,13 +95,16 @@ foreach ($appointments as $appt) {
         $cancelledAppointments[] = $appt;
     } elseif ($status === 'Missed') {
         $missedAppointments[] = $appt;
-    } elseif ($date === $today) {
+    } elseif ($dateObj == $todayObj) {
         $todayAppointments[] = $appt;
-    } elseif ($date > $today) {
+    } elseif ($dateObj > $todayObj) {
         $upcomingAppointments[] = $appt;
     }
 }
+
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="en">

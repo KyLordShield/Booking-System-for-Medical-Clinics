@@ -22,9 +22,10 @@ $message_class = "";
 
 <body>
 
-    <!-- 👍 INSERT HEADER HERE -->
-    <?php include __DIR__ . "/partials/header.php"; ?>
-    <!-- 👍 REMOVE YOUR OLD HARDCODED HEADER -->
+    <?php
+// Include the guest header at the very top
+include (__DIR__) . '/partials/guest_header.php';
+?>
 
     <div class="register-container">
         <h2 class="form-title">Register</h2>

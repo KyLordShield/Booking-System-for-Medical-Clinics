@@ -1,4 +1,16 @@
+<?php
 
+date_default_timezone_set('Asia/Manila'); // set to your local timezone
+$today = date('Y-m-d');
+
+
+
+
+
+
+
+echo date('Y-m-d H:i:s');
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

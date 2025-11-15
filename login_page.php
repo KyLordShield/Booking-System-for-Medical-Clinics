@@ -50,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     <link href="https://fonts.googleapis.com/css2?family=Kalnia:wght@400;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
     <title>Medicina - Booking System</title>
 <style>
 :root {
@@ -70,20 +71,7 @@ body {
     min-height: 100vh;
 }
 
-/* FLOATING OVAL HEADER */
-.header {
-    background-color: var(--color-dark-blue);
-    width: 85%;
-    max-width: 1000px;
-    height: 90px;
-    margin: 30px auto 50px auto;
-    border-radius: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: start;
-    padding: 0 5%;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-}
+
 
 .logo {
     display: flex;
@@ -107,7 +95,7 @@ body {
     flex-grow: 1;
     display: flex;
     flex-wrap: wrap;
-    padding: 0 5%;
+    padding: 100 5%;
     align-items: center;
 }
 
@@ -260,12 +248,10 @@ body {
 </head>
 <body>
 
-<header class="header">
-    <div class="logo">
-        <img src="assets/logo.png" alt="Medicina Logo">
-        <span>Medicina</span>
-    </div>
-</header>
+<?php
+// Include the guest header at the very top
+include __DIR__ . '/partials/guest_header.php';
+?>
 
 <div class="main-container">
     <div class="login-column">

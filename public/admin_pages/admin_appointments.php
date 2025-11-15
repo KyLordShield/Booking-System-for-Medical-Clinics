@@ -102,12 +102,13 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
   <button class="tab-btn filter-btn" data-filter="upcoming">Upcoming</button>
   <button class="tab-btn filter-btn" data-filter="completed">Completed</button>
   <button class="tab-btn filter-btn" data-filter="cancelled">Cancelled</button>
+  <button class="tab-btn filter-btn" data-filter="missed">Missed</button>
+
 
   <!-- Search box -->
   <input id="searchInput" type="text" placeholder="Search patient, doctor, or service..."
          style="margin-left:auto; padding:10px 15px; border-radius:25px; border:1px solid #ccc; min-width:250px;">
 </div>
-
 
   <!-- ✅ Appointment Table -->
   <div class="bg-[var(--light)] p-6 rounded-[25px] shadow-md mb-6 overflow-x-auto">
@@ -142,9 +143,15 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
               <td><?= esc($a['APPT_TIME']) ?></td>
               <td><?= esc($a['APPT_STATUS']) ?></td>
               <td class="flex gap-2">
-                <button onclick='editAppt(<?= json_encode($a) ?>)' class="btn">Edit</button>
-                <button onclick="deleteAppt('<?= esc($a['APPT_ID']) ?>')" class="btn" style="background:#c0392b;">Delete</button>
-              </td>
+              <?php if ($a['APPT_DATE'] === date('Y-m-d') && $a['APPT_STATUS'] !== 'Completed'): ?>
+                <button onclick="markAsCompleted('<?= esc($a['APPT_ID']) ?>')" 
+                        class="btn" style="background:#27ae60;">✔</button>
+              <?php endif; ?>
+              
+              <button onclick='editAppt(<?= json_encode($a) ?>)' class="btn">Edit</button>
+              <button onclick="deleteAppt('<?= esc($a['APPT_ID']) ?>')" class="btn" style="background:#c0392b;">Delete</button>
+          </td>
+
             </tr>
           <?php endforeach; endif; ?>
         </tbody>
@@ -207,7 +214,6 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
     </form>
   </div>
 </div>
-
 
 <!-- ✅ FOOTER LINK -->
   <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
@@ -321,6 +327,24 @@ async function editAppt(a) {
     timeSelect.value = a.APPT_TIME;
   }
 }
+async function markAsCompleted(id) {
+  if (!confirm("Mark this appointment as COMPLETED?")) return;
+
+  const formData = new FormData();
+formData.append("appt_id", id);       // lowercase to match PHP
+formData.append("status", "Completed");
+
+
+  const res = await fetch('../../ajax/update_appointment_status.php', {
+    method: 'POST',
+    body: formData
+});
+const text = await res.text();
+alert(text);
+location.reload();
+
+}
+
 
 /* ✅ FILTER + SEARCH */
 document.addEventListener('DOMContentLoaded', function() {
@@ -330,37 +354,45 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentFilter = 'all';
 
   function applyFilters() {
-    const today = new Date().toISOString().split('T')[0];
-    const term = searchInput.value.toLowerCase();
+  const now = new Date();
+  const today = now.getFullYear() + '-' + 
+                String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                String(now.getDate()).padStart(2, '0');
 
-    rows.forEach(row => {
-      const status = row.dataset.status;
-      const date = row.dataset.date;
-      const patient = row.dataset.patient;
-      const doctor = row.dataset.doctor;
-      const service = row.dataset.service;
+  const term = searchInput.value.toLowerCase();
 
-      let show = true;
+  rows.forEach(row => {
+    const status = row.dataset.status;
+    const date = row.dataset.date;
+    const patient = row.dataset.patient;
+    const doctor = row.dataset.doctor;
+    const service = row.dataset.service;
 
-     
-      // <-- continue inside applyFilters() in your big script
-      if (currentFilter === 'today') {
+    let show = true;
+
+    if (currentFilter === 'today') {
         show = (date === today);
-      } else if (currentFilter === 'upcoming') {
-        show = (date > today && !['completed','cancelled'].includes(status));
-      } else if (currentFilter !== 'all') {
+    } 
+    else if (currentFilter === 'upcoming') {
+        show = (date > today && !['completed','cancelled','missed'].includes(status));
+    } 
+    else if (currentFilter === 'missed') {
+        show = (status === 'missed');
+    }
+    else if (currentFilter !== 'all') {
         show = (status === currentFilter);
-      }
+    }
 
-      // SEARCH: combine patient, doctor, service
-      const combined = (patient + ' ' + doctor + ' ' + service).toLowerCase();
-      const matchesSearch = combined.includes(term);
+    // SEARCH
+    const combined = (patient + ' ' + doctor + ' ' + service).toLowerCase();
+    const matchesSearch = combined.includes(term);
 
-      if (!matchesSearch) show = false;
+    if (!matchesSearch) show = false;
 
-      row.style.display = show ? '' : 'none';
-    });
-  }
+    row.style.display = show ? '' : 'none';
+ });
+}
+
 
   // Filter button clicks
   filterButtons.forEach(btn => {
@@ -381,3 +413,5 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
+
