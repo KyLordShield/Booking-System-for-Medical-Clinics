@@ -85,7 +85,6 @@ $statuses = $status->getAll();
             <td class="py-3 px-4"><?= htmlspecialchars($row['STAT_NAME']) ?></td>
             <td class="py-3 px-4">
               <button class="btn-edit text-blue-600 font-semibold mr-3">Edit</button>
-              <button class="btn-delete text-red-600 font-semibold">Delete</button>
             </td>
           </tr>
           <?php endforeach; ?>
