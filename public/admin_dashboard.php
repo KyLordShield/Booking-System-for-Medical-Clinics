@@ -50,55 +50,7 @@ try {
   <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 
   <!-- Minimal rule to support toggling dropdowns via a class (does not change existing styles) -->
-  <style>
-    /* only to support click-to-open; all visual rules remain in your style.css */
-    /* Dropdown hidden state */
-.dropdown .dropdown-content {
-    position: absolute;
-    top: 48px; /* slightly below the nav button */
-    left: 0;
-    background: #ffffff;
-    border-radius: 12px;
-    padding: 10px 0;
-    min-width: 150px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-
-    display: none;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-5px);
-    transition: opacity 0.2s ease, transform 0.2s ease;
-    z-index: 999;
-}
-
-/* Dropdown visible when toggled */
-.dropdown.open .dropdown-content {
-    display: block !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    transform: translateY(0px);
-}
-
-/* Dropdown items */
-.dropdown-content a {
-    display: block;
-    color: #002339;
-    padding: 10px 20px;
-    font-size: 15px;
-    text-decoration: none;
-    transition: background 0.2s ease;
-}
-
-/* Hover effect */
-.dropdown-content a:hover {
-    background: #f4f4f4;
-    border-radius: 8px;
-}
-
-/* Ensure parent dropdown container is positioned correctly */
-.dropdown {
-    position: relative;
-}
+  
 
   </style>
 </head>
