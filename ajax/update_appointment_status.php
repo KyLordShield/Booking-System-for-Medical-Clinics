@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../classes/Database.php';
+require_once __DIR__ . '/../config/Database.php';
 $conn = (new Database())->connect();
 
 if (isset($_POST['appt_id'], $_POST['status'])) {
