@@ -162,7 +162,6 @@ $specializations = $specializationObj->getAll(); // must return SPEC_ID + SPEC_N
                         <p class="text-gray-600 mb-2 price">Price: ₱<?= number_format($service['SERV_PRICE'], 2) ?></p>
                         <div class="flex gap-2">
                             <button onclick="openEditModal(<?= $service['SERV_ID'] ?>, <?= $service['SPEC_ID'] ?? 0 ?>)" class="px-3 py-1 bg-[var(--primary)] text-white rounded-lg hover:bg-[var(--primary-dark)]">Edit</button>
-                            <button onclick="openDeleteModal(<?= $service['SERV_ID'] ?>)" class="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600">Delete</button>
                             <button onclick="viewAppointments(<?= $service['SERV_ID'] ?>)" class="px-3 py-1 bg-green-500 text-white rounded-lg hover:bg-green-600">View Appointments</button>
                         </div>
                     </div>
