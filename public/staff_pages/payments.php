@@ -4,6 +4,12 @@ require_once __DIR__ . '/../../classes/Payment.php';
 require_once __DIR__ . '/../../classes/PaymentMethod.php';
 require_once __DIR__ . '/../../classes/PaymentStatus.php';
 
+/* ---------- 1. AUTH CHECK ---------- */
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
+    header("Location: ../../index.php");
+    exit;
+}
+
 $payment = new Payment();
 $method = new PaymentMethod();
 $status = new PaymentStatus();

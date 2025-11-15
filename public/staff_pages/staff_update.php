@@ -1,4 +1,10 @@
 <?php
+session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
+    header("Location: ../index.php");
+    exit;
+}
+
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 

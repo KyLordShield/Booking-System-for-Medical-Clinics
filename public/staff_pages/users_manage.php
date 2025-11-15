@@ -1,5 +1,9 @@
 <?php
-// TODO: session role check for staff only
+session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
+    header("Location: ../index.php");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>

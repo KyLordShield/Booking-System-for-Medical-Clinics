@@ -1,5 +1,9 @@
 <?php
 session_start();
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
+    header("Location: ../index.php");
+    exit;
+}
 require_once __DIR__ . '/../../classes/Status.php';
 $status = new Status();
 
