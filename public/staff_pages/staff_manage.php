@@ -11,7 +11,9 @@ require_once dirname(__DIR__, 2) . '/config/Database.php';
 $db = new Database();
 $conn = $db->connect();
 
-/* ✅ AJAX INSERT / UPDATE */
+/* ==========================
+   AJAX INSERT / UPDATE
+=========================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     header('Content-Type: application/json');
 
@@ -22,47 +24,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     $contact = trim($_POST['STAFF_CONTACT_NUM']);
     $email = trim($_POST['STAFF_EMAIL']);
 
-    // ✅ VALIDATION STARTS HERE
-$errors = [];
+    // ✅ Validation
+    $errors = [];
+    if (!preg_match('/^\d{11}$/', $contact)) $errors[] = "Contact must be exactly 11 digits";
+    if (!preg_match('/^[a-zA-Z0-9._%+-]+@gmail\.com$/', $email)) $errors[] = "Email must be a valid Gmail address ending with @gmail.com";
 
-// ✅ Contact must be 11 digits
-if (!preg_match('/^\d{11}$/', $contact)) {
-    $errors[] = "Contact must be exactly 11 digits";
-}
-
-// ✅ Email must be Gmail only (you can change the pattern later)
-if (!preg_match('/^[a-zA-Z0-9._%+-]+@gmail\.com$/', $email)) {
-    $errors[] = "Email must be a valid Gmail address ending with @gmail.com";
-}
-
-// ❌ If validation fails — stop and return an error JSON
-if (!empty($errors)) {
-    echo json_encode(["success" => false, "message" => implode(", ", $errors)]);
-    exit;
-}
-
-    if ($id === "") {
-        $query = "INSERT INTO staff 
-        (STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME, STAFF_CONTACT_NUM, STAFF_EMAIL, STAFF_CREATED_AT, STAFF_UPDATED_AT)
-        VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
-        $stmt = $conn->prepare($query);
-        $success = $stmt->execute([$fname, $mname, $lname, $contact, $email]);
-
-        echo json_encode(["success" => $success, "message" => "Staff added successfully!"]);
-    } else {
-        $query = "UPDATE staff SET 
-        STAFF_FIRST_NAME=?, STAFF_MIDDLE_INIT=?, STAFF_LAST_NAME=?,
-        STAFF_CONTACT_NUM=?, STAFF_EMAIL=?, STAFF_UPDATED_AT=NOW()
-        WHERE STAFF_ID=?";
-        $stmt = $conn->prepare($query);
-        $success = $stmt->execute([$fname, $mname, $lname, $contact, $email, $id]);
-
-        echo json_encode(["success" => $success, "message" => "Staff updated successfully!"]);
+    if (!empty($errors)) {
+        echo json_encode(["success" => false, "message" => implode(", ", $errors)]);
+        exit;
     }
+
+    // ✅ Check for duplicates (email or contact)
+    $dupStmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE (STAFF_EMAIL = ? OR STAFF_CONTACT_NUM = ?) AND STAFF_ID != ?");
+    $dupStmt->execute([$email, $contact, $id ?: 0]);
+    if ($dupStmt->fetch(PDO::FETCH_ASSOC)) {
+        echo json_encode([
+            "success" => false,
+            "message" => "Email or contact already exists in the database!"
+        ]);
+        exit;
+    }
+
+    try {
+        if ($id === "") {
+            $query = "INSERT INTO staff 
+                (STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME, STAFF_CONTACT_NUM, STAFF_EMAIL, STAFF_CREATED_AT, STAFF_UPDATED_AT)
+                VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
+            $stmt = $conn->prepare($query);
+            $success = $stmt->execute([$fname, $mname, $lname, $contact, $email]);
+            $message = $success ? "Staff added successfully!" : "Insert failed!";
+        } else {
+            $query = "UPDATE staff SET 
+                STAFF_FIRST_NAME=?, STAFF_MIDDLE_INIT=?, STAFF_LAST_NAME=?,
+                STAFF_CONTACT_NUM=?, STAFF_EMAIL=?, STAFF_UPDATED_AT=NOW()
+                WHERE STAFF_ID=?";
+            $stmt = $conn->prepare($query);
+            $success = $stmt->execute([$fname, $mname, $lname, $contact, $email, $id]);
+            $message = $success ? "Staff updated successfully!" : "Update failed!";
+        }
+    } catch (Exception $e) {
+        $success = false;
+        $message = $e->getMessage();
+    }
+
+    echo json_encode(["success" => $success, "message" => $message]);
     exit;
 }
 
-/* ✅ AJAX DELETE */
+/* ==========================
+   AJAX DELETE
+=========================== */
 if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     header('Content-Type: application/json');
     $id = intval($_GET['delete']);
@@ -70,46 +81,46 @@ if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     $stmt = $conn->prepare("DELETE FROM staff WHERE STAFF_ID = ?");
     $success = $stmt->execute([$id]);
 
-    echo json_encode(["success" => $success, "message" => "Staff deleted successfully!"]);
+    echo json_encode(["success" => $success, "message" => $success ? "Staff deleted successfully!" : "Delete failed!"]);
     exit;
 }
 
-/* ✅ FETCH TABLE DATA */
+/* ==========================
+   FETCH TABLE DATA
+=========================== */
 $search = $_GET['q'] ?? "";
 $sql = "SELECT * FROM staff";
-
 if (!empty($search)) {
-    $sql .= " WHERE 
-        CONCAT(STAFF_FIRST_NAME, ' ', COALESCE(STAFF_MIDDLE_INIT,''), ' ', STAFF_LAST_NAME) LIKE :search
-        OR STAFF_CONTACT_NUM LIKE :search
-        OR STAFF_EMAIL LIKE :search";
+    $sql .= " WHERE CONCAT(STAFF_FIRST_NAME, ' ', COALESCE(STAFF_MIDDLE_INIT,''), ' ', STAFF_LAST_NAME) LIKE :search
+              OR STAFF_CONTACT_NUM LIKE :search
+              OR STAFF_EMAIL LIKE :search";
 }
 $sql .= " ORDER BY STAFF_ID ASC";
 
 $stmt = $conn->prepare($sql);
-
 if (!empty($search)) {
     $searchText = "%$search%";
     $stmt->bindParam(':search', $searchText);
 }
-
 $stmt->execute();
 $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Helper
+function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Staff Management</title>
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-
 <body>
 
-<!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
 <h2>Staff Management</h2>
@@ -117,8 +128,8 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="top-controls">
     <form method="get" style="display:flex; gap:10px;">
         <input class="modal-input" type="text" name="q"
-        placeholder="Search staff..."
-        value="<?= htmlspecialchars($search) ?>">
+               placeholder="Search staff..."
+               value="<?= esc($search) ?>">
         <button class="btn" type="submit">Search</button>
     </form>
 
@@ -139,13 +150,12 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <tbody>
 <?php if (empty($staff)): ?>
 <tr><td colspan="5" style="text-align:center;">No results found</td></tr>
-<?php else: ?>
-<?php foreach ($staff as $row): ?>
+<?php else: foreach ($staff as $row): ?>
 <tr>
-<td><?= $row['STAFF_ID'] ?></td>
-<td><?= $row['STAFF_FIRST_NAME'] . " " . $row['STAFF_MIDDLE_INIT'] . ". " . $row['STAFF_LAST_NAME'] ?></td>
-<td><?= $row['STAFF_CONTACT_NUM'] ?></td>
-<td><?= $row['STAFF_EMAIL'] ?></td>
+<td><?= esc($row['STAFF_ID']) ?></td>
+<td><?= esc($row['STAFF_FIRST_NAME'] . " " . $row['STAFF_MIDDLE_INIT'] . ". " . $row['STAFF_LAST_NAME']) ?></td>
+<td><?= esc($row['STAFF_CONTACT_NUM']) ?></td>
+<td><?= esc($row['STAFF_EMAIL']) ?></td>
 <td>
 <button class="btn" onclick='openEditModal(<?= json_encode($row) ?>)'>Edit</button>
 </td>
@@ -157,10 +167,9 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </main>
 
-<!-- ✅ FOOTER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
-<!-- ✅ MODAL -->
+<!-- Modal -->
 <div class="modal" id="staffModal">
 <div class="modal-content">
 <span class="close-btn" onclick="closeModal()">&times;</span>
@@ -182,14 +191,12 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <input type="text" id="phone" name="STAFF_CONTACT_NUM" pattern="\d{11}" maxlength="11" required>
 
 <label>Email</label>
-<input type="email" id="email" name="STAFF_EMAIL"  pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
+<input type="email" id="email" name="STAFF_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 
-<button class="btn" type="submit">Save</button>
+<button class="btn" type="submit" onclick="closeModal()">Save</button>
 </form>
 </div>
 </div>
-
-
 
 <script>
 function openAddModal() {
@@ -217,7 +224,7 @@ function closeModal() {
     document.getElementById("staffModal").style.display = "none";
 }
 
-// ✅ AJAX SAVE
+// AJAX Save with SweetAlert2
 document.getElementById("staffForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -229,23 +236,32 @@ document.getElementById("staffForm").addEventListener("submit", async (e) => {
     });
 
     const data = await res.json();
-    alert(data.message);
 
-    if (data.success) {
-        closeModal();
-        location.reload();
-    }
+    Swal.fire({
+        icon: data.success ? 'success' : 'error',
+        title: data.success ? 'Success!' : 'Oops!',
+        text: data.message,
+        confirmButtonColor: data.success ? '#3085d6' : '#d33'
+    }).then(() => {
+        if (data.success) {
+            closeModal();
+            location.reload();
+        }
+    });
 });
 
-// ✅ AJAX DELETE
+// AJAX Delete
 async function deleteStaff(id) {
     if (!confirm("Delete this staff?")) return;
     const res = await fetch(`staff_manage.php?delete=${id}`, {
         headers: { "X-Requested-With": "XMLHttpRequest" }
     });
     const data = await res.json();
-    alert(data.message);
-    if (data.success) location.reload();
+    Swal.fire({
+        icon: data.success ? 'success' : 'error',
+        title: data.success ? 'Deleted!' : 'Oops!',
+        text: data.message
+    }).then(() => { if (data.success) location.reload(); });
 }
 </script>
 

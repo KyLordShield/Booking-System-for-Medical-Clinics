@@ -3,11 +3,9 @@ session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-require_once dirname(__DIR__, 2) . '/classes/Doctor.php';
-require_once dirname(__DIR__, 2) . '/classes/Specialization.php';
-
-$doctorObj = new Doctor();
-$specObj = new Specialization();
+require_once dirname(__DIR__, 2) . '/config/Database.php';
+$db = new Database();
+$conn = $db->connect();
 
 $loggedRole = $_SESSION['role'] ?? "";
 $loggedDocId = $_SESSION['DOC_ID'] ?? null;
@@ -17,79 +15,96 @@ if ($loggedRole !== "doctor") {
     exit;
 }
 
-/* ---------- AJAX INSERT / UPDATE (uses classes) ---------- */
+/* ==========================
+   AJAX INSERT / UPDATE
+=========================== */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     header('Content-Type: application/json');
 
     $id = $_POST['DOC_ID'] ?? "";
-    $data = [
-        'first'   => trim($_POST['DOC_FIRST_NAME'] ?? ''),
-        'middle'  => trim($_POST['DOC_MIDDLE_INIT'] ?? ''),
-        'last'    => trim($_POST['DOC_LAST_NAME'] ?? ''),
-        'contact' => trim($_POST['DOC_CONTACT_NUM'] ?? ''),
-        'email'   => trim($_POST['DOC_EMAIL'] ?? ''),
-        'spec'    => trim($_POST['SPEC_ID'] ?? '')
-    ];
+    $fname = trim($_POST['DOC_FIRST_NAME']);
+    $mname = trim($_POST['DOC_MIDDLE_INIT']);
+    $lname = trim($_POST['DOC_LAST_NAME']);
+    $contact = trim($_POST['DOC_CONTACT_NUM']);
+    $email = trim($_POST['DOC_EMAIL']);
+    $spec = trim($_POST['SPEC_ID']);
 
-    // Validation (server-side)
+    // Validation
     $errors = [];
-    if ($data['first'] === '') $errors[] = 'First name required';
-    if ($data['last'] === '')  $errors[] = 'Last name required';
-    if ($data['contact'] === '') $errors[] = 'Contact required';
-    if ($data['email'] === '' || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email required';
-    if ($data['spec'] === '') $errors[] = 'Specialization required';
+    if ($fname === '') $errors[] = 'First name required';
+    if ($lname === '') $errors[] = 'Last name required';
+    if (!preg_match('/^\d{11}$/', $contact)) $errors[] = "Contact must be exactly 11 digits";
+    if (!preg_match('/^[a-zA-Z0-9._%+-]+@gmail\.com$/', $email)) $errors[] = "Email must be a valid Gmail address ending with @gmail.com";
+    if ($spec === '') $errors[] = 'Specialization required';
+
+    // Duplicate check
+    $dupStmt = $conn->prepare("SELECT DOC_ID FROM doctor WHERE (DOC_EMAIL = ? OR DOC_CONTACT_NUM = ?) AND DOC_ID != ?");
+    $dupStmt->execute([$email, $contact, $id ?: 0]);
+    if ($dupStmt->fetch(PDO::FETCH_ASSOC)) $errors[] = "Email or contact already exists in the database!";
 
     if (!empty($errors)) {
-        echo json_encode(['success' => false, 'errors' => $errors]);
+        echo json_encode(["success" => false, "message" => implode(", ", $errors)]);
         exit;
     }
 
-    // Block editing others (doctors can only update themselves)
-    if ($loggedRole === "doctor" && $id !== "" && $id != $loggedDocId) {
-        echo json_encode(['success' => false, 'message' => 'Not allowed to update other doctors']);
-        exit;
-    }
-
-    try {
-        if ($id === "") {
-    $newId = $doctorObj->insert($data);
-
-    if ($newId) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Doctor added',
-            'newId'   => $newId
-        ]);
+   try {
+    if ($id === "") {
+        // Insert new doctor
+        $stmt = $conn->prepare("
+            INSERT INTO doctor 
+            (DOC_FIRST_NAME, DOC_MIDDLE_INIT, DOC_LAST_NAME, DOC_CONTACT_NUM, DOC_EMAIL, SPEC_ID, DOC_CREATED_AT, DOC_UPDATED_AT)
+            VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+        ");
+        $success = $stmt->execute([$fname, $mname, $lname, $contact, $email, $spec]);
+        $newId = $conn->lastInsertId(); // capture the new ID
+        $message = $success ? "Doctor added successfully!" : "Insert failed!";
     } else {
-        echo json_encode(['success' => false, 'message' => 'Insert failed']);
+        // Update existing doctor
+        $stmt = $conn->prepare("
+            UPDATE doctor 
+            SET DOC_FIRST_NAME=?, DOC_MIDDLE_INIT=?, DOC_LAST_NAME=?, DOC_CONTACT_NUM=?, DOC_EMAIL=?, SPEC_ID=?, DOC_UPDATED_AT=NOW() 
+            WHERE DOC_ID=?
+        ");
+        $success = $stmt->execute([$fname, $mname, $lname, $contact, $email, $spec, $id]);
+        $newId = null; // no new ID on update
+        $message = $success ? "Profile updated successfully!" : "Update failed!";
     }
+} catch (Exception $e) {
+    $success = false;
+    $newId = null;
+    $message = $e->getMessage();
 }
 
-    } catch (Exception $e) {
-        echo json_encode(['success' => false, 'message' => $e->getMessage()]);
-    }
-    exit;
+// Return JSON response
+echo json_encode([
+    "success" => $success,
+    "message" => $message,
+    "newId"  => $newId
+]);
+exit;
+
+
 }
 
-/* ---------- AJAX DELETE BLOCKED FOR DOCTORS ---------- */
-if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    // doctors cannot delete
-    echo json_encode(['success' => false, 'message' => 'Doctors cannot delete accounts']);
-    exit;
+/* ==========================
+   FETCH DATA
+=========================== */
+$search = $_GET['q'] ?? "";
+$sql = "SELECT d.*, s.SPEC_NAME FROM doctor d LEFT JOIN specialization s ON d.SPEC_ID = s.SPEC_ID WHERE d.DOC_ID != ?";
+$params = [$loggedDocId];
+if ($search !== '') {
+    $sql .= " AND (CONCAT(d.DOC_FIRST_NAME, ' ', COALESCE(d.DOC_MIDDLE_INIT,''), ' ', d.DOC_LAST_NAME) LIKE ? OR d.DOC_EMAIL LIKE ? OR d.DOC_CONTACT_NUM LIKE ?)";
+    $searchParam = "%$search%";
+    $params = array_merge($params, [$searchParam, $searchParam, $searchParam]);
 }
+$sql .= " ORDER BY d.DOC_ID ASC";
+$stmt = $conn->prepare($sql);
+$stmt->execute($params);
+$doctors = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-/* ---------- Data for page (use classes) ---------- */
-$specializations = $specObj->getAll();
+$specStmt = $conn->query("SELECT * FROM specialization ORDER BY SPEC_NAME ASC");
+$specializations = $specStmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Logged-in doctor's full record (includes SPEC_NAME if class returns it)
-$myself = $doctorObj->getById($loggedDocId);
-
-// Search param for other doctors
-$search = trim($_GET['q'] ?? '');
-// Get other doctors excluding self
-$others = $doctorObj->getAll($loggedDocId, $search);
-
-// helper
 function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 ?>
 <!DOCTYPE html>
@@ -97,208 +112,162 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <head>
 <meta charset="UTF-8">
 <title>Doctor Management</title>
-<meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
-    <h2>My Profile</h2>
+<h2>Doctor Management</h2>
 
-    <div class="table-container" style="margin-bottom:18px;">
-        <table>
-            <tr><th>ID</th><td><?= esc($myself['DOC_ID']) ?></td></tr>
-            <tr>
-                <th>Name</th>
-                <td>
-                    <?php
-                        $mid = trim($myself['DOC_MIDDLE_INIT'] ?? '');
-                        $midDot = $mid !== '' ? esc($mid) . '. ' : '';
-                        echo esc($myself['DOC_FIRST_NAME'] ?? '') . ' ' . $midDot . esc($myself['DOC_LAST_NAME'] ?? '');
-                    ?>
-                </td>
-            </tr>
-            <tr><th>Email</th><td><?= esc($myself['DOC_EMAIL']) ?></td></tr>
-            <tr><th>Contact</th><td><?= esc($myself['DOC_CONTACT_NUM']) ?></td></tr>
-            <tr><th>Specialization</th><td><?= esc($myself['SPEC_NAME'] ?? $myself['SPEC_ID'] ?? '') ?></td></tr>
-        </table>
-
-        <br>
-        <!-- Edit only own profile -->
-        <button class="btn" onclick='openEditModal(<?= json_encode($myself, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>Update My Info</button>
-    </div>
-
-    <br><hr><br>
-
-    <h2>Other Doctors</h2>
-
-    <div class="top-controls" style="align-items:center; margin-bottom:12px;">
-        <form method="get" style="display:flex; gap:8px; align-items:center;">
-            <input name="q" placeholder="Search doctors by name, email, contact" value="<?=esc($search)?>">
-            <button class="btn" type="submit">Search</button>
-        </form>
-
-        <button class="create-btn" onclick="openAddModal()">+ Add Doctor</button>
-    </div>
-
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th><th>Name</th><th>Specialization</th><th>Contact</th><th>Email</th><th>Action</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (empty($others)): ?>
-                    <tr><td colspan="6" style="text-align:center;">No doctors found</td></tr>
-                <?php else: ?>
-                    <?php foreach($others as $d): 
-                        $mid = trim($d['DOC_MIDDLE_INIT'] ?? '');
-                        $midDot = $mid !== '' ? esc($mid) . '. ' : '';
-                        $full = esc($d['DOC_FIRST_NAME']) . ' ' . $midDot . esc($d['DOC_LAST_NAME']);
-                    ?>
-                    <tr>
-                        <td><?= esc($d['DOC_ID']) ?></td>
-                        <td><?= $full ?></td>
-                        <td><?= esc($d['SPEC_NAME'] ?? $d['SPEC_ID'] ?? '') ?></td>
-                        <td><?= esc($d['DOC_CONTACT_NUM']) ?></td>
-                        <td><?= esc($d['DOC_EMAIL']) ?></td>
-                        <td>
-                            <!-- view only for others -->
-                            <button class="btn" onclick='openViewModal(<?= json_encode($d, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>View</button>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            </tbody>
-        </table>
-    </div>
-</main>
-
-<!-- MODAL (used for Add & Edit own profile; when viewing others we use view modal alert) -->
-<!-- MODAL (Add / Edit / View) -->
-<div class="modal" id="doctorModal" aria-hidden="true">
-  <div class="modal-content" role="dialog" aria-labelledby="modalTitle">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <h2 id="modalTitle">Doctor Details</h2>
-
-    <form id="doctorForm">
-      <input type="hidden" id="DOC_ID" name="DOC_ID">
-
-      <label>First Name</label>
-      <input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME" required>
-
-      <label>Middle Init</label>
-      <input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT" maxlength="2">
-
-      <label>Last Name</label>
-      <input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME" required>
-
-      <label>Email</label>
-      <input type="email" id="DOC_EMAIL" name="DOC_EMAIL" required>
-
-      <label>Contact Number</label>
-      <input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM" required>
-
-      <label>Specialization</label>
-      <select id="SPEC_ID" name="SPEC_ID" required>
-        <?php foreach($specializations as $sp): ?>
-            <option value="<?= esc($sp['SPEC_ID']) ?>"><?= esc($sp['SPEC_NAME']) ?></option>
-        <?php endforeach; ?>
-      </select>
-
-      <button type="submit" class="btn" id="saveButton">Save</button>
+<div class="top-controls">
+    <form method="get" style="display:flex; gap:10px;">
+        <input type="text" name="q" placeholder="Search doctors..." value="<?= esc($search) ?>">
+        <button class="btn" type="submit">Search</button>
     </form>
-  </div>
+    <button class="create-btn" onclick="openAddModal()">+ Add Doctor</button>
 </div>
 
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>ID</th><th>Name</th><th>Contact</th><th>Email</th><th>Specialization</th><th>Action</th>
+</tr>
+</thead>
+<tbody>
+<?php if (empty($doctors)): ?>
+<tr><td colspan="6" style="text-align:center;">No results found</td></tr>
+<?php else: foreach($doctors as $d):
+$mid = trim($d['DOC_MIDDLE_INIT'] ?? '');
+$midDot = $mid !== '' ? esc($mid).'. ' : '';
+$full = esc($d['DOC_FIRST_NAME']) . ' ' . $midDot . esc($d['DOC_LAST_NAME']);
+?>
+<tr>
+<td><?= esc($d['DOC_ID']) ?></td>
+<td><?= $full ?></td>
+<td><?= esc($d['DOC_CONTACT_NUM']) ?></td>
+<td><?= esc($d['DOC_EMAIL']) ?></td>
+<td><?= esc($d['SPEC_NAME'] ?? '') ?></td>
+<td>
+<button class="btn" 
+    onclick='openEditModal(<?= json_encode($d, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>Edit</button>
 
+</td>
+</tr>
+<?php endforeach; endif; ?>
+</tbody>
+</table>
+</div>
+</main>
 
-<!-- ✅ FOOTER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+<div class="modal" id="doctorModal">
+<div class="modal-content">
+<span class="close-btn" onclick="closeModal()">&times;</span>
+<h2 id="modalTitle">Add Doctor</h2>
 
+<form id="doctorForm">
+<input type="hidden" name="DOC_ID" id="DOC_ID">
+
+<label>First Name</label>
+<input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME" required>
+
+<label>Middle Initial</label>
+<input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT" maxlength="2">
+
+<label>Last Name</label>
+<input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME" required>
+
+<label>Contact</label>
+<input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM" pattern="\d{11}" maxlength="11" required>
+
+<label>Email</label>
+<input type="email" id="DOC_EMAIL" name="DOC_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
+
+<label>Specialization</label>
+<select name="SPEC_ID" id="SPEC_ID" required>
+<?php foreach($specializations as $sp): ?>
+<option value="<?= esc($sp['SPEC_ID']) ?>"><?= esc($sp['SPEC_NAME']) ?></option>
+<?php endforeach; ?>
+</select>
+
+<button class="btn" type="submit" onclick="closeModal()">Save</button>
+</form>
+</div>
+</div>
 
 <script>
-function showModal(){ 
-    document.getElementById('doctorModal').style.display = 'flex'; 
-}
-function closeModal(){ 
-    document.getElementById('doctorModal').style.display = 'none'; 
-}
-
-// Helper to enable/disable form
-function setFormDisabled(disabled) {
-    document.querySelectorAll('#doctorForm input, #doctorForm select').forEach(el => {
-        el.disabled = disabled;
-    });
-    document.getElementById('saveButton').style.display = disabled ? 'none' : 'block';
-}
-
-function openAddModal(){
-    document.getElementById('modalTitle').innerText = 'Add Doctor';
+function openAddModal() {
     document.getElementById('doctorForm').reset();
-    document.getElementById('DOC_ID').value = "";
-
-    setFormDisabled(false);
-    showModal();
+    document.getElementById('DOC_ID').value = '';
+    document.getElementById('modalTitle').innerText = 'Add Doctor';
+    document.getElementById('doctorModal').style.display = 'flex';
 }
 
-function openEditModal(data){
-    document.getElementById('modalTitle').innerText = 'Edit My Profile';
-    fillForm(data);
-
-    setFormDisabled(false);
-    showModal();
+function openEditModal(d) {
+    document.getElementById('DOC_ID').value = d.DOC_ID;
+    document.getElementById('DOC_FIRST_NAME').value = d.DOC_FIRST_NAME;
+    document.getElementById('DOC_MIDDLE_INIT').value = d.DOC_MIDDLE_INIT;
+    document.getElementById('DOC_LAST_NAME').value = d.DOC_LAST_NAME;
+    document.getElementById('DOC_CONTACT_NUM').value = d.DOC_CONTACT_NUM;
+    document.getElementById('DOC_EMAIL').value = d.DOC_EMAIL;
+    document.getElementById('SPEC_ID').value = d.SPEC_ID;
+    document.getElementById('modalTitle').innerText = 'Edit Doctor';
+    document.getElementById('doctorModal').style.display = 'flex';
 }
 
-function openViewModal(data){
-    document.getElementById('modalTitle').innerText = 'View Doctor Details';
-    fillForm(data);
-
-    setFormDisabled(true);
-    showModal();
+function closeModal() {
+    document.getElementById('doctorModal').style.display = 'none';
 }
 
-function fillForm(d){
-    document.getElementById('DOC_ID').value = d.DOC_ID || '';
-    document.getElementById('DOC_FIRST_NAME').value = d.DOC_FIRST_NAME || '';
-    document.getElementById('DOC_MIDDLE_INIT').value = d.DOC_MIDDLE_INIT || '';
-    document.getElementById('DOC_LAST_NAME').value = d.DOC_LAST_NAME || '';
-    document.getElementById('DOC_EMAIL').value = d.DOC_EMAIL || '';
-    document.getElementById('DOC_CONTACT_NUM').value = d.DOC_CONTACT_NUM || '';
-    document.getElementById('SPEC_ID').value  = d.SPEC_ID || '';
-}
-
-// Submit Add / Update
-document.getElementById('doctorForm').addEventListener('submit', async function(e){
+// Handle form submission
+document.getElementById('doctorForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    const form = new FormData(this);
 
-    const res = await fetch(location.pathname, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: form
-    });
+    const formData = new FormData(this);
 
-    const json = await res.json();
-    alert(json.message);
+    try {
+        const res = await fetch(location.pathname, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        });
 
-    if(json.success){
-        closeModal();
-         window.location.href = "/Booking-System-For-Medical-Clinics/public/register/register_doctor.php?doc=" + json.newId;
+        const resData = await res.json();
+
+        Swal.fire({
+            icon: resData.success ? 'success' : 'error',
+            title: resData.success ? 'Success' : 'Oops!',
+            text: resData.message
+        }).then(() => {
+            if (resData.success) {
+                closeModal();
+                // Redirect only if a new doctor was added
+                if (resData.newId) {
+                    window.location.href = "/Booking-System-For-Medical-Clinics/public/register/register_doctor.php?doc=" + resData.newId;
+                } else {
+                    // Otherwise reload page to refresh table
+                    location.reload();
+                }
+            }
+        });
+
+    } catch (err) {
+        console.error('Error submitting form:', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong. Please try again.'
+        });
     }
 });
 
-// Click backdrop to close
-document.getElementById('doctorModal').addEventListener('click', function(e){
-    if(e.target === this) closeModal();
+// Close modal when clicking outside content
+document.getElementById('doctorModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
 });
-
 </script>
 
 </body>
