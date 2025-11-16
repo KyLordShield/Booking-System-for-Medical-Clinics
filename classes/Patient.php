@@ -121,7 +121,7 @@ class Patient {
 
    // 🟩 Takes all Patients with user accounts for admin page manage user
    public function getAllWithUsers() {
-    $sql = "SELECT p.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD
+    $sql = "SELECT p.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD, u.USER_LAST_LOGIN, u.USER_CREATED_AT
             FROM PATIENT p
             LEFT JOIN USERS u ON p.PAT_ID = u.PAT_ID
             ORDER BY p.PAT_ID DESC";
@@ -140,7 +140,7 @@ public function getPatientsWithoutUser() {
     $stmt = $this->conn->prepare($sql);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
+}   
 
 
 }

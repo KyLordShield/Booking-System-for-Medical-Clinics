@@ -179,9 +179,9 @@ class Doctor {
         return $stmt->execute([$id]);
     }
 
-    // TAKES ALL DOCTORS WHO ALREADY HAVE A USER ACCOUNT FOR ADMIN USER MANAGE
+   // TAKES ALL DOCTORS WHO ALREADY HAVE A USER ACCOUNT FOR ADMIN USER MANAGE
     public function getAllWithUsers() {
-        $sql = "SELECT d.*, s.SPEC_NAME, u.USER_ID, u.USER_NAME, u.USER_PASSWORD
+        $sql = "SELECT d.*, s.SPEC_NAME, u.USER_ID, u.USER_NAME, u.USER_PASSWORD, u.USER_LAST_LOGIN, u.USER_CREATED_AT
                 FROM DOCTOR d
                 LEFT JOIN SPECIALIZATION s ON d.SPEC_ID = s.SPEC_ID
                 LEFT JOIN USERS u ON d.DOC_ID = u.DOC_ID

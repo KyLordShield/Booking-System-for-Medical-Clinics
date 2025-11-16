@@ -66,7 +66,7 @@ class Staff {
 
     //GET ALL STAFF WHO ALREADY HAVE A USER ACCOUNTS FOR THE ADMIN USER MANAGE PAGE
    public function getAllWithUsers() {
-    $sql = "SELECT st.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD
+    $sql = "SELECT st.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD, u.USER_LAST_LOGIN, u.USER_CREATED_AT
             FROM STAFF st
             LEFT JOIN USERS u ON st.STAFF_ID = u.STAFF_ID
             ORDER BY st.STAFF_ID DESC";
