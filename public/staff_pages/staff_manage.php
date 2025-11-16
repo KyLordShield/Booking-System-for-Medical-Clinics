@@ -1,7 +1,7 @@
 <?php
 session_start();
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit;
 }
 ini_set('display_errors', 1);
@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     $contact = trim($_POST['STAFF_CONTACT_NUM']);
     $email = trim($_POST['STAFF_EMAIL']);
 
-    // ✅ Validation
+    // Validation
     $errors = [];
     if (!preg_match('/^\d{11}$/', $contact)) $errors[] = "Contact must be exactly 11 digits";
     if (!preg_match('/^[a-zA-Z0-9._%+-]+@gmail\.com$/', $email)) $errors[] = "Email must be a valid Gmail address ending with @gmail.com";
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
         exit;
     }
 
-    // ✅ Check for duplicates (email or contact)
+    // Check for duplicates
     $dupStmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE (STAFF_EMAIL = ? OR STAFF_CONTACT_NUM = ?) AND STAFF_ID != ?");
     $dupStmt->execute([$email, $contact, $id ?: 0]);
     if ($dupStmt->fetch(PDO::FETCH_ASSOC)) {
@@ -52,7 +52,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
             $stmt = $conn->prepare($query);
             $success = $stmt->execute([$fname, $mname, $lname, $contact, $email]);
+            $newStaffId = $conn->lastInsertId();
             $message = $success ? "Staff added successfully!" : "Insert failed!";
+
+            if ($success) {
+                echo json_encode([
+                    "success" => true,
+                    "message" => $message,
+                    "newStaffId" => $newStaffId
+                ]);
+                exit;
+            }
         } else {
             $query = "UPDATE staff SET 
                 STAFF_FIRST_NAME=?, STAFF_MIDDLE_INIT=?, STAFF_LAST_NAME=?,
@@ -115,7 +125,6 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <meta charset="UTF-8">
 <title>Staff Management</title>
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
-<!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -153,7 +162,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <?php else: foreach ($staff as $row): ?>
 <tr>
 <td><?= esc($row['STAFF_ID']) ?></td>
-<td><?= esc($row['STAFF_FIRST_NAME'] . " " . $row['STAFF_MIDDLE_INIT'] . ". " . $row['STAFF_LAST_NAME']) ?></td>
+<td><?= esc($row['STAFF_FIRST_NAME'] . " " . ($row['STAFF_MIDDLE_INIT'] ? $row['STAFF_MIDDLE_INIT'].'. ' : '') . $row['STAFF_LAST_NAME']) ?></td>
 <td><?= esc($row['STAFF_CONTACT_NUM']) ?></td>
 <td><?= esc($row['STAFF_EMAIL']) ?></td>
 <td>
@@ -193,7 +202,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <label>Email</label>
 <input type="email" id="email" name="STAFF_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 
-<button class="btn" type="submit" onclick="closeModal()">Save</button>
+<button class="btn" type="submit">Save</button>
 </form>
 </div>
 </div>
@@ -224,7 +233,7 @@ function closeModal() {
     document.getElementById("staffModal").style.display = "none";
 }
 
-// AJAX Save with SweetAlert2
+// AJAX Save + REDIRECT
 document.getElementById("staffForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -243,26 +252,16 @@ document.getElementById("staffForm").addEventListener("submit", async (e) => {
         text: data.message,
         confirmButtonColor: data.success ? '#3085d6' : '#d33'
     }).then(() => {
-        if (data.success) {
+        if (data.success && data.newStaffId) {
+            closeModal();
+            // CORRECTED PATH: from public/staff_pages/ → public/register/
+            window.location.href = `../register/register_staff.php?staff_id=${data.newStaffId}`;
+        } else if (data.success) {
             closeModal();
             location.reload();
         }
     });
 });
-
-// AJAX Delete
-async function deleteStaff(id) {
-    if (!confirm("Delete this staff?")) return;
-    const res = await fetch(`staff_manage.php?delete=${id}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    });
-    const data = await res.json();
-    Swal.fire({
-        icon: data.success ? 'success' : 'error',
-        title: data.success ? 'Deleted!' : 'Oops!',
-        text: data.message
-    }).then(() => { if (data.success) location.reload(); });
-}
 </script>
 
 </body>
