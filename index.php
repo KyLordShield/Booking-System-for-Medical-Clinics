@@ -5,24 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Landing Page</title>
   <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/landing.css" />
+  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
 <body>
 
   <!-- ===== Header ===== -->
-  <header class="header">
-    <div class="logo">
-      <img src="/Booking-System-For-Medical-Clinics/assets/images/logo.png" alt="Medicina Logo" />
-      <h1>Medicina</h1>
-    </div>
-
- <div class="nav-right">
-    <nav class="nav-links">
-      <a href="#home">Home</a>
-      <a href="#about">About Us</a>
-    </nav>
-    <a href="login_page.php" class="login-btn">Login</a>
-    <a href="/Booking-System-For-Medical-Clinics/public/register/register.php" class="signup-btn">Sign Up</a>
-  </div>
+  <?php
+// Include the guest header at the very top
+include __DIR__ . '/partials/guest_header.php';
+?>
 
 </header>
   <!-- ===== Welcome Section (Home) ===== -->

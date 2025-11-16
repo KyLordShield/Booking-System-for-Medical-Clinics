@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width , initial-scale=1.0">
     <title>Patient Registration</title>
     <link rel="stylesheet" href="register.css">
+    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
     <style>
         /* fallback message styles if not included in CSS file */
         .message {
@@ -77,14 +78,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <body>
     <!-- #for header section -->
-    <div class="header">
-        <div class="logo">
-             <a href="/Booking-System-For-Medical-Clinics/index.php">
-                <img src="logo.png" alt="Medicina Logo" style="height: 50px;">
-            </a>
-            <h1>Medicina</h1>
-        </div>
-    </div>
+    <?php
+// Include the guest header at the very top
+include dirname(__DIR__, 2) . '/partials/guest_header.php';
+?>
 
     <!-- #for main registration container -->
     <div class="register-container">

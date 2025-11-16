@@ -13,39 +13,7 @@ body {
 }
 
 /* ===== Header ===== */
-.header {
-  background-color: #172A3A;
-  padding: 25px 60px;
-  border-top-right-radius: 40px;
-  border-bottom-right-radius: 40px;
-   border-top-left-radius: 40px;
-  border-bottom-left-radius: 40px;
-  width: 90%;
-  margin: 30px auto 0;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
 
-.header .logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.header .logo img {
-  width: 55px;
-  height: auto;
-  object-fit: contain; /* naay chance i delete(new add)*/
-}
-
-.header h1 {
-  font-family: 'Kalnia', serif;
-  font-size: 35px;  /*original size 34*/
-  color: #ffffff;
-  font-weight: 700;
-  margin: 0;
-}
 
 
 /* ===== Title ===== */

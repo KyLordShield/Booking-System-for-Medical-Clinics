@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
 }
 ?>
 
-?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -105,8 +105,8 @@ body {
     max-width: 300px;
     background: var(--color-light-blue);
     padding: 20px;
-    margin-top: -40px; /* move the entire login section up */
-    margin-left: 40px;
+    margin-top: 50px; /* move the entire login section up */
+    margin-left: 100px;
 }
 
 .login-title {
