@@ -2,6 +2,7 @@
 session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
+
 // ---------- 1. AUTH CHECK ----------
 if (
     empty($_SESSION['USER_IS_SUPERADMIN']) ||
@@ -11,14 +12,72 @@ if (
    header("Location: ../../index.php");
     exit;
 }
+
+require_once dirname(__DIR__, 2) . '/classes/User.php';          // NEW
 require_once dirname(__DIR__, 2) . '/config/Database.php';
+
 $db = new Database();
 $conn = $db->connect();
+$userObj = new User();                                           // NEW
 
 /* ---------- AJAX INSERT / UPDATE ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     header('Content-Type: application/json');
 
+    $action = $_POST['action'] ?? '';
+
+    /* ---------- CREATE STAFF USER (NEW ENDPOINT) ---------- */
+    if ($action === 'createStaffUser') {
+        $staff_id = (int)($_POST['staff_id'] ?? 0);
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        $errors = [];
+        if ($username === '') $errors[] = 'Username is required.';
+        if ($password === '') $errors[] = 'Password is required.';
+        if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters.';
+
+        if (!empty($errors)) {
+            echo json_encode(['success' => false, 'errors' => $errors]);
+            exit;
+        }
+
+        try {
+            // Check if staff exists
+            $stmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE STAFF_ID = ?");
+            $stmt->execute([$staff_id]);
+            if (!$stmt->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'Staff not found.']);
+                exit;
+            }
+
+            // Check if staff already has user
+            if ($userObj->existsByEntity('Staff', $staff_id)) {
+                echo json_encode(['success' => false, 'message' => 'This staff already has a user account.']);
+                exit;
+            }
+
+            // Check username
+            if ($userObj->isUsernameTaken($username)) {
+                echo json_encode(['success' => false, 'message' => 'Username already exists.']);
+                exit;
+            }
+
+            // Create user
+            $result = $userObj->createForEntity('Staff', $staff_id, $username, $password, 0);
+            $ok = str_starts_with($result, 'User created successfully!');
+
+            echo json_encode([
+                'success' => $ok,
+                'message' => $ok ? 'User account created!' : $result
+            ]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /* ---------- ORIGINAL INSERT / UPDATE ---------- */
     $id = $_POST['STAFF_ID'] ?? "";
     $data = [
         'first'   => trim($_POST['STAFF_FIRST_NAME'] ?? ''),
@@ -45,8 +104,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
             $stmt = $conn->prepare("INSERT INTO staff 
                 (STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME, STAFF_CONTACT_NUM, STAFF_EMAIL, STAFF_CREATED_AT, STAFF_UPDATED_AT)
                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
-            $success = $stmt->execute([$data['first'], $data['middle'], $data['last'], $data['contact'], $data['email']]);
-            echo json_encode(['success' => $success, 'message' => $success ? 'Staff added successfully!' : 'Insert failed']);
+            $stmt->execute([$data['first'], $data['middle'], $data['last'], $data['contact'], $data['email']]);
+            $newStaffId = $conn->lastInsertId();
+
+            $fullName = trim("{$data['first']} " . ($data['middle'] ? $data['middle'].'. ' : '') . $data['last']);
+
+            echo json_encode([
+                'success' => true,
+                'message' => 'Staff added successfully!',
+                'newStaffId' => $newStaffId,
+                'staffName' => $fullName
+            ]);
         } else {
             $stmt = $conn->prepare("UPDATE staff SET
                 STAFF_FIRST_NAME=?, STAFF_MIDDLE_INIT=?, STAFF_LAST_NAME=?,
@@ -102,13 +170,17 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <meta charset="UTF-8">
 <title>Staff Management | Admin</title>
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<style>
+    .modal { display: none; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 1000; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; max-width: 420px; width: 90%; position: relative; }
+    .close-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; cursor: pointer; }
+    .error { color: #d00; margin-top: 5px; font-size: 0.9rem; }
+    #userModalErrors { margin-top: 10px; }
+</style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
 <h2>Staff Management (Admin)</h2>
@@ -160,10 +232,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </div>
 </main>
 
-<!-- Modal -->
+<!-- ==================== STAFF MODAL ==================== -->
 <div class="modal" id="staffModal">
 <div class="modal-content">
-<span class="close-btn" onclick="closeModal()">&times;</span>
+<span class="close-btn" onclick="closeModal('staffModal')">&times;</span>
 <h2 id="modalTitle">Add Staff</h2>
 
 <form id="staffForm">
@@ -189,53 +261,125 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </div>
 </div>
 
+<!-- ==================== USER CREATION MODAL ==================== -->
+<div class="modal" id="userModal">
+<div class="modal-content">
+<span class="close-btn" onclick="closeModal('userModal')">&times;</span>
+<h2>Create Account for <span id="staffFullName"></span></h2>
 
-<!-- ✅ FOOTER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+<form id="userForm">
+<input type="hidden" name="staff_id" id="userStaffId">
+<input type="hidden" name="action" value="createStaffUser">
 
+<label>Username</label>
+<input type="text" name="username" required minlength="3">
+
+<label>Password</label>
+<input type="password" name="password" required minlength="6">
+
+<div id="userModalErrors"></div>
+
+<button class="btn" type="submit">Create Account</button>
+</form>
+</div>
+</div>
+
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 <script>
+/* ---------- MODAL HELPERS ---------- */
+function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+/* ---------- STAFF MODAL ---------- */
 function openAddModal() {
     document.getElementById("modalTitle").innerText = "Add Staff";
     document.getElementById("staffForm").reset();
     document.getElementById("STAFF_ID").value = "";
-    showModal();
+    showModal('staffModal');
 }
 
 function openEditModal(staff) {
     document.getElementById("modalTitle").innerText = "Edit Staff";
     for (const key in staff) {
-        if (document.getElementById(key)) document.getElementById(key).value = staff[key];
+        const el = document.getElementById(key);
+        if (el) el.value = staff[key] ?? '';
     }
-    showModal();
+    showModal('staffModal');
 }
 
-function showModal(){ document.getElementById("staffModal").style.display = "flex"; }
-function closeModal(){ document.getElementById("staffModal").style.display = "none"; }
-
-// AJAX Save
-document.getElementById("staffForm").addEventListener("submit", async (e)=>{
+/* ---------- STAFF FORM SUBMIT ---------- */
+document.getElementById("staffForm").addEventListener("submit", async e => {
     e.preventDefault();
     const formData = new FormData(e.target);
 
     const res = await fetch(location.pathname, {
-        method:"POST",
+        method: "POST",
         body: formData,
-        headers:{ "X-Requested-With":"XMLHttpRequest" }
+        headers: { "X-Requested-With": "XMLHttpRequest" }
     });
     const data = await res.json();
-    if(data.errors) { alert(data.errors.join("\n")); return; }
+
+    if (data.errors) {
+        alert(data.errors.join("\n"));
+        return;
+    }
+
     alert(data.message);
-    if(data.success){ closeModal(); location.reload(); }
+    if (data.success) {
+        closeModal('staffModal');
+        if (data.newStaffId) {
+            // Open user creation modal
+            document.getElementById('staffFullName').innerText = data.staffName;
+            document.getElementById('userStaffId').value = data.newStaffId;
+            document.getElementById('userForm').reset();
+            document.getElementById('userModalErrors').innerHTML = '';
+            showModal('userModal');
+        } else {
+            location.reload();
+        }
+    }
 });
 
-// AJAX Delete
-async function deleteStaff(id){
-    if(!confirm("Delete this staff?")) return;
-    const res = await fetch(`?delete=${id}`,{ headers:{ "X-Requested-With":"XMLHttpRequest" }});
+/* ---------- USER FORM SUBMIT ---------- */
+document.getElementById("userForm").addEventListener("submit", async e => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+
+    const res = await fetch(location.pathname, {
+        method: "POST",
+        body: formData,
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
+    const data = await res.json();
+
+    const errDiv = document.getElementById('userModalErrors');
+    errDiv.innerHTML = '';
+
+    if (data.errors) {
+        data.errors.forEach(msg => {
+            const p = document.createElement('p');
+            p.className = 'error';
+            p.textContent = msg;
+            errDiv.appendChild(p);
+        });
+        return;
+    }
+
+    alert(data.message);
+    if (data.success) {
+        closeModal('userModal');
+        location.reload();
+    }
+});
+
+/* ---------- DELETE ---------- */
+async function deleteStaff(id) {
+    if (!confirm("Delete this staff?")) return;
+    const res = await fetch(`?delete=${id}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
     const data = await res.json();
     alert(data.message);
-    if(data.success) location.reload();
+    if (data.success) location.reload();
 }
 </script>
 
