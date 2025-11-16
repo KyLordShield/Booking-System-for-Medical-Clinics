@@ -12,72 +12,33 @@ require_once dirname(__DIR__, 2) . '/config/Database.php';
 $db = new Database();
 $conn = $db->connect();
 
-/* ✅ AJAX INSERT / UPDATE */
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    header('Content-Type: application/json');
+// Helper
+function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 
-    $id = $_POST['staff_id'] ?? "";
-    $fname = trim($_POST['STAFF_FIRST_NAME']);
-    $mname = trim($_POST['STAFF_MIDDLE_INIT']);
-    $lname = trim($_POST['STAFF_LAST_NAME']);
-    $contact = trim($_POST['STAFF_CONTACT_NUM']);
-    $email = trim($_POST['STAFF_EMAIL']);
+$loggedStaffId = $_SESSION['STAFF_ID'];
 
-    if ($id === "") {
-        $query = "INSERT INTO staff 
-        (STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME, STAFF_CONTACT_NUM, STAFF_EMAIL, STAFF_CREATED_AT, STAFF_UPDATED_AT)
-        VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
-        $stmt = $conn->prepare($query);
-        $success = $stmt->execute([$fname, $mname, $lname, $contact, $email]);
+// Fetch logged-in staff for profile
+$stmt = $conn->prepare("SELECT * FROM staff WHERE STAFF_ID = ?");
+$stmt->execute([$loggedStaffId]);
+$myself = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        echo json_encode(["success" => $success, "message" => "Staff added successfully!"]);
-    } else {
-        $query = "UPDATE staff SET 
-        STAFF_FIRST_NAME=?, STAFF_MIDDLE_INIT=?, STAFF_LAST_NAME=?,
-        STAFF_CONTACT_NUM=?, STAFF_EMAIL=?, STAFF_UPDATED_AT=NOW()
-        WHERE STAFF_ID=?";
-        $stmt = $conn->prepare($query);
-        $success = $stmt->execute([$fname, $mname, $lname, $contact, $email, $id]);
-
-        echo json_encode(["success" => $success, "message" => "Staff updated successfully!"]);
-    }
-    exit;
-}
-
-/* ✅ AJAX DELETE */
-if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
-    header('Content-Type: application/json');
-    $id = intval($_GET['delete']);
-
-    $stmt = $conn->prepare("DELETE FROM staff WHERE STAFF_ID = ?");
-    $success = $stmt->execute([$id]);
-
-    echo json_encode(["success" => $success, "message" => "Staff deleted successfully!"]);
-    exit;
-}
-
-/* ✅ FETCH TABLE DATA */
+// Fetch staff list
 $search = $_GET['q'] ?? "";
 $sql = "SELECT * FROM staff";
-
 if (!empty($search)) {
-    $sql .= " WHERE 
-        CONCAT(STAFF_FIRST_NAME, ' ', COALESCE(STAFF_MIDDLE_INIT,''), ' ', STAFF_LAST_NAME) LIKE :search
-        OR STAFF_CONTACT_NUM LIKE :search
-        OR STAFF_EMAIL LIKE :search";
+    $sql .= " WHERE CONCAT(STAFF_FIRST_NAME,' ',COALESCE(STAFF_MIDDLE_INIT,''),' ',STAFF_LAST_NAME) LIKE :search 
+              OR STAFF_CONTACT_NUM LIKE :search
+              OR STAFF_EMAIL LIKE :search";
 }
 $sql .= " ORDER BY STAFF_ID ASC";
 
 $stmt = $conn->prepare($sql);
-
 if (!empty($search)) {
     $searchText = "%$search%";
     $stmt->bindParam(':search', $searchText);
 }
-
 $stmt->execute();
-$staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+$staffList = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -86,96 +47,54 @@ $staff = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <title>Staff Management</title>
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
-
 <body>
 
-<!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
-
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
-<h2>Staff Management</h2>
-
-<div class="top-controls">
-    <form method="get" style="display:flex; gap:10px;">
-        <input class="modal-input" type="text" name="q"
-        placeholder="Search staff..."
-        value="<?= htmlspecialchars($search) ?>">
-        <button class="btn" type="submit">Search</button>
-    </form>
-
-    <button class="create-btn" onclick="openAddModal()">+ Add Staff</button>
-</div>
-
-
+<h2>My Profile</h2>
 <div class="table-container">
 <table>
-<thead>
+<tr><th>ID</th><td><?= esc($myself['STAFF_ID']) ?></td></tr>
 <tr>
-<th>ID</th>
 <th>Name</th>
-<th>Contact</th>
-<th>Email</th>
-<th>Action</th>
-</tr>
-</thead>
-<tbody>
-<?php if (empty($staff)): ?>
-<tr><td colspan="5" style="text-align:center;">No results found</td></tr>
-<?php else: ?>
-<?php foreach ($staff as $row): ?>
-<tr>
-<td><?= $row['STAFF_ID'] ?></td>
-<td><?= $row['STAFF_FIRST_NAME'] . " " . $row['STAFF_MIDDLE_INIT'] . ". " . $row['STAFF_LAST_NAME'] ?></td>
-<td><?= $row['STAFF_CONTACT_NUM'] ?></td>
-<td><?= $row['STAFF_EMAIL'] ?></td>
 <td>
-<button class="btn" onclick='openEditModal(<?= json_encode($row) ?>)'>Edit</button>
+<?php
+$mid = trim($myself['STAFF_MIDDLE_INIT'] ?? '');
+$midDot = $mid !== '' ? esc($mid) . '. ' : '';
+echo esc($myself['STAFF_FIRST_NAME']) . ' ' . $midDot . esc($myself['STAFF_LAST_NAME']);
+?>
 </td>
 </tr>
-<?php endforeach; endif; ?>
-</tbody>
+<tr><th>Email</th><td><?= esc($myself['STAFF_EMAIL']) ?></td></tr>
+<tr><th>Contact</th><td><?= esc($myself['STAFF_CONTACT_NUM']) ?></td></tr>
 </table>
+
+<button class="btn" onclick='openEditModal(<?= json_encode($myself, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>Update My Info</button>
 </div>
+
+
 
 </main>
 
-<!-- ✅ MODAL -->
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
+<!-- MODAL -->
 <div class="modal" id="staffModal">
 <div class="modal-content">
 <span class="close-btn" onclick="closeModal()">&times;</span>
 <h2 id="modalTitle">Add Staff</h2>
-
 <form id="staffForm">
 <input type="hidden" name="staff_id" id="staff_id">
-
-<label>First Name</label>
-<input type="text" id="fname" name="STAFF_FIRST_NAME" required>
-
-<label>Middle Initial</label>
-<input type="text" id="mname" name="STAFF_MIDDLE_INIT" maxlength="2">
-
-<label>Last Name</label>
-<input type="text" id="lname" name="STAFF_LAST_NAME" required>
-
-<label>Contact</label>
-<input type="text" id="phone" name="STAFF_CONTACT_NUM" required>
-
-<label>Email</label>
-<input type="email" id="email" name="STAFF_EMAIL" required>
-
+<label>First Name</label><input type="text" id="fname" name="STAFF_FIRST_NAME" required>
+<label>Middle Initial</label><input type="text" id="mname" name="STAFF_MIDDLE_INIT" maxlength="2">
+<label>Last Name</label><input type="text" id="lname" name="STAFF_LAST_NAME" required>
+<label>Contact</label><input type="text" id="phone" name="STAFF_CONTACT_NUM" pattern="\d{11}" maxlength="11" required>
+<label>Email</label><input type="email" id="email" name="STAFF_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 <button class="btn" type="submit">Save</button>
 </form>
 </div>
 </div>
-
-
-<!-- ✅ FOOTER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
-<!-- ✅ FOOTER LINK -->
-
 
 <script>
 function openAddModal() {
@@ -184,7 +103,6 @@ function openAddModal() {
     document.getElementById("staff_id").value = "";
     showModal();
 }
-
 function openEditModal(staff) {
     document.getElementById("modalTitle").innerText = "Edit Staff";
     document.getElementById("staff_id").value = staff.STAFF_ID;
@@ -195,45 +113,31 @@ function openEditModal(staff) {
     document.getElementById("email").value = staff.STAFF_EMAIL;
     showModal();
 }
+function showModal(){ document.getElementById("staffModal").style.display = "flex"; }
+function closeModal(){ document.getElementById("staffModal").style.display = "none"; }
 
-function showModal() {
-    document.getElementById("staffModal").style.display = "flex";
-}
-function closeModal() {
-    document.getElementById("staffModal").style.display = "none";
-}
-
-// ✅ AJAX SAVE
+// AJAX SAVE
 document.getElementById("staffForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-
     const res = await fetch("staff_manage.php", {
         method: "POST",
         body: formData,
         headers: { "X-Requested-With": "XMLHttpRequest" }
     });
-
     const data = await res.json();
     alert(data.message);
-
-    if (data.success) {
-        closeModal();
-        location.reload();
-    }
+    if(data.success){ closeModal(); location.reload(); }
 });
 
-// ✅ AJAX DELETE
-async function deleteStaff(id) {
-    if (!confirm("Delete this staff?")) return;
-    const res = await fetch(`staff_manage.php?delete=${id}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-    });
+// AJAX DELETE
+async function deleteStaff(id){
+    if(!confirm("Delete this staff?")) return;
+    const res = await fetch(`staff_manage.php?delete=${id}`, { headers: { "X-Requested-With": "XMLHttpRequest" }});
     const data = await res.json();
     alert(data.message);
-    if (data.success) location.reload();
+    if(data.success) location.reload();
 }
 </script>
-
 </body>
 </html>
