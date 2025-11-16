@@ -142,6 +142,18 @@ public function getPatientsWithoutUser() {
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+public function emailExistsForOther($email, $excludeId) {
+    $stmt = $this->conn->prepare("SELECT PAT_ID FROM patient WHERE PAT_EMAIL = ? AND PAT_ID != ?");
+    $stmt->execute([$email, $excludeId]);
+    return $stmt->fetch() ? true : false;
+}
+
+public function contactExistsForOther($contact, $excludeId) {
+    $stmt = $this->conn->prepare("SELECT PAT_ID FROM patient WHERE PAT_CONTACT_NUM = ? AND PAT_ID != ?");
+    $stmt->execute([$contact, $excludeId]);
+    return $stmt->fetch() ? true : false;
+}
+
 
 }
 ?>

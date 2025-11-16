@@ -19,7 +19,9 @@ $serviceObj = new Service();
 $schedObj = new Schedule();
 
 $services = $serviceObj->getAllServices();
-$message = "";
+
+// ✅ SweetAlert message
+$alert = ['type'=>'', 'message'=>''];
 
 // ✅ Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
@@ -29,22 +31,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
     $serv_id = $_POST['SERV_ID'] ?? '';
 
     if (empty($appt_date) || empty($appt_time) || empty($doc_id) || empty($serv_id)) {
-        $message = "⚠ Please fill out all fields.";
+        $alert = ['type'=>'error', 'message'=>'⚠ Please fill out all fields.'];
     } else {
         // ✅ Check if doctor is available (schedule + booked)
         $available = $schedObj->isDoctorAvailable($doc_id, $appt_date, $appt_time);
 
         if (!$available) {
-            $message = "❌ Doctor is not available at the selected date/time.";
+            $alert = ['type'=>'error', 'message'=>'❌ Doctor is not available at the selected date/time.'];
         } else {
             $result = $appointmentObj->createAppointment($pat_id, $doc_id, $serv_id, $appt_date, $appt_time);
 
             if (strpos($result, '✅') !== false) {
-                // Use a simple success query param since we can't redirect with full control here
-                header("Location: ../patient_dashboard.php?success=1");
-                exit;
+                $alert = ['type'=>'success', 'message'=>'✅ Appointment created successfully!'];
             } else {
-                $message = $result;
+                $alert = ['type'=>'error', 'message'=>$result];
             }
         }
     }
@@ -62,80 +62,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
 
 <!-- ✅ Global Custom CSS -->
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+
+<!-- ✅ SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
-<!-- Applying dashboard body styles -->
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-   <!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
+<!-- NAVBAR -->
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
-    <!-- ✅ MAIN CONTENT CONTAINER -->
-    <main class="flex flex-col flex-1 px-20 py-16 w-full items-center justify-start">
-        <!-- Form Container using dashboard card styling -->
-        <div class="appointment-form-container bg-[var(--light)] p-8 rounded-[25px] shadow-xl w-full max-w-lg">
-            <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-6">Book New Appointment</h1>
+<!-- MAIN CONTENT -->
+<main class="flex flex-col flex-1 px-20 py-16 w-full items-center justify-start">
+    <div class="appointment-form-container bg-[var(--light)] p-8 rounded-[25px] shadow-xl w-full max-w-lg">
+        <h1 class="text-3xl font-bold text-[var(--primary)] text-center mb-6">Book New Appointment</h1>
 
-            <?php if ($message): ?>
-                <!-- Alert box styling -->
-                <div class="p-4 mb-4 rounded-lg bg-red-100 text-red-800 font-medium text-center">
-                    <?= htmlspecialchars($message) ?>
-                </div>
-            <?php endif; ?>
+        <form method="POST" id="appointmentForm" class="space-y-4">
+            <div>
+                <label for="SERV_ID" class="block mb-1 font-semibold text-gray-700">Select Service:</label>
+                <select name="SERV_ID" id="SERV_ID" required 
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
+                    <option value="">-- Choose Service --</option>
+                    <?php foreach ($services as $s): ?>
+                        <option value="<?= $s['SERV_ID'] ?>"><?= htmlspecialchars($s['SERV_NAME']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-            <form method="POST" id="appointmentForm" class="space-y-4">
-                
-                <div>
-                    <label for="SERV_ID" class="block mb-1 font-semibold text-gray-700">Select Service:</label>
-                    <select name="SERV_ID" id="SERV_ID" required 
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
-                        <option value="">-- Choose Service --</option>
-                        <?php foreach ($services as $s): ?>
-                            <option value="<?= $s['SERV_ID'] ?>"><?= htmlspecialchars($s['SERV_NAME']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+            <div>
+                <label for="DOC_ID" class="block mb-1 font-semibold text-gray-700">Select Doctor:</label>
+                <select name="DOC_ID" id="DOC_ID" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
+                    <option value="">-- Choose Doctor --</option>
+                </select>
+            </div>
 
-                <div>
-                    <label for="DOC_ID" class="block mb-1 font-semibold text-gray-700">Select Doctor:</label>
-                    <select name="DOC_ID" id="DOC_ID" required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
-                        <option value="">-- Choose Doctor --</option>
-                    </select>
-                </div>
+            <div>
+                <label for="APPT_DATE" class="block mb-1 font-semibold text-gray-700">Date:</label>
+                <input type="date" name="APPT_DATE" id="APPT_DATE" min="<?= date('Y-m-d') ?>" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none">
+            </div>
 
-                <div>
-                    <label for="APPT_DATE" class="block mb-1 font-semibold text-gray-700">Date:</label>
-                    <input type="date" name="APPT_DATE" id="APPT_DATE" min="<?= date('Y-m-d') ?>" required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none">
-                </div>
+            <div>
+                <label for="APPT_TIME" class="block mb-1 font-semibold text-gray-700">Time:</label>
+                <select name="APPT_TIME" id="APPT_TIME" required
+                    class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
+                    <option value="">-- Choose Time --</option>
+                </select>
+            </div>
 
-                <div>
-                    <label for="APPT_TIME" class="block mb-1 font-semibold text-gray-700">Time:</label>
-                    <select name="APPT_TIME" id="APPT_TIME" required
-                        class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none appearance-none">
-                        <option value="">-- Choose Time --</option>
-                    </select>
-                </div>
+            <button type="submit" name="create_appt" 
+                class="w-full p-3 mt-6 bg-[var(--primary)] text-white font-semibold rounded-lg hover:bg-sky-600 transition">
+                📝 Create Appointment
+            </button>
+        </form>
 
-                <!-- Create Button using primary color style -->
-                <button type="submit" name="create_appt" 
-                    class="w-full p-3 mt-6 bg-[var(--primary)] text-white font-semibold rounded-lg hover:bg-sky-600 transition">
-                    📝 Create Appointment
-                </button>
-            </form>
+        <a href="../patient_dashboard.php" class="block text-center mt-6 text-gray-600 font-medium hover:text-[var(--primary)] transition">
+            ⬅ Back to Dashboard
+        </a>
+    </div>
+</main>
 
-            <!-- Back link styled to match the dashboard's hover text -->
-            <a href="../patient_dashboard.php" class="block text-center mt-6 text-gray-600 font-medium hover:text-[var(--primary)] transition">
-                ⬅ Back to Dashboard
-            </a>
-        </div>
-    </main>
-    
-    <!-- ✅ FOOTER - APPLIED DASHBOARD STYLES -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
-
+<!-- FOOTER -->
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 <script>
 const serviceSelect = document.getElementById('SERV_ID');
@@ -199,6 +187,17 @@ function loadAvailableTimes() {
 
 doctorSelect.addEventListener('change', loadAvailableTimes);
 dateInput.addEventListener('change', loadAvailableTimes);
+
+// ✅ SweetAlert notification
+<?php if(!empty($alert['message'])): ?>
+Swal.fire({
+    icon: '<?= $alert['type'] ?>',
+    title: '<?= $alert['type']==='success' ? 'Success!' : 'Oops!' ?>',
+    text: '<?= $alert['message'] ?>',
+    confirmButtonColor: '<?= $alert['type']==='success' ? '#3085d6' : '#d33' ?>'
+});
+<?php endif; ?>
 </script>
+
 </body>
 </html>
