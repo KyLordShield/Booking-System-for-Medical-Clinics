@@ -2,23 +2,26 @@
 session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-// ---------- 1. AUTH CHECK ----------
+
+/* ---------- 1. AUTH CHECK ---------- */
 if (
     empty($_SESSION['USER_IS_SUPERADMIN']) ||
     $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
     $_SESSION['role'] !== 'admin'
 ) {
-   header("Location: ../../index.php");
+    header("Location: ../../index.php");
     exit;
 }
+
 require_once dirname(__DIR__, 2) . '/classes/Doctor.php';
 require_once dirname(__DIR__, 2) . '/classes/Specialization.php';
+require_once dirname(__DIR__, 2) . '/classes/User.php';          // NEW
 
 $doctorObj = new Doctor();
-$specObj = new Specialization();
+$specObj   = new Specialization();
+$userObj   = new User();                                      // NEW
 
 $loggedRole = $_SESSION['role'] ?? "";
-
 if ($loggedRole !== "admin" && $loggedRole !== "superadmin") {
     header("Location: ../index.php");
     exit;
@@ -28,6 +31,60 @@ if ($loggedRole !== "admin" && $loggedRole !== "superadmin") {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
     header('Content-Type: application/json');
 
+    $action = $_POST['action'] ?? '';
+
+    /* ---------- CREATE DOCTOR USER (new endpoint) ---------- */
+    if ($action === 'createDoctorUser') {
+        $doc_id   = (int)($_POST['doc_id'] ?? 0);
+        $username = trim($_POST['username'] ?? '');
+        $password = $_POST['password'] ?? '';
+
+        $errors = [];
+        if ($username === '') $errors[] = 'Username is required.';
+        if ($password === '') $errors[] = 'Password is required.';
+        if (strlen($password) < 6) $errors[] = 'Password must be at least 6 characters.';
+
+        if (!empty($errors)) {
+            echo json_encode(['success' => false, 'errors' => $errors]);
+            exit;
+        }
+
+        try {
+            // 1. Doctor must exist
+            $doc = $doctorObj->getById($doc_id);
+            if (!$doc) {
+                echo json_encode(['success' => false, 'message' => 'Doctor not found.']);
+                exit;
+            }
+
+            // 2. Doctor must NOT already have a user account
+            if ($userObj->existsByEntity('Doctor', $doc_id)) {
+                echo json_encode(['success' => false, 'message' => 'This doctor already has a user account.']);
+                exit;
+            }
+
+            // 3. Username must be unique
+            if ($userObj->isUsernameTaken($username)) {
+                echo json_encode(['success' => false, 'message' => 'Username already exists.']);
+                exit;
+            }
+
+            // 4. Create the user
+            $result = $userObj->createForEntity('Doctor', $doc_id, $username, $password, 0);
+            // $result is a string: "User created successfully!" or error
+            $ok = str_starts_with($result, 'User created successfully!');
+
+            echo json_encode([
+                'success' => $ok,
+                'message' => $ok ? 'User account created!' : $result
+            ]);
+        } catch (Exception $e) {
+            echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+        }
+        exit;
+    }
+
+    /* ---------- ORIGINAL INSERT / UPDATE ---------- */
     $id = $_POST['DOC_ID'] ?? "";
     $data = [
         'first'   => trim($_POST['DOC_FIRST_NAME'] ?? ''),
@@ -53,8 +110,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 
     try {
         if ($id === "") {
-            $ok = $doctorObj->insert($data);
-            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Doctor added' : 'Insert failed']);
+            $newDocId = $doctorObj->insert($data);               // assume insert() returns the new ID
+            $ok = $newDocId !== false;
+            $message = $ok ? 'Doctor added' : 'Insert failed';
+            // ---- RETURN NEW DOCTOR ID FOR USER-CREATION MODAL ----
+            echo json_encode([
+                'success'   => $ok,
+                'message'   => $message,
+                'newDocId'  => $ok ? $newDocId : null,
+                'docName'   => $ok ? $data['first'].' '.($data['middle'] ? $data['middle'].'. ' : '').$data['last'] : null
+            ]);
         } else {
             $ok = $doctorObj->update($id, $data);
             echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Doctor updated' : 'Update failed']);
@@ -93,13 +158,17 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <title>Admin — Doctor Management</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<style>
+    .modal{display:none;justify-content:center;align-items:center;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:1000;}
+    .modal-content{background:#fff;padding:20px;border-radius:8px;max-width:420px;width:90%;position:relative;}
+    .close-btn{position:absolute;top:8px;right:12px;font-size:24px;cursor:pointer;}
+    .error{color:#d00;margin-top:5px;font-size:0.9rem;}
+    #userModalErrors{margin-top:10px;}
+</style>
 </head>
 <body>
 
-<!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
 <h2>Doctor Management (Admin)</h2>
@@ -108,13 +177,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <form method="get" style="display:flex; gap:10px;">
     <input name="q" placeholder="Search..." value="<?=esc($search)?>">
     <button class="btn" type="submit">Search</button>
-    
     <?php if (!empty($search)): ?>
         <a href="doctors.php" class="btn" style="background:#777;">Reset</a>
     <?php endif; ?>
 </form>
-
-
 <button class="create-btn" onclick="openAddModal()">+ Add Doctor</button>
 </div>
 
@@ -151,37 +217,34 @@ $name = esc($d['DOC_FIRST_NAME']).' '.$midDot.esc($d['DOC_LAST_NAME']);
 </div>
 </main>
 
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
-<!-- ✅FOOTER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
-
-
-<!-- Modal -->
+<!-- ==================== DOCTOR MODAL ==================== -->
 <div class="modal" id="doctorModal">
 <div class="modal-content">
-<span class="close-btn" onclick="closeModal()">&times;</span>
+<span class="close-btn" onclick="closeModal('doctorModal')">&times;</span>
 <h2 id="modalTitle"></h2>
 
 <form id="doctorForm">
 <input type="hidden" name="DOC_ID" id="DOC_ID">
 
 <label>First Name</label>
-<input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME">
+<input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME" required>
 
 <label>Middle Initial</label>
-<input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT">
+<input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT" maxlength="1">
 
 <label>Last Name</label>
-<input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME">
+<input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME" required>
 
 <label>Email</label>
-<input type="email" id="DOC_EMAIL" name="DOC_EMAIL">
+<input type="email" id="DOC_EMAIL" name="DOC_EMAIL" required>
 
 <label>Contact</label>
-<input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM">
+<input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM" required>
 
 <label>Specialization</label>
-<select id="SPEC_ID" name="SPEC_ID">
+<select id="SPEC_ID" name="SPEC_ID" required>
 <?php foreach($specializations as $sp): ?>
 <option value="<?= esc($sp['SPEC_ID']) ?>"><?= esc($sp['SPEC_NAME']) ?></option>
 <?php endforeach; ?>
@@ -189,49 +252,118 @@ $name = esc($d['DOC_FIRST_NAME']).' '.$midDot.esc($d['DOC_LAST_NAME']);
 
 <button class="btn" type="submit">Save</button>
 </form>
+</div>
+</div>
 
+<!-- ==================== USER-CREATION MODAL ==================== -->
+<div class="modal" id="userModal">
+<div class="modal-content">
+<span class="close-btn" onclick="closeModal('userModal')">&times;</span>
+<h2 id="userModalTitle">Create Account for <span id="docFullName"></span></h2>
+
+<form id="userForm">
+<input type="hidden" name="doc_id" id="userDocId">
+<input type="hidden" name="action" value="createDoctorUser">
+
+<label>Username</label>
+<input type="text" id="username" name="username" required minlength="3">
+
+<label>Password</label>
+<input type="password" id="password" name="password" required minlength="6">
+
+<div id="userModalErrors"></div>
+
+<button class="btn" type="submit">Create Account</button>
+</form>
 </div>
 </div>
 
 <script>
-function showModal(){ document.getElementById('doctorModal').style.display = 'flex'; }
-function closeModal(){ document.getElementById('doctorModal').style.display = 'none'; }
+/* ---------- COMMON MODAL HELPERS ---------- */
+function showModal(id){ document.getElementById(id).style.display = 'flex'; }
+function closeModal(id){ document.getElementById(id).style.display = 'none'; }
 
+/* ---------- DOCTOR MODAL ---------- */
 function openAddModal(){
     document.getElementById('modalTitle').innerText = "Add Doctor";
     document.getElementById('doctorForm').reset();
     document.getElementById('DOC_ID').value = "";
-    showModal();
+    showModal('doctorModal');
 }
-
 function openEditModal(d){
     document.getElementById('modalTitle').innerText = "Edit Doctor";
     for (const key in d) {
-        if (document.getElementById(key)) {
-            document.getElementById(key).value = d[key];
-        }
+        const el = document.getElementById(key);
+        if (el) el.value = d[key] ?? '';
     }
-    showModal();
+    showModal('doctorModal');
 }
 
-// SUBMIT FORM
-document.getElementById('doctorForm').addEventListener('submit', async (e)=>{
+/* ---------- DOCTOR FORM SUBMIT ---------- */
+document.getElementById('doctorForm').addEventListener('submit', async e => {
     e.preventDefault();
     const form = new FormData(e.target);
-    const res = await fetch(location.pathname,{
-        method:"POST",
-        headers:{ "X-Requested-With":"XMLHttpRequest" },
+    const res = await fetch(location.pathname, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
         body: form
     });
     const json = await res.json();
+
+    // show server validation errors (if any)
+    if (json.errors) {
+        alert(json.errors.join('\n'));
+        return;
+    }
+
     alert(json.message);
-    if(json.success){
-        closeModal();
+    if (json.success) {
+        closeModal('doctorModal');
+        if (json.newDocId) {
+            // ---- NEW DOCTOR → OPEN USER MODAL ----
+            document.getElementById('docFullName').innerText = json.docName;
+            document.getElementById('userDocId').value = json.newDocId;
+            document.getElementById('userForm').reset();
+            document.getElementById('userModalErrors').innerHTML = '';
+            showModal('userModal');
+        } else {
+            location.reload();
+        }
+    }
+});
+
+/* ---------- USER FORM SUBMIT ---------- */
+document.getElementById('userForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    const res = await fetch(location.pathname, {
+        method: "POST",
+        headers: { "X-Requested-With": "XMLHttpRequest" },
+        body: form
+    });
+    const json = await res.json();
+
+    const errDiv = document.getElementById('userModalErrors');
+    errDiv.innerHTML = '';
+
+    if (json.errors) {
+        json.errors.forEach(msg => {
+            const p = document.createElement('p');
+            p.className = 'error';
+            p.textContent = msg;
+            errDiv.appendChild(p);
+        });
+        return;
+    }
+
+    alert(json.message);
+    if (json.success) {
+        closeModal('userModal');
         location.reload();
     }
 });
 
-// DELETE
+/* ---------- DELETE ---------- */
 async function deleteDoc(id){
     if(!confirm("Delete this doctor?")) return;
     const res = await fetch(`?delete=${id}`,{

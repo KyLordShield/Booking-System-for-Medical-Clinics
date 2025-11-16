@@ -52,12 +52,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 
     try {
         if ($id === "") {
-            $ok = $doctorObj->insert($data);
-            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Doctor added' : 'Insert failed']);
-        } else {
-            $ok = $doctorObj->update($id, $data);
-            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Profile updated' : 'Update failed']);
-        }
+    $newId = $doctorObj->insert($data);
+
+    if ($newId) {
+        echo json_encode([
+            'success' => true,
+            'message' => 'Doctor added',
+            'newId'   => $newId
+        ]);
+    } else {
+        echo json_encode(['success' => false, 'message' => 'Insert failed']);
+    }
+}
+
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
@@ -283,7 +290,7 @@ document.getElementById('doctorForm').addEventListener('submit', async function(
 
     if(json.success){
         closeModal();
-        location.reload();
+         window.location.href = "/Booking-System-For-Medical-Clinics/public/register/register_doctor.php?doc=" + json.newId;
     }
 });
 

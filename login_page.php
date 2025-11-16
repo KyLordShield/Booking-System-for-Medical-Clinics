@@ -72,24 +72,6 @@ body {
 }
 
 
-
-.logo {
-    display: flex;
-    align-items: center;
-    color: white;
-    font-family: 'Kalnia', serif;
-    font-size: 22px;
-    font-weight: bold;
-}
-
-.logo img {
-    width: 45px;
-    height: 45px;
-    margin-right: 10px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
 /* MAIN CONTAINER */
 .main-container {
     flex-grow: 1;

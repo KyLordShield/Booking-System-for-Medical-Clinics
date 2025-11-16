@@ -85,7 +85,7 @@ class User {
             $stmt2 = $this->conn->prepare($sql2);
             $stmt2->execute([
                 ':username' => $username,
-                ':password' => $password,
+                ':password' => password_hash($password, PASSWORD_DEFAULT),
                 ':pat_id' => $pat_id
             ]);
 
@@ -131,7 +131,7 @@ public function createForEntity($role, $entity_id, $username, $password, $is_sup
             'DOC_ID' => null,
             'STAFF_ID' => null,
             'username' => $username,
-            'password' => $password, // store as plain text (not recommended for production)
+            'password' =>  password_hash($password, PASSWORD_DEFAULT), // store as plain text (not recommended for production)
 
             'is_superadmin' => $is_superadmin
         ];
@@ -164,7 +164,8 @@ public function updateUser($user_id, $username, $password) {
     $stmt = $this->conn->prepare("
         UPDATE USERS SET USER_NAME = ?, USER_PASSWORD = ? WHERE USER_ID = ?
     ");
-    return $stmt->execute([$username, $password, $user_id]);
+    return $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT), $user_id]);
+
 }
 
 

@@ -20,7 +20,7 @@ class Login {
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 // ⚠️ For testing: plain text password (replace later with password_verify)
-                if ($password === $user['USER_PASSWORD']) {
+                 if (password_verify($password, $user['USER_PASSWORD'])) {
 
                     // Update last login
                     $update = $this->conn->prepare("UPDATE USERS SET USER_LAST_LOGIN = NOW() WHERE USER_ID = :id");
