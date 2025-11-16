@@ -3,6 +3,10 @@ session_start();
 require_once __DIR__ . '/../../classes/Payment.php';
 require_once __DIR__ . '/../../classes/PaymentMethod.php';
 require_once __DIR__ . '/../../classes/PaymentStatus.php';
+require_once dirname(__DIR__, 2) . '/classes/Medical_Records.php';
+require_once dirname(__DIR__, 2) . '/config/Database.php';
+$db = new Database();
+$conn = $db->connect();
 
 /* ---------- 1. AUTH CHECK ---------- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
@@ -13,10 +17,34 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
 $payment = new Payment();
 $method = new PaymentMethod();
 $status = new PaymentStatus();
+$mr = new MedicalRecord();
 
 $payments = $payment->getAllPayments();
 $methods = $method->getAllMethods();
 $statuses = $status->getAllStatuses();
+$medicalRecords = $mr->getAll();
+
+// Fetch appointments for dropdown
+$apptOptions = [];
+try {
+    $stmt = $conn->prepare("
+        SELECT a.APPT_ID, CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_LAST_NAME) AS patient_name
+        FROM appointment a
+        LEFT JOIN patient p ON p.PAT_ID = a.PAT_ID
+        ORDER BY a.APPT_ID DESC
+    ");
+    $stmt->execute();
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach ($rows as $r) {
+        $apptOptions[] = [
+            'APPT_ID' => $r['APPT_ID'],
+            'label'   => "Appt#".$r['APPT_ID']." — ".$r['patient_name']
+        ];
+    }
+} catch (Exception $e) {
+    // ignore or log error
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -108,7 +136,15 @@ $statuses = $status->getAllStatuses();
   <div class="bg-white p-8 rounded-2xl w-[400px] relative">
     <h3 class="text-xl font-bold mb-4 text-[var(--primary)]">Add Payment</h3>
     <form id="formAddPayment" class="space-y-3">
-      <input name="appt_id" placeholder="Appointment ID" class="input-box w-full" required>
+      <select name="appt_id" class="input-box w-full" required>
+    <option value="">Select Appointment</option>
+    <?php foreach ($apptOptions as $opt): ?>
+        <option value="<?= htmlspecialchars($opt['APPT_ID']) ?>">
+            <?= htmlspecialchars($opt['label']) ?>
+        </option>
+    <?php endforeach; ?>
+</select>
+
       <input name="amount" placeholder="Amount Paid" class="input-box w-full" required>
       <select name="method_id" class="input-box w-full" required>
         <option value="">Select Method</option>

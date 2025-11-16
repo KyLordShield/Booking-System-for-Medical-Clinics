@@ -137,9 +137,6 @@ function esc($v) {
                 Browse Doctors
               </button>
 
-              <a href="?delete=<?= $s['SPEC_ID'] ?>"
-                onclick="return confirm('Delete specialization?')"
-                class="btn bg-[var(--primary)] text-white px-6 py-2 rounded-full ml-2">Delete</a>
 
             </td>
           </tr>

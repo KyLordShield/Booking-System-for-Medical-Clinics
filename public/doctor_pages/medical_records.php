@@ -202,16 +202,38 @@ if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
 $search = trim($_GET['q'] ?? '');
 $records = $mr->getRecordsByDoctor($loggedDocId, $search);
 
-/* ---------- Appointment options for select (APPT_ID list) ---------- */
+/* ---------- Appointment options for select (APPT_ID + patient name) ---------- */
 $apptOptions = [];
 try {
-    $stmt = $conn->prepare("SELECT APPT_ID FROM appointment WHERE DOC_ID = ? ORDER BY APPT_ID DESC");
+    $stmt = $conn->prepare("
+        SELECT 
+            a.APPT_ID,
+            a.APPT_DATE,
+            CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_LAST_NAME) AS patient_name
+        FROM appointment a
+        LEFT JOIN patient p ON p.PAT_ID = a.PAT_ID
+        WHERE a.DOC_ID = ?
+        ORDER BY a.APPT_ID DESC
+    ");
     $stmt->execute([$loggedDocId]);
+
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    foreach ($rows as $r) $apptOptions[] = ['APPT_ID'=>$r['APPT_ID'], 'label'=>'Appt#'.$r['APPT_ID']];
+
+    foreach ($rows as $r) {
+        $label = "Appt#" . $r['APPT_ID'];
+        if (!empty($r['patient_name'])) {
+            $label .= " — " . $r['patient_name'];
+        }
+        $apptOptions[] = [
+            'APPT_ID' => $r['APPT_ID'],
+            'APPT_DATE' => $r['APPT_DATE'],
+            'label'   => $label
+        ];
+    }
 } catch (Exception $e) {
     // leave empty
 }
+
 
 /* ---------- Helpers ---------- */
 function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
@@ -293,9 +315,15 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
       <label>Appointment (APPT_ID)</label>
       <select id="APPT_ID" name="APPT_ID" required>
         <option value="">-- Select Appointment --</option>
-        <?php foreach ($apptOptions as $opt): ?>
-          <option value="<?= esc($opt['APPT_ID']) ?>"><?= esc($opt['label']) ?></option>
-        <?php endforeach; ?>
+        <<?php foreach ($apptOptions as $opt): ?>
+  <option 
+    value="<?= esc($opt['APPT_ID']) ?>" 
+    data-date="<?= esc($opt['APPT_DATE']) ?>"
+  >
+    <?= esc($opt['label']) ?>
+  </option>
+<?php endforeach; ?>
+
       </select>
 
       <label>Diagnosis</label>
@@ -305,7 +333,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
       <textarea id="MED_REC_PRESCRIPTION" name="MED_REC_PRESCRIPTION" rows="2"></textarea>
 
       <label>Visit Date</label>
-      <input type="date" id="MED_REC_VISIT_DATE" name="MED_REC_VISIT_DATE" required>
+      <input type="date" id="MED_REC_VISIT_DATE" name="MED_REC_VISIT_DATE" required readonly>
 
       <div style="margin-top:12px;">
         <button type="button" class="btn-outline" onclick="closeModal()">Cancel</button>
@@ -409,6 +437,15 @@ async function deleteRecord(id){
     alert('Network error');
   }
 }
+document.getElementById('APPT_ID').addEventListener('change', function() {
+    const selected = this.options[this.selectedIndex];
+    const date = selected.getAttribute('data-date');
+    if (date) {
+        document.getElementById('MED_REC_VISIT_DATE').value = date;
+    } else {
+        document.getElementById('MED_REC_VISIT_DATE').value = '';
+    }
+});
 
 // close on backdrop
 recordModal.addEventListener('click', function(e){
