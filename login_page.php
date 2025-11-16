@@ -197,7 +197,7 @@ body {
     justify-content: flex-start; /* move text upward */
     padding-left: 170px; /* space from login */
     padding-right: 40px;
-    margin-top: -100px; /* lift the text slightly upward */
+    margin-top: 0px; /* lift the text slightly upward */
 }
 
 .marketing-headline {
