@@ -220,12 +220,7 @@ body {
     color: white;
 }
 
-/* FLAT FOOTER */
-.footer {
-    background-color: var(--color-dark-blue);
-    height: 100px;
-    margin-top: 60px;
-}
+
 </style>
 </head>
 <body>
@@ -268,7 +263,7 @@ include __DIR__ . '/partials/guest_header.php';
     </div>
 </div>
 
-<footer class="footer"></footer>
+<?php include __DIR__ . "/partials/footer.php"?>
 
 </body>
 </html>

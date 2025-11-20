@@ -43,327 +43,302 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
     <title>Patient Dashboard | Medicina</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <!-- ✅ Tailwind CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- ✅ Global Custom CSS -->
+    <!-- Use existing global CSS (your palette and rules) -->
     <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+    <style>
+      /* Small page-specific tweaks to enhance corporate feel without changing your palette */
+      .dashboard-wrapper { max-width: 1200px; margin: 0 auto; }
+      .top-row { display:flex; gap:30px; align-items:center; justify-content:space-between; }
+      .profile-summary { display:flex; gap:24px; align-items:center; }
+      .profile-avatar { width:120px; height:120px; border-radius:18px; background:var(--white); display:flex; align-items:center; justify-content:center; box-shadow:0 6px 18px rgba(0,0,0,0.08); }
+      .profile-avatar img{ width:88px; }
+      .welcome { font-size:20px; color:var(--primary); }
+      .patient-name { font-size:28px; font-weight:700; color:var(--primary); }
+      .patient-meta { color:#214b58; font-weight:600; }
+      .patient-actions { display:flex; gap:12px; margin-top:12px; }
+      .muted { color:#315a68; }
+      .status-pill { padding:6px 10px; border-radius:999px; font-weight:700; font-size:13px; }
+      .status-pending { background:var(--light); color:var(--primary); }
+      .table-actions .btn { padding:8px 12px; border-radius:18px; }
+      .card-legend { display:flex; gap:12px; align-items:center; justify-content:flex-end; }
+      .small { font-size:13px; color:#12323a; }
+    </style>
 </head>
-<!-- Applying doctor's dashboard body styles -->
-<body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
+<body>
 
-  <!-- ✅ HEADER LINK -->
+  <!-- Header (keeps your partial so server-side nav works) -->
   <?php include dirname(__DIR__) . "/partials/header.php"; ?>
 
-    <!-- ✅ MAIN CONTENT - APPLIED DOCTOR'S STYLES -->
-    <main class="flex flex-col flex-1 px-20 py-16 w-full"> 
-        
-        <?php if ($message): ?>
-            <!-- Assuming 'message' class is defined in style.css for alerts -->
-            <div class="message p-4 mb-4 rounded-lg bg-green-100 text-green-800 font-medium">
-                <?= htmlspecialchars($message) ?>
-            </div>
-        <?php endif; ?>
+  <main class="dashboard-wrapper" style="padding:40px 20px 80px;">
 
-        <!-- Patient Info Section - Styled to mimic Doctor's Profile Card/Info Layout -->
-        <div class="flex items-start mb-10 w-full">
-            
-            <!-- Profile Card -->
-            <div class="profile-card bg-[var(--light)] w-[250px] h-[250px] rounded-[40px] flex justify-center items-center shadow-md flex-shrink-0">
-                <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" alt="Patient Icon" class="w-[130px]">
-            </div>
-
-            <!-- Patient Info -->
-            <div class="patient-info ml-14 flex-1">
-                <h1 class="text-[45px] font-bold text-[var(--primary)]">Welcome,</h1>
-                <p class="text-[20px] mt-1 text-gray-800"><?= htmlspecialchars(($patient['PAT_FIRST_NAME'] ?? '') . ' ' . ($patient['PAT_LAST_NAME'] ?? '')) ?></p>
-                <p class="text-[18px] mt-1 text-gray-700">Patient ID: <?= htmlspecialchars($pat_id) ?></p>
-
-                <!-- Patient Details -->
-                <div id="viewInfo" class="patient-details mt-4 text-lg">
-                    <p><strong class="font-semibold">Email:</strong> <?= htmlspecialchars($patient['PAT_EMAIL'] ?? '') ?></p>
-                    <p><strong class="font-semibold">Contact:</strong> <?= htmlspecialchars($patient['PAT_CONTACT_NUM'] ?? '') ?></p>
-                    <p><strong class="font-semibold">Address:</strong> <?= htmlspecialchars($patient['PAT_ADDRESS'] ?? '') ?></p>
-                    <p><strong class="font-semibold">Gender:</strong> <?= htmlspecialchars($patient['PAT_GENDER'] ?? '') ?></p>
-                    <p><strong class="font-semibold">Date of Birth:</strong> <?= htmlspecialchars($patient['PAT_DOB'] ?? '') ?></p>
-                </div>
-                
-                <div class="patient-actions mt-5 flex gap-4">
-                    <!-- Update Button: Uses doctor's update button styles -->
-                    <button id="editInfo" class="btn-update bg-[var(--light)] px-8 py-2 rounded-full font-semibold hover:bg-[#bfe1eb] transition">
-                        🖋 UPDATE INFO
-                    </button>
-                    <!-- Create Appointment Button: Mimics the doctor's general button style -->
-                    <a href="patient_pages/create_appointment.php" class="bg-[var(--primary)] text-white px-8 py-2 rounded-full font-semibold hover:bg-sky-600 transition flex items-center">
-                        ➕ Create Appointment
-                    </a>
-                </div>
-            </div>
+    <?php if ($message): ?>
+        <div class="message p-4 mb-6 rounded-lg bg-light text-[var(--primary)] font-medium" role="status">
+            <?= htmlspecialchars($message) ?>
         </div>
+    <?php endif; ?>
 
-        <!-- Update Form - Modal -->
-        <form id="updateForm" class="modal fixed z-10 left-0 top-0 w-full h-full overflow-auto bg-black bg-opacity-40 hidden justify-center items-center" method="post" action="">
-            <div class="modal-content bg-white p-8 rounded-xl w-4/5 max-w-lg shadow-2xl relative">
-                <h2 class="text-2xl font-bold text-[var(--primary)] mb-4">Update Info</h2>
-                <span class="close-btn absolute top-4 right-6 text-xl font-bold cursor-pointer" id="cancelEdit">❌</span>
-
-                <input type="text" name="PAT_FIRST_NAME" value="<?= htmlspecialchars($patient['PAT_FIRST_NAME'] ?? '') ?>" placeholder="First Name" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <input type="text" name="PAT_MIDDLE_INIT" value="<?= htmlspecialchars($patient['PAT_MIDDLE_INIT'] ?? '') ?>" placeholder="Middle Initial" class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <input type="text" name="PAT_LAST_NAME" value="<?= htmlspecialchars($patient['PAT_LAST_NAME'] ?? '') ?>" placeholder="Last Name" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <input type="email" name="PAT_EMAIL" value="<?= htmlspecialchars($patient['PAT_EMAIL'] ?? '') ?>" placeholder="Email" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <input type="text" name="PAT_CONTACT_NUM" value="<?= htmlspecialchars($patient['PAT_CONTACT_NUM'] ?? '') ?>" placeholder="Contact Number" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <input type="text" name="PAT_ADDRESS" value="<?= htmlspecialchars($patient['PAT_ADDRESS'] ?? '') ?>" placeholder="Address" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <select name="PAT_GENDER" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg appearance-none">
-                    <option value="Male" <?= ($patient['PAT_GENDER'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
-                    <option value="Female" <?= ($patient['PAT_GENDER'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
-                </select>
-                <input type="date" name="PAT_DOB" value="<?= htmlspecialchars($patient['PAT_DOB'] ?? '') ?>" required class="w-full p-3 mb-3 border border-gray-300 rounded-lg">
-                <button type="submit" name="update_info" class="create-btn w-full p-3 mt-4 bg-[var(--primary)] text-white font-semibold rounded-lg hover:bg-sky-600 transition">
-                    💾 Save Changes
-                </button>
-            </div>
-        </form>
-
-
-        <!-- Appointments Section - STYLED TO MATCH REFERENCE TABLE -->
-        <div class="appointments w-full mt-6">
-            <h2 class="text-3xl font-bold text-[var(--primary)] mb-4">Your Appointments</h2>
-            <?php if (!empty($appointments)): ?>
-                <!-- Table Container Styled from Reference -->
-                <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-md">
-                    <table class="w-full border-collapse text-[var(--primary)]">
-                        <thead>
-                            <!-- Header Row Styled from Reference -->
-                            <tr class="border-b border-gray-300">
-                                <!-- Table Headers Styled from Reference -->
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">ID</th>
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">Date</th>
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">Time</th>
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">Service</th>
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">Doctor</th>
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">Status</th>
-                                <th class="py-3 px-4 text-left text-[var(--primary)]">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        <?php foreach ($appointments as $appt): ?>
-                            <!-- Table Body Rows Styled from Reference -->
-                            <tr data-doc-id="<?= $appt['DOC_ID'] ?>" class="border-b border-gray-300 hover:bg-gray-50 transition">
-                                <td class="py-3 px-4"><?= htmlspecialchars($appt['APPT_ID']) ?></td>
-                                <td class="py-3 px-4"><?= htmlspecialchars($appt['APPT_DATE']) ?></td>
-                                <td class="py-3 px-4"><?= htmlspecialchars($appt['APPT_TIME']) ?></td>
-                                <td class="py-3 px-4"><?= htmlspecialchars($appt['SERV_NAME'] ?? 'N/A') ?></td>
-                                <td class="py-3 px-4"><?= htmlspecialchars($appt['DOCTOR_NAME'] ?? 'N/A') ?></td>
-                                <td class="py-3 px-4"><?= htmlspecialchars($appt['STAT_NAME'] ?? 'Pending') ?></td>
-                                <td class="py-3 px-4 flex gap-2">
-                                    <!-- Using reference button style, maintaining distinction -->
-                                    <button class="appt-action appt-update px-4 py-1 rounded-full text-white bg-yellow-500 hover:bg-yellow-600 transition text-sm font-medium">✏ Update</button>
-                                    <button class="appt-action appt-cancel px-4 py-1 rounded-full text-white bg-red-500 hover:bg-red-600 transition text-sm font-medium" 
-                                            data-appt-id="<?= $appt['APPT_ID'] ?>" 
-                                            <?= in_array($appt['STAT_NAME'], ['Completed', 'Cancelled']) ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '' ?>>
-                                                ❌ Cancel
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                            <!-- Empty row to simulate 'no more records found' look if needed -->
-                            <tr class="hover:bg-gray-50">
-                                <td colspan="7" class="py-6 text-center text-gray-500">End of appointment list.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            <?php else: ?>
-                <p class="text-lg text-gray-700">You currently have no appointments.</p>
-            <?php endif; ?>
+    <!-- TOP ROW: Profile + Quick Actions -->
+    <section class="top-row mb-8">
+      <div class="profile-summary">
+        <div class="profile-avatar">
+          <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" alt="Patient Avatar">
         </div>
-    </main>
+        <div>
+          <div class="welcome">Welcome back,</div>
+          <div class="patient-name"><?= htmlspecialchars(($patient['PAT_FIRST_NAME'] ?? '') . ' ' . ($patient['PAT_LAST_NAME'] ?? '')) ?></div>
+          <div class="muted">Patient ID: <strong class="patient-meta"><?= htmlspecialchars($pat_id) ?></strong></div>
 
-    <!-- ✅ FOOTER - APPLIED DOCTOR'S STYLES -->
-   
+          <div class="patient-actions">
+            <button id="openUpdate" class="btn" aria-haspopup="dialog">🖋 Update Profile</button>
+            <a href="patient_pages/create_appointment.php" class="btn create-btn">➕ Create Appointment</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cards: quick stats -->
+      <div class="dashboard-cards" style="max-width:520px; width:100%;">
+        <div class="card">
+          <div class="small">Upcoming Appointments</div>
+          <h2><?= count(array_filter($appointments, function($a){ return !in_array($a['STAT_NAME'], ['Cancelled','Completed']); })) ?></h2>
+          <p class="small">Appointments that require your attention</p>
+        </div>
+        <div class="card">
+          <div class="small">Total Appointments</div>
+          <h2><?= count($appointments) ?></h2>
+          <p class="small">All-time scheduled appointments</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PATIENT DETAILS (read-only) -->
+    <section class="table-container mb-8">
+      <h2 style="margin-bottom:18px;">My Profile</h2>
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+        <div>
+          <p><strong>Email</strong></p>
+          <p class="muted"><?= htmlspecialchars($patient['PAT_EMAIL'] ?? '') ?></p>
+        </div>
+        <div>
+          <p><strong>Contact</strong></p>
+          <p class="muted"><?= htmlspecialchars($patient['PAT_CONTACT_NUM'] ?? '') ?></p>
+        </div>
+        <div>
+          <p><strong>Address</strong></p>
+          <p class="muted"><?= htmlspecialchars($patient['PAT_ADDRESS'] ?? '') ?></p>
+        </div>
+        <div>
+          <p><strong>Gender</strong></p>
+          <p class="muted"><?= htmlspecialchars($patient['PAT_GENDER'] ?? '') ?></p>
+        </div>
+        <div>
+          <p><strong>Date of Birth</strong></p>
+          <p class="muted"><?= htmlspecialchars($patient['PAT_DOB'] ?? '') ?></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- APPOINTMENTS -->
+    <section>
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+        <h2>Your Appointments</h2>
+        <div class="card-legend">
+          <span class="status-pill status-pending">Pending</span>
+        </div>
+      </div>
+
+      <?php if (!empty($appointments)): ?>
+        <div class="table-container">
+          <table aria-describedby="appointments-desc">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Service</th>
+                <th>Doctor</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($appointments as $appt): ?>
+                <tr data-doc-id="<?= $appt['DOC_ID'] ?>">
+                  <td><?= htmlspecialchars($appt['APPT_ID']) ?></td>
+                  <td><?= htmlspecialchars($appt['APPT_DATE']) ?></td>
+                  <td><?= htmlspecialchars($appt['APPT_TIME']) ?></td>
+                  <td><?= htmlspecialchars($appt['SERV_NAME'] ?? 'N/A') ?></td>
+                  <td><?= htmlspecialchars($appt['DOCTOR_NAME'] ?? 'N/A') ?></td>
+                  <td><?= htmlspecialchars($appt['STAT_NAME'] ?? 'Pending') ?></td>
+                  <td class="table-actions">
+                    <button class="btn appt-update">Reschedule</button>
+                    <button class="btn appt-cancel" data-appt-id="<?= $appt['APPT_ID'] ?>" <?= in_array($appt['STAT_NAME'], ['Completed', 'Cancelled']) ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '' ?>>Cancel</button>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+              <tr>
+                <td colspan="7" style="text-align:center; padding:18px; color:#12323a;">End of appointment list.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      <?php else: ?>
+        <div class="table-container">
+          <p class="muted">You currently have no appointments. Use the Create Appointment button to schedule one.</p>
+        </div>
+      <?php endif; ?>
+    </section>
+
+  </main>
+
+  <!-- Footer (keeps your partial) -->
   <?php include dirname(__DIR__) . "/partials/footer.php"; ?>
 
-<!-- Existing JavaScript logic remains here -->
+  <!-- UPDATE PROFILE MODAL (keeps the same form names so backend remains unchanged) -->
+  <div id="updateModal" class="modal" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
+      <span class="close-btn" id="closeModal">×</span>
+      <h2 id="updateTitle">Update Profile</h2>
+      <form method="post" action="">
+        <label>First Name
+          <input type="text" name="PAT_FIRST_NAME" value="<?= htmlspecialchars($patient['PAT_FIRST_NAME'] ?? '') ?>" required>
+        </label>
+        <label>Middle Initial
+          <input type="text" name="PAT_MIDDLE_INIT" value="<?= htmlspecialchars($patient['PAT_MIDDLE_INIT'] ?? '') ?>">
+        </label>
+        <label>Last Name
+          <input type="text" name="PAT_LAST_NAME" value="<?= htmlspecialchars($patient['PAT_LAST_NAME'] ?? '') ?>" required>
+        </label>
+        <label>Email
+          <input type="email" name="PAT_EMAIL" value="<?= htmlspecialchars($patient['PAT_EMAIL'] ?? '') ?>" required>
+        </label>
+        <label>Contact Number
+          <input type="text" name="PAT_CONTACT_NUM" value="<?= htmlspecialchars($patient['PAT_CONTACT_NUM'] ?? '') ?>" required>
+        </label>
+        <label>Address
+          <input type="text" name="PAT_ADDRESS" value="<?= htmlspecialchars($patient['PAT_ADDRESS'] ?? '') ?>" required>
+        </label>
+        <label>Gender
+          <select name="PAT_GENDER" required>
+            <option value="Male" <?= ($patient['PAT_GENDER'] ?? '') === 'Male' ? 'selected' : '' ?>>Male</option>
+            <option value="Female" <?= ($patient['PAT_GENDER'] ?? '') === 'Female' ? 'selected' : '' ?>>Female</option>
+          </select>
+        </label>
+        <label>Date of Birth
+          <input type="date" name="PAT_DOB" value="<?= htmlspecialchars($patient['PAT_DOB'] ?? '') ?>" required>
+        </label>
+
+        <button type="submit" name="update_info" class="create-btn">💾 Save Changes</button>
+      </form>
+    </div>
+  </div>
+
 <script>
-// --------------------- TOGGLE UPDATE INFO FORM ---------------------
-const editBtn = document.getElementById('editInfo');
-const cancelBtn = document.getElementById('cancelEdit');
-const viewDiv = document.getElementById('viewInfo');
-const formDiv = document.getElementById('updateForm');
+// Modal controls
+const openBtn = document.getElementById('openUpdate');
+const modal = document.getElementById('updateModal');
+const closeModal = document.getElementById('closeModal');
+openBtn && openBtn.addEventListener('click', () => { modal.style.display = 'flex'; modal.setAttribute('aria-hidden', 'false'); });
+closeModal && closeModal.addEventListener('click', () => { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); });
+window.addEventListener('click', (e) => { if (e.target === modal) { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); } });
 
-editBtn.addEventListener('click', () => {
-    viewDiv.style.display = 'none';
-    formDiv.style.display = 'flex'; // modal flex center
-    editBtn.style.display = 'none';
-});
-
-cancelBtn.addEventListener('click', () => {
-    formDiv.style.display = 'none';
-    viewDiv.style.display = 'block';
-    editBtn.style.display = 'inline-block';
-});
-
-// --------------------- DISABLE CANCEL & UPDATE BUTTONS ON PAGE LOAD ---------------------
-document.querySelectorAll('tr').forEach(row => {
-    const statusCell = row.querySelector('td:nth-child(6)');
-    const cancelBtn = row.querySelector('.appt-cancel');
-    const updateBtn = row.querySelector('.appt-update');
-
-    if (statusCell && cancelBtn && updateBtn) {
-        const status = statusCell.textContent.trim();
-        if (status === 'Cancelled' || status === 'Completed') {
-            cancelBtn.disabled = true;
-            updateBtn.disabled = true;
-            cancelBtn.style.opacity = 0.5;
-            cancelBtn.style.cursor = 'not-allowed';
-            updateBtn.style.opacity = 0.5;
-            updateBtn.style.cursor = 'not-allowed';
-        }
+// Disable actions for completed/cancelled rows on load
+document.querySelectorAll('tbody tr').forEach(row => {
+  const statusCell = row.querySelector('td:nth-child(6)');
+  const cancelBtn = row.querySelector('.appt-cancel');
+  const updateBtn = row.querySelector('.appt-update');
+  if (statusCell && cancelBtn && updateBtn) {
+    const status = statusCell.textContent.trim();
+    if (status === 'Cancelled' || status === 'Completed') {
+      cancelBtn.disabled = true; updateBtn.disabled = true;
+      cancelBtn.style.opacity = 0.5; cancelBtn.style.cursor = 'not-allowed';
+      updateBtn.style.opacity = 0.5; updateBtn.style.cursor = 'not-allowed';
     }
+  }
 });
 
-// --------------------- CANCEL APPOINTMENT ---------------------
+// Cancel appointment (keeps original ajax endpoint)
 document.querySelectorAll('.appt-cancel').forEach(btn => {
-    btn.addEventListener('click', function() {
-        const row = btn.closest('tr');
-        const apptId = btn.getAttribute('data-appt-id');
+  btn.addEventListener('click', function() {
+    const row = btn.closest('tr');
+    const apptId = btn.getAttribute('data-appt-id');
+    if (!confirm('Are you sure you want to cancel appointment ID ' + apptId + '?')) return;
 
-        const isConfirmed = confirmCustom('Are you sure you want to cancel appointment ID ' + apptId + '?');
-        if (!isConfirmed) return;
-
-        fetch('../ajax/cancel_appointment.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: 'APPT_ID=' + encodeURIComponent(apptId)
-        })
-        .then(res => res.text())
-        .then(msg => {
-            alertCustom(msg);
-            const statusCell = row.querySelector('td:nth-child(6)');
-            if (statusCell) statusCell.textContent = 'Cancelled';
-
-            btn.disabled = true;
-            btn.style.opacity = 0.5;
-            btn.style.cursor = 'not-allowed';
-
-            const updateBtn = row.querySelector('.appt-update');
-            if (updateBtn) {
-                updateBtn.disabled = true;
-                updateBtn.style.opacity = 0.5;
-                updateBtn.style.cursor = 'not-allowed';
-            }
-        })
-        .catch(() => alertCustom('Error cancelling appointment.'));
-    });
+    fetch('../ajax/cancel_appointment.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: 'APPT_ID=' + encodeURIComponent(apptId)
+    })
+    .then(res => res.text())
+    .then(msg => {
+      alert(msg);
+      const statusCell = row.querySelector('td:nth-child(6)');
+      if (statusCell) statusCell.textContent = 'Cancelled';
+      btn.disabled = true; btn.style.opacity = 0.5; btn.style.cursor = 'not-allowed';
+      const updateBtn = row.querySelector('.appt-update'); if (updateBtn) { updateBtn.disabled = true; updateBtn.style.opacity = 0.5; updateBtn.style.cursor = 'not-allowed'; }
+    })
+    .catch(() => alert('Error cancelling appointment.'));
+  });
 });
 
-// --------------------- RESCHEDULE APPOINTMENT ---------------------
+// Reschedule flow (keeps original ajax endpoints)
 document.querySelectorAll('.appt-update').forEach(btn => {
-    btn.addEventListener('click', function() {
-        if (btn.disabled) return; // skip disabled
+  btn.addEventListener('click', function() {
+    if (btn.disabled) return;
+    const row = btn.closest('tr');
+    document.querySelectorAll('.reschedule-row').forEach(r => r.remove());
+    const apptId = row.querySelector('td').textContent.trim();
+    const docId = row.dataset.docId;
 
-        const row = btn.closest('tr');
-        document.querySelectorAll('.reschedule-row').forEach(r => r.remove());
+    const resRow = document.createElement('tr');
+    resRow.className = 'reschedule-row';
+    resRow.innerHTML = `\
+      <td colspan="7">\
+        <form class="reschedule-form" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">\
+          <label class="small">New Date:<input type="date" name="APPT_DATE" min="<?= date('Y-m-d') ?>" required></label>\
+          <label class="small">New Time:<select name="APPT_TIME" required><option value="">-- Choose --</option></select></label>\
+          <button type="submit" class="btn">Save</button>\
+          <button type="button" class="btn" id="cancelRes">Cancel</button>\
+        </form>\
+      </td>`;
 
-        const apptId = row.querySelector('td').textContent;
-        const docId = row.dataset.docId;
+    row.insertAdjacentElement('afterend', resRow);
+    const form = resRow.querySelector('.reschedule-form');
+    const dateInput = form.querySelector('input[name="APPT_DATE"]');
+    const timeSelect = form.querySelector('select[name="APPT_TIME"]');
 
-        const rescheduleRow = document.createElement('tr');
-        rescheduleRow.classList.add('reschedule-row', 'bg-gray-100', 'border-b', 'border-gray-300');
-        rescheduleRow.innerHTML = `
-            <td colspan="7" class="py-4 px-4">
-                <form class="reschedule-form flex flex-wrap gap-4 items-center justify-start text-gray-800">
-                    <label class="font-medium text-sm">New Date:</label>
-                    <input type="date" name="APPT_DATE" min="<?= date('Y-m-d') ?>" required class="p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[var(--primary)] outline-none">
-                    <label class="font-medium text-sm">New Time:</label>
-                    <select name="APPT_TIME" required class="p-2 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-[var(--primary)] outline-none">
-                        <option value="">-- Choose Time --</option>
-                    </select>
-                    <button type="submit" class="bg-[var(--primary)] text-white py-2 px-4 rounded-full font-medium hover:bg-sky-600 transition">Save Reschedule</button>
-                    <button type="button" class="cancel-reschedule bg-gray-400 text-white py-2 px-4 rounded-full font-medium hover:bg-gray-500 transition">Cancel</button>
-                </form>
-            </td>
-        `;
-        row.insertAdjacentElement('afterend', rescheduleRow);
-
-        const form = rescheduleRow.querySelector('.reschedule-form');
-        const dateInput = form.querySelector('input[name="APPT_DATE"]');
-        const timeSelect = form.querySelector('select[name="APPT_TIME"]');
-
-        dateInput.addEventListener('change', () => {
-            if (!dateInput.value) return;
-            timeSelect.innerHTML = '<option value="">Loading...</option>';
-            fetch(`../ajax/get_available_times.php?doc_id=${docId}&date=${dateInput.value}`)
-                .then(res => res.json())
-                .then(times => {
-                    timeSelect.innerHTML = '<option value="">-- Choose Time --</option>';
-                    if (times.length === 0) timeSelect.innerHTML = '<option value="" disabled>No times available</option>';
-                    times.forEach(slot => {
-                        const opt = document.createElement('option');
-                        opt.value = slot.time;
-                        opt.textContent = `${slot.time} - ${slot.endTime}`;
-                        timeSelect.appendChild(opt);
-                    });
-                })
-                .catch(() => timeSelect.innerHTML = '<option value="" disabled>Error loading times</option>');
-        });
-
-        rescheduleRow.querySelector('.cancel-reschedule').addEventListener('click', () => rescheduleRow.remove());
-
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            const newDate = dateInput.value;
-            const newTime = timeSelect.value;
-            if (!newDate || !newTime) return alertCustom("Please select a new date and available time slot.");
-
-            if (!confirmCustom('Confirm reschedule to ' + newDate + ' at ' + newTime + '?')) return;
-
-            fetch('../ajax/reschedule_appointment.php', {
-                method: 'POST',
-                headers: {'Content-Type':'application/x-www-form-urlencoded'},
-                body: `APPT_ID=${apptId}&APPT_DATE=${newDate}&APPT_TIME=${newTime}`
-            })
-            .then(res => res.text())
-            .then(msg => {
-                alertCustom(msg);
-                location.reload();
-            })
-            .catch(() => alertCustom('Error updating appointment.'));
-        });
+    dateInput.addEventListener('change', () => {
+      if (!dateInput.value) return;
+      timeSelect.innerHTML = '<option>Loading...</option>';
+      fetch(`../ajax/get_available_times.php?doc_id=${docId}&date=${dateInput.value}`)
+        .then(res => res.json())
+        .then(times => {
+          timeSelect.innerHTML = '<option value="">-- Choose --</option>';
+          if (times.length === 0) timeSelect.innerHTML = '<option disabled>No times available</option>';
+          times.forEach(slot => { const opt=document.createElement('option'); opt.value=slot.time; opt.textContent = slot.time + ' - ' + (slot.endTime||''); timeSelect.appendChild(opt); });
+        })
+        .catch(() => timeSelect.innerHTML = '<option disabled>Error loading times</option>');
     });
+
+    resRow.querySelector('#cancelRes').addEventListener('click', () => resRow.remove());
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const newDate = dateInput.value; const newTime = timeSelect.value;
+      if (!newDate || !newTime) return alert('Please select new date and time.');
+      if (!confirm('Confirm reschedule to ' + newDate + ' at ' + newTime + '?')) return;
+
+      fetch('../ajax/reschedule_appointment.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/x-www-form-urlencoded'},
+        body: `APPT_ID=${apptId}&APPT_DATE=${newDate}&APPT_TIME=${newTime}`
+      })
+      .then(res => res.text())
+      .then(msg => { alert(msg); location.reload(); })
+      .catch(() => alert('Error updating appointment.'));
+    });
+  });
 });
-
-// --------------------- CUSTOM ALERT ---------------------
-function alertCustom(message) {
-    console.log("ALERT: " + message);
-    const container = document.body;
-    let alertBox = document.getElementById('custom-alert');
-    if (!alertBox) {
-        alertBox = document.createElement('div');
-        alertBox.id = 'custom-alert';
-        alertBox.className = 'fixed top-5 right-5 z-50 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300';
-        container.appendChild(alertBox);
-    }
-
-    let bgColor = 'bg-[var(--primary)]';
-    if (message.includes("Error") || message.includes("not found") || message.includes("denied")) bgColor = 'bg-red-600';
-    else if (message.includes("successfully") || message.includes("done")) bgColor = 'bg-green-600';
-
-    alertBox.className = `fixed top-5 right-5 z-50 p-4 rounded-lg shadow-xl text-white font-semibold transition-opacity duration-300 ${bgColor}`;
-    alertBox.textContent = message;
-    alertBox.style.opacity = '1';
-
-    setTimeout(() => {
-        alertBox.style.opacity = '0';
-    }, 5000);
-}
-
-// --------------------- CUSTOM CONFIRM ---------------------
-function confirmCustom(message) {
-    return window.confirm(message);
-}
 </script>
-
 
 </body>
 </html>

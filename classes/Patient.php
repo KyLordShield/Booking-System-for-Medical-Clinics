@@ -10,21 +10,36 @@ class Patient {
         $this->conn = $database->connect();
     }
 
-    // 🟩 Fetch patient info by PAT_ID
+       // 🟢 FIXED - SAFE VERSION (keeps backward compatibility)
     public function getPatientById($pat_id) {
         try {
             $sql = "SELECT * FROM {$this->table} WHERE PAT_ID = :pat_id LIMIT 1";
             $stmt = $this->conn->prepare($sql);
-            $stmt->bindParam(':pat_id', $pat_id);
+            $stmt->bindParam(':pat_id', $pat_id, PDO::PARAM_INT);
             $stmt->execute();
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result ?: [];  // ← This fixes the fatal error forever
         } catch (PDOException $e) {
-            return ['error' => $e->getMessage()];
+            error_log("Patient::getPatientById Error: " . $e->getMessage());
+            return []; // Never return string or error array
         }
     }
 
-    // 🟩 Update patient info
-    public function updatePatient($pat_id, $data) {
+    // 🟢 FIXED - Accepts BOTH old array style AND new individual params
+    public function updatePatient($pat_id, $fname, $mname = null, $lname = null, $dob = null, $gender = null, $contact = null, $email = null, $address = null) {
+        // If first param after $pat_id is array → old style (backward compatible)
+        if (is_array($fname)) {
+            extract($fname); // creates $first, $middle, etc.
+            $fname = $first ?? $fname['first'] ?? '';
+            $mname = $middle ?? $fname['middle'] ?? '';
+            $lname = $last ?? $fname['last'] ?? '';
+            $dob = $dob ?? $fname['dob'] ?? '';
+            $gender = $gender ?? $fname['gender'] ?? '';
+            $contact = $contact ?? $fname['contact'] ?? '';
+            $email = $email ?? $fname['email'] ?? '';
+            $address = $address ?? $fname['address'] ?? '';
+        }
+
         try {
             $sql = "UPDATE {$this->table}
                     SET PAT_FIRST_NAME = :fname,
@@ -37,21 +52,26 @@ class Patient {
                         PAT_ADDRESS = :address,
                         PAT_UPDATED_AT = NOW()
                     WHERE PAT_ID = :pat_id";
+
             $stmt = $this->conn->prepare($sql);
             $stmt->execute([
-                ':fname' => $data['first'],
-                ':mname' => $data['middle'],
-                ':lname' => $data['last'],
-                ':dob' => $data['dob'],
-                ':gender' => $data['gender'],
-                ':contact' => $data['contact'],
-                ':email' => $data['email'],
-                ':address' => $data['address'],
-                ':pat_id' => $pat_id
+                ':fname'    => $fname,
+                ':mname'    => $mname,
+                ':lname'    => $lname,
+                ':dob'      => $dob,
+                ':gender'   => $gender,
+                ':contact'  => $contact,
+                ':email'    => $email,
+                ':address'  => $address,
+                ':pat_id'   => $pat_id
             ]);
-            return $stmt->rowCount() > 0;
+
+            return $stmt->rowCount() > 0 
+                ? "Profile updated successfully!" 
+                : "No changes were made.";
         } catch (PDOException $e) {
-            throw new Exception($e->getMessage());
+            error_log("Patient::updatePatient Error: " . $e->getMessage());
+            return "Database error occurred.";
         }
     }
 
