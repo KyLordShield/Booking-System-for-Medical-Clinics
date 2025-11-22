@@ -131,6 +131,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/payment.css">
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 
 <body>
@@ -155,17 +157,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
                 <a href="../patient_dashboard.php" class="back-link">Back to Dashboard</a>
             </div>
 
-            <!-- Center Calendar -->
-            <div class="calendar-box">
-                <div class="calendar-header">Select Date</div>
-                <div class="calendar-icon">►</div>
-
-                <div class="date-display">
-                    <input type="date" name="APPT_DATE" id="APPT_DATE" min="<?= date('Y-m-d') ?>" required>
-                    <div class="calendar-hint">(Click to open calendar)</div>
-                </div>
-            </div>
-
+            <!-- NEW: Inline Flatpickr Calendar -->
+<!-- PERFECTLY WORKING CALENDAR BOX -->
+<div class="calendar-box">
+    <div class="calendar-header">Select Date</div>
+    <div class="calendar-wrapper">
+        <div id="inlineCalendar"></div>
+    </div>
+    <input type="hidden" name="APPT_DATE" id="APPT_DATE" required>
+    <div class="calendar-hint">Click a date to choose</div>
+</div>
             <!-- Right Inputs -->
             <div class="right-section">
 
@@ -372,6 +373,35 @@ window.addEventListener('click', function(e) {
         closePaymentModal();
     }
 });
+
+
+//THIS IS FOR THE CALENDAR FUNTIONALITIES
+document.addEventListener("DOMContentLoaded", function () {
+    const calendarContainer = document.getElementById('inlineCalendar');
+
+    flatpickr(calendarContainer, {
+        inline: true,
+        minDate: "today",
+        dateFormat: "Y-m-d",
+        // THIS IS THE MAGIC LINE:
+        appendTo: calendarContainer.parentElement,   // forces calendar INSIDE the wrapper
+        onChange: function(selectedDates, dateStr) {
+            document.getElementById('APPT_DATE').value = dateStr;
+            loadAvailableTimes();
+            document.querySelector('.calendar-box').classList.add('date-selected');
+        }
+    });
+
+    // Force the calendar to be inside our wrapper (extra safety)
+    setTimeout(() => {
+        const realCalendar = document.querySelector('.flatpickr-calendar.inline');
+        if (realCalendar && !realCalendar.parentElement.classList.contains('calendar-wrapper')) {
+            calendarContainer.parentElement.appendChild(realCalendar);
+        }
+    }, 100);
+});
+
+
 </script>
 
 <?php if(!empty($alert['message'])): ?>
@@ -382,6 +412,7 @@ Swal.fire({
     text: '<?= addslashes($alert['message']) ?>',
     confirmButtonColor: '#002339'
 });
+
 </script>
 <?php endif; ?>
 

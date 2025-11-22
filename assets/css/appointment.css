@@ -8,6 +8,7 @@
 .appt-wrapper {
     width: 100%;
     padding: 40px;
+    
     display: flex;
     justify-content: center;
 }
@@ -28,6 +29,7 @@
     font-size: 3rem;
     color: #000;
     margin-bottom: 10px;
+     margin-top: -180px;
     line-height: 1.1;
 }
 
@@ -66,53 +68,6 @@
     font-weight: bold;
 }
 
-/* Calendar Box */
-.calendar-box {
-    background: var(--light);
-    border-radius: 20px;
-    height: 350px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,.1);
-}
-
-.calendar-header {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--primary);
-    font-family: Georgia, serif;
-}
-
-.calendar-icon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 24px;
-    color: var(--primary);
-}
-
-.date-display input[type="date"] {
-    background: transparent;
-    border: none;
-    font-size: 22px;
-    color: var(--primary);
-    font-family: Georgia, serif;
-    font-weight: bold;
-    cursor: pointer;
-    outline: none;
-}
-
-.calendar-hint {
-    margin-top: 10px;
-    font-size: 14px;
-    opacity: .7;
-}
 
 /* Right Section */
 .right-section {
@@ -156,6 +111,94 @@
     color: var(--primary);
     pointer-events: none;
 }
+
+
+/* ===============================
+   FINAL MERGED CALENDAR BOX
+   (Version 1 design + Version 2 functionality)
+================================ */
+
+/* Main Calendar Box — Version 1 look kept */
+.calendar-box {
+    background: var(--light);
+    border-radius: 20px;
+    height: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;  /* allow header + wrapper */
+    align-items: center;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,.1);
+    padding-top: 70px; /* space for header + icon */
+    overflow: hidden; /* ensure calendar stays inside */
+}
+
+/* Floating Header — from Version 1 */
+.calendar-header {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--primary);
+    font-family: Georgia, serif;
+}
+
+/* Icon from Version 1 */
+.calendar-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    color: var(--primary);
+}
+
+/* Calendar Wrapper — from Version 2 */
+.calendar-wrapper {
+    width: 100%;
+    flex: 1;
+    top: -15px;
+    background: var(--light);
+    border-radius: 12px;
+    padding: 0px 50px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* FORCE flatpickr to stay inside wrapper */
+.calendar-wrapper > .flatpickr-calendar {
+    width: 100% !important;
+    height: 100% !important;
+    background: var(--light) !important;
+    box-shadow: none !important;
+    position: absolute;
+    inset: 0;
+}
+
+/* Fix inner content heights */
+.flatpickr-calendar .flatpickr-innerContainer,
+.flatpickr-calendar .dayContainer {
+    height: 100% !important;
+}
+
+/* Day grid height: adjusts without breaking */
+.flatpickr-days {
+    height: calc(100% - 60px) !important; 
+}
+
+/* Selected Day Style */
+.flatpickr-day.selected {
+    background: #002339 !important;
+    border-color: #002339 !important;
+    color: white !important;
+}
+
+/* Decorative for selected date */
+.calendar-box.date-selected {
+    border: 2px solid #002339;
+}
+
+
 
 /* Responsive */
 @media (max-width: 992px) {

@@ -348,6 +348,176 @@ body.landing-page {
   border-top: 1px solid rgba(255,255,255,0.1);
 }
 
+/* ============= WHY CHOOSE US SECTION ============= */
+.why-section {
+  padding: 100px 8%;
+  text-align: center;
+}
+
+.why-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 50px;
+  color: #ffffff;
+  font-family: 'Kalnia', serif;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.why-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.why-box {
+  background: rgba(255,255,255,0.95);
+  padding: 35px 25px;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: 0.35s ease;
+}
+
+.why-box:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+}
+
+.why-box h3 {
+  color: #1a3c6e;
+  font-family: 'Kalnia', serif;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.why-box p {
+  color: #444;
+  line-height: 1.6;
+}
+
+/* ============= HOW IT WORKS SECTION ============= */
+.how-section {
+  padding: 100px 8%;
+  text-align: center;
+}
+
+.how-section h2 {
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #ffffff;
+  font-family: 'Kalnia', serif;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.how-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 40px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+
+.how-step {
+  background: rgba(255,255,255,0.95);
+  padding: 40px 28px;
+  border-radius: 20px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: 0.35s ease;
+}
+
+.how-step:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+}
+
+.how-step h3 {
+  font-family: 'Kalnia', serif;
+  font-size: 1.4rem;
+  color: #1a3c6e;
+  margin-bottom: 12px;
+}
+
+.how-step p {
+  font-size: 1.05rem;
+  color: #555;
+  line-height: 1.6;
+}
+
+/* ============= SECURITY SECTION ============= */
+.security-section {
+  padding: 120px 8%;
+  text-align: center;
+  max-width: 1400px;
+  margin: 70px auto;
+  background: rgba(255,255,255,0.4);
+  backdrop-filter: blur(7px);
+  border-radius: 24px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.security-section h2 {
+  font-family: 'Kalnia', serif;
+  font-size: 2.4rem;
+  color: white;
+  margin-bottom: 20px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.18);
+}
+
+.security-text {
+  font-size: 1.2rem;
+  color: #f8f8f8;
+  max-width: 900px;
+  margin: 0 auto;
+  line-height: 1.8;
+  opacity: 0.95;
+}
+
+/* ============= TESTIMONIALS SECTION ============= */
+.testimonials-section {
+  padding: 100px 8%;
+  text-align: center;
+}
+
+.testimonials-section h2 {
+  font-size: 2.5rem;
+  color: #ffffff;
+  margin-bottom: 50px;
+  font-family: 'Kalnia', serif;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.15);
+}
+
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 40px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.testimonial {
+  background: rgba(255,255,255,0.95);
+  padding: 35px 30px;
+  border-radius: 20px;
+  font-size: 1.1rem;
+  line-height: 1.7;
+  color: #333;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: 0.35s ease;
+}
+
+.testimonial:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+}
+
+.testimonial h4 {
+  margin-top: 20px;
+  font-family: 'Kalnia', serif;
+  color: #1a3c6e;
+  font-size: 1.1rem;
+}
+
+
 /* ============= RESPONSIVE ============= */
 @media (max-width: 992px) {
   .hero-section {
