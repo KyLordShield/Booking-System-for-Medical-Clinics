@@ -89,94 +89,416 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Doctor Management</title>
+<title>Doctor Profile - Medical Clinic System</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<style>
+/* FORMAL PROFILE STYLES */
+.profile-wrapper {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.profile-header {
+    background: var(--white);
+    border-radius: 15px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.profile-header-content {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+}
+
+.profile-avatar {
+    width: 140px;
+    height: 140px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--white);
+    font-size: 56px;
+    font-weight: 700;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,35,57,0.2);
+}
+
+.profile-details {
+    flex: 1;
+}
+
+.profile-name {
+    font-size: 32px;
+    color: var(--primary);
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    letter-spacing: -0.5px;
+}
+
+.profile-role {
+    font-size: 16px;
+    color: var(--secondary);
+    font-weight: 600;
+    margin-bottom: 25px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.info-label {
+    font-size: 13px;
+    color: #666;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.info-value {
+    font-size: 16px;
+    color: var(--primary);
+    font-weight: 500;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 30px;
+    padding-top: 25px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.btn-edit-profile {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 12px 30px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    letter-spacing: 0.3px;
+}
+
+.btn-edit-profile:hover {
+    background: #014769;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,35,57,0.3);
+}
+
+/* FORMAL MODAL STYLES */
+#doctorModal .modal-content {
+    max-width: 650px;
+    padding: 0;
+    border-radius: 12px;
+}
+
+.modal-header {
+    background: var(--primary);
+    color: var(--white);
+    padding: 25px 35px;
+    border-radius: 12px 12px 0 0;
+    position: relative;
+}
+
+.modal-header h2 {
+    color: var(--white);
+    font-size: 24px;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+}
+
+.modal-header .close-btn {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 28px;
+    color: var(--white);
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.modal-header .close-btn:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 35px;
+}
+
+#doctorForm {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-group label {
+    font-size: 13px;
+    color: var(--primary);
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select {
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    font-family: Georgia, serif;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--secondary);
+    box-shadow: 0 0 0 3px rgba(109, 169, 198, 0.1);
+}
+
+.form-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 10px;
+    padding-top: 25px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.btn-cancel {
+    background: #f5f5f5;
+    color: var(--primary);
+    border: none;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-cancel:hover {
+    background: #e0e0e0;
+}
+
+.btn-save {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-save:hover {
+    background: #014769;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,35,57,0.3);
+}
+
+/* RESPONSIVE */
+@media(max-width: 768px) {
+    .profile-header-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .profile-info-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+}
+</style>
 </head>
 <body>
 
 <!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
+<?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
 <main>
-    <h2>My Profile</h2>
+    <div class="profile-wrapper">
+        <h1>Doctor Profile</h1>
+        
+        <div class="profile-header">
+            <div class="profile-header-content">
+                <!-- AVATAR SECTION -->
+                <div class="profile-avatar">
+                    <?= strtoupper(substr($myself['DOC_FIRST_NAME'] ?? 'D',0,1)) ?>
+                </div>
 
-    <div class="table-container" style="margin-bottom:18px;">
-        <table>
-            <tr><th>ID</th><td><?= esc($myself['DOC_ID']) ?></td></tr>
-            <tr>
-                <th>Name</th>
-                <td>
-                    <?php
-                        $mid = trim($myself['DOC_MIDDLE_INIT'] ?? '');
-                        $midDot = $mid !== '' ? esc($mid) . '. ' : '';
-                        echo esc($myself['DOC_FIRST_NAME'] ?? '') . ' ' . $midDot . esc($myself['DOC_LAST_NAME'] ?? '');
-                    ?>
-                </td>
-            </tr>
-            <tr><th>Email</th><td><?= esc($myself['DOC_EMAIL']) ?></td></tr>
-            <tr><th>Contact</th><td><?= esc($myself['DOC_CONTACT_NUM']) ?></td></tr>
-            <tr><th>Specialization</th><td><?= esc($myself['SPEC_NAME'] ?? $myself['SPEC_ID'] ?? '') ?></td></tr>
-        </table>
+                <!-- INFO SECTION -->
+                <div class="profile-details">
+                    <h2 class="profile-name">
+                        <?php
+                            $mid = trim($myself['DOC_MIDDLE_INIT'] ?? '');
+                            $midDot = $mid !== '' ? esc($mid) . '. ' : '';
+                            echo esc($myself['DOC_FIRST_NAME'] ?? '') . ' ' . $midDot . esc($myself['DOC_LAST_NAME'] ?? '');
+                        ?>
+                    </h2>
+                    <div class="profile-role">
+                        <?= esc($myself['SPEC_NAME'] ?? 'Medical Doctor') ?>
+                    </div>
 
-        <br>
-        <!-- Edit only own profile -->
-        <button class="btn" onclick='openEditModal(<?= json_encode($myself, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>Update My Info</button>
+                    <div class="profile-info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Doctor ID</div>
+                            <div class="info-value">#<?= esc($myself['DOC_ID']) ?></div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">Specialization</div>
+                            <div class="info-value"><?= esc($myself['SPEC_NAME'] ?? $myself['SPEC_ID'] ?? 'N/A') ?></div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">Contact Number</div>
+                            <div class="info-value"><?= esc($myself['DOC_CONTACT_NUM']) ?></div>
+                        </div>
+
+                        <div class="info-item">
+                            <div class="info-label">Email Address</div>
+                            <div class="info-value"><?= esc($myself['DOC_EMAIL']) ?></div>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        <button class="btn-edit-profile" 
+                            onclick='openEditModal(<?= json_encode($myself, JSON_HEX_APOS|JSON_HEX_QUOT) ?>)'>
+                            Edit Profile Information
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-
-
-    
 </main>
 
-<!-- MODAL (used for Add & Edit own profile; when viewing others we use view modal alert) -->
-<!-- MODAL (Add / Edit / View) -->
+<!-- FORMAL MODAL -->
 <div class="modal" id="doctorModal" aria-hidden="true">
-  <div class="modal-content" role="dialog" aria-labelledby="modalTitle">
-    <span class="close-btn" onclick="closeModal()">&times;</span>
-    <h2 id="modalTitle">Doctor Details</h2>
+    <div class="modal-content" role="dialog" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <h2 id="modalTitle">Edit Profile Information</h2>
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+        </div>
 
-    <form id="doctorForm">
-      <input type="hidden" id="DOC_ID" name="DOC_ID">
+        <div class="modal-body">
+            <form id="doctorForm">
+                <input type="hidden" id="DOC_ID" name="DOC_ID">
 
-      <label>First Name</label>
-      <input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="DOC_FIRST_NAME" name="DOC_FIRST_NAME" required>
+                    </div>
 
-      <label>Middle Init</label>
-      <input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT" maxlength="2">
+                    <div class="form-group">
+                        <label>Middle Initial</label>
+                        <input type="text" id="DOC_MIDDLE_INIT" name="DOC_MIDDLE_INIT" maxlength="2">
+                    </div>
+                </div>
 
-      <label>Last Name</label>
-      <input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME" required>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Last Name *</label>
+                        <input type="text" id="DOC_LAST_NAME" name="DOC_LAST_NAME" required>
+                    </div>
+                </div>
 
-      <label>Email</label>
-      <input type="email" id="DOC_EMAIL" name="DOC_EMAIL" required>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Email Address *</label>
+                        <input type="email" id="DOC_EMAIL" name="DOC_EMAIL" 
+                               placeholder="doctor@example.com" required>
+                    </div>
+                </div>
 
-      <label>Contact Number</label>
-      <input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM" required>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Contact Number *</label>
+                        <input type="text" id="DOC_CONTACT_NUM" name="DOC_CONTACT_NUM" 
+                               placeholder="09XXXXXXXXX" required>
+                    </div>
+                </div>
 
-      <label>Specialization</label>
-      <select id="SPEC_ID" name="SPEC_ID" required>
-        <?php foreach($specializations as $sp): ?>
-            <option value="<?= esc($sp['SPEC_ID']) ?>"><?= esc($sp['SPEC_NAME']) ?></option>
-        <?php endforeach; ?>
-      </select>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label>Specialization *</label>
+                        <select id="SPEC_ID" name="SPEC_ID" required>
+                            <option value="">Select Specialization</option>
+                            <?php foreach($specializations as $sp): ?>
+                                <option value="<?= esc($sp['SPEC_ID']) ?>">
+                                    <?= esc($sp['SPEC_NAME']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
 
-      <button type="submit" class="btn" id="saveButton">Save</button>
-    </form>
-  </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-save" id="saveButton">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-
-
-<!-- ✅ FOOTER LINK -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
-
+<!-- FOOTER -->
+<?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 <script>
 function showModal(){ 
     document.getElementById('doctorModal').style.display = 'flex'; 
 }
+
 function closeModal(){ 
     document.getElementById('doctorModal').style.display = 'none'; 
 }
@@ -199,7 +521,7 @@ function openAddModal(){
 }
 
 function openEditModal(data){
-    document.getElementById('modalTitle').innerText = 'Edit My Profile';
+    document.getElementById('modalTitle').innerText = 'Edit Profile Information';
     fillForm(data);
 
     setFormDisabled(false);
@@ -221,7 +543,7 @@ function fillForm(d){
     document.getElementById('DOC_LAST_NAME').value = d.DOC_LAST_NAME || '';
     document.getElementById('DOC_EMAIL').value = d.DOC_EMAIL || '';
     document.getElementById('DOC_CONTACT_NUM').value = d.DOC_CONTACT_NUM || '';
-    document.getElementById('SPEC_ID').value  = d.SPEC_ID || '';
+    document.getElementById('SPEC_ID').value = d.SPEC_ID || '';
 }
 
 // Submit Add / Update
@@ -249,6 +571,13 @@ document.getElementById('doctorModal').addEventListener('click', function(e){
     if(e.target === this) closeModal();
 });
 
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('doctorModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
 </script>
 
 </body>
