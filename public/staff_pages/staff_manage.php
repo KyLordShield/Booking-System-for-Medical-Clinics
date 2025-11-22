@@ -191,7 +191,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <input type="text" id="fname" name="STAFF_FIRST_NAME" required>
 
 <label>Middle Initial</label>
-<input type="text" id="mname" name="STAFF_MIDDLE_INIT" maxlength="2">
+<input type="text" id="mname" name="STAFF_MIDDLE_INIT" maxlength="1">
 
 <label>Last Name</label>
 <input type="text" id="lname" name="STAFF_LAST_NAME" required>

@@ -29,6 +29,11 @@ $myself = $stmt->fetch(PDO::FETCH_ASSOC);
 <meta charset="UTF-8">
 <title>Staff Profile - Medical Clinic System</title>
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+
+<!-- ✅ SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <style>
 /* FORMAL PROFILE STYLES */
 .profile-wrapper {
@@ -404,7 +409,7 @@ $myself = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-save">Save Changes</button>
+                    <button type="submit" class="btn-save" onclick="closeModal()">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -412,6 +417,9 @@ $myself = $stmt->fetch(PDO::FETCH_ASSOC);
 </div>
 
 <script>
+// ✅ Get primary color from CSS variable
+const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#002339';
+
 function openEditModal(staff){
     document.getElementById("staff_id").value = staff.STAFF_ID;
     document.getElementById("fname").value = staff.STAFF_FIRST_NAME;
@@ -435,23 +443,48 @@ window.onclick = function(event) {
     }
 }
 
-// AJAX SAVE
+// ✅ AJAX SAVE WITH SWEETALERT
 document.getElementById("staffForm").addEventListener("submit", async (e)=>{
     e.preventDefault();
 
     const formData = new FormData(e.target);
-    const res = await fetch("staff_manage.php", {
-        method: "POST",
-        body: formData,
-        headers: { "X-Requested-With": "XMLHttpRequest" } 
-    });
+    
+    try {
+        const res = await fetch("staff_manage.php", {
+            method: "POST",
+            body: formData,
+            headers: { "X-Requested-With": "XMLHttpRequest" } 
+        });
 
-    const data = await res.json();
-    alert(data.message);
-
-    if(data.success){
-        closeModal();
-        location.reload();
+        const data = await res.json();
+        
+        if(data.success){
+            await Swal.fire({
+                icon: 'success',
+                title: 'Profile Updated!',
+                text: data.message,
+                confirmButtonColor: primaryColor,
+                timer: 2000,
+                showConfirmButton: true
+            });
+            closeModal();
+            location.reload();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: data.message || 'Failed to update profile',
+                confirmButtonColor: primaryColor
+            });
+        }
+    } catch (err) {
+        console.error('Update error:', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong while updating your profile',
+            confirmButtonColor: primaryColor
+        });
     }
 });
 </script>

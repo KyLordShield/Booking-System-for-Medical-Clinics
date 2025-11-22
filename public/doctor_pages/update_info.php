@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     if ($data['spec'] === '') $errors[] = 'Specialization required';
 
     if (!empty($errors)) {
-        echo json_encode(['success' => false, 'errors' => $errors]);
+        echo json_encode(['success' => false, 'message' => implode(', ', $errors)]);
         exit;
     }
 
@@ -53,10 +53,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     try {
         if ($id === "") {
             $ok = $doctorObj->insert($data);
-            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Doctor added' : 'Insert failed']);
+            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Doctor added successfully!' : 'Insert failed']);
         } else {
             $ok = $doctorObj->update($id, $data);
-            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Profile updated' : 'Update failed']);
+            echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Profile updated successfully!' : 'Update failed']);
         }
     } catch (Exception $e) {
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -92,6 +92,11 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <title>Doctor Profile - Medical Clinic System</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+
+<!-- ✅ SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 <style>
 /* FORMAL PROFILE STYLES */
 .profile-wrapper {
@@ -484,7 +489,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 
                 <div class="form-actions">
                     <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
-                    <button type="submit" class="btn-save" id="saveButton">Save Changes</button>
+                    <button type="submit" class="btn-save" id="saveButton" onclick="closeModal()" >Save Changes</button>
                 </div>
             </form>
         </div>
@@ -495,6 +500,9 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 <script>
+// ✅ Get primary color from CSS variable
+const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#002339';
+
 function showModal(){ 
     document.getElementById('doctorModal').style.display = 'flex'; 
 }
@@ -546,23 +554,47 @@ function fillForm(d){
     document.getElementById('SPEC_ID').value = d.SPEC_ID || '';
 }
 
-// Submit Add / Update
+// ✅ Submit Add / Update with SweetAlert
 document.getElementById('doctorForm').addEventListener('submit', async function(e){
     e.preventDefault();
     const form = new FormData(this);
 
-    const res = await fetch(location.pathname, {
-        method: 'POST',
-        headers: { 'X-Requested-With': 'XMLHttpRequest' },
-        body: form
-    });
+    try {
+        const res = await fetch(location.pathname, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: form
+        });
 
-    const json = await res.json();
-    alert(json.message);
+        const json = await res.json();
 
-    if(json.success){
-        closeModal();
-        location.reload();
+        if(json.success){
+            await Swal.fire({
+                icon: 'success',
+                title: 'Profile Updated!',
+                text: json.message,
+                confirmButtonColor: primaryColor,
+                timer: 2000,
+                showConfirmButton: true
+            });
+            closeModal();
+            location.reload();
+        } else {
+            Swal.fire({
+                icon: 'error',
+                title: 'Update Failed',
+                text: json.message || 'Failed to update profile',
+                confirmButtonColor: primaryColor
+            });
+        }
+    } catch (err) {
+        console.error('Update error:', err);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Something went wrong while updating your profile',
+            confirmButtonColor: primaryColor
+        });
     }
 });
 
