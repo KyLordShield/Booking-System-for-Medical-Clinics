@@ -61,47 +61,41 @@ try {
             }
             break;
 
-       // =====================================================
-// 🔹 UPDATE PAYMENT
-// =====================================================
-case 'updatePayment':
-    if (!empty($_POST['id']) && !empty($_POST['amount']) && !empty($_POST['method_id']) && !empty($_POST['status_id'])) {
-        $id = $_POST['id'];
-        $amount = $_POST['amount'];
-        $method_id = $_POST['method_id'];
-        $status_id = $_POST['status_id'];
+        // =====================================================
+        // 🔹 UPDATE PAYMENT
+        // =====================================================
+        case 'updatePayment':
+            $id = $_POST['payment_id'] ?? 0;
+            $amount = $_POST['amount'] ?? 0;
+            $method_id = $_POST['method_id'] ?? 0;
+            $status_id = $_POST['status_id'] ?? 0;
 
-        // Validate method ID exists
-        $mCheck = $conn->prepare("SELECT PYMT_METH_ID FROM PAYMENT_METHOD WHERE PYMT_METH_ID = ?");
-        $mCheck->execute([$method_id]);
-        if ($mCheck->rowCount() === 0) {
-            $response = ['success' => false, 'message' => '⚠️ Invalid payment method selected.'];
-            echo json_encode($response);
-            exit;
-        }
+            if (!$id || !$amount || !$method_id || !$status_id) {
+                $response = ['success' => false, 'message' => '⚠️ Missing or invalid fields.'];
+                break;
+            }
 
-        // Validate status ID exists
-        $sCheck = $conn->prepare("SELECT PYMT_STAT_ID FROM PAYMENT_STATUS WHERE PYMT_STAT_ID = ?");
-        $sCheck->execute([$status_id]);
-        if ($sCheck->rowCount() === 0) {
-            $response = ['success' => false, 'message' => '⚠️ Invalid payment status selected.'];
-            echo json_encode($response);
-            exit;
-        }
+            try {
+                $stmt = $conn->prepare("
+                    UPDATE payment 
+                    SET PYMT_AMOUNT_PAID = ?, 
+                        PYMT_METH_ID = ?, 
+                        PYMT_STAT_ID = ? 
+                    WHERE PYMT_ID = ?
+                ");
+                $success = $stmt->execute([$amount, $method_id, $status_id, $id]);
 
-        // Use today's date for the update
-        $date = date('Y-m-d');
-
-        $success = $payment->updatePayment($id, $amount, $date, $method_id, $status_id);
-        $response = $success
-            ? ['success' => true, 'message' => '✅ Payment updated successfully!']
-            : ['success' => false, 'message' => '❌ Failed to update payment.'];
-    } else {
-        $response = ['success' => false, 'message' => '⚠️ Missing or invalid fields.'];
-    }
-    break;
-
-
+                $response = [
+                    'success' => $success,
+                    'message' => $success ? '✅ Payment updated successfully!' : '❌ Failed to update payment.'
+                ];
+            } catch (Exception $e) {
+                $response = [
+                    'success' => false,
+                    'message' => '❌ Database error: ' . $e->getMessage()
+                ];
+            }
+            break;
 
         // =====================================================
         // 🔹 DELETE PAYMENT
@@ -132,15 +126,15 @@ case 'updatePayment':
             break;
 
         case 'updateMethod':
-    if (!empty($_POST['id']) && !empty($_POST['name'])) {
-        $success = $method->updateMethod($_POST['id'], trim($_POST['name']));
-        $response = $success
-            ? ['success' => true, 'message' => '✅ Payment method updated successfully!']
-            : ['success' => false, 'message' => '❌ Failed to update method.'];
-    } else {
-        $response = ['success' => false, 'message' => '⚠️ Missing or invalid input.'];
-    }
-    break;
+            if (!empty($_POST['id']) && !empty($_POST['name'])) {
+                $success = $method->updateMethod($_POST['id'], trim($_POST['name']));
+                $response = $success
+                    ? ['success' => true, 'message' => '✅ Payment method updated successfully!']
+                    : ['success' => false, 'message' => '❌ Failed to update method.'];
+            } else {
+                $response = ['success' => false, 'message' => '⚠️ Missing or invalid input.'];
+            }
+            break;
 
         case 'deleteMethod':
             if (!empty($_POST['id'])) {
@@ -168,15 +162,15 @@ case 'updatePayment':
             break;
 
         case 'updateStatus':
-    if (!empty($_POST['id']) && !empty($_POST['name'])) {
-        $success = $status->updateStatus($_POST['id'], trim($_POST['name']));
-        $response = $success
-            ? ['success' => true, 'message' => '✅ Payment status updated successfully!']
-            : ['success' => false, 'message' => '❌ Failed to update payment status.'];
-    } else {
-        $response = ['success' => false, 'message' => '⚠️ Missing or invalid input.'];
-    }
-    break;
+            if (!empty($_POST['id']) && !empty($_POST['name'])) {
+                $success = $status->updateStatus($_POST['id'], trim($_POST['name']));
+                $response = $success
+                    ? ['success' => true, 'message' => '✅ Payment status updated successfully!']
+                    : ['success' => false, 'message' => '❌ Failed to update payment status.'];
+            } else {
+                $response = ['success' => false, 'message' => '⚠️ Missing or invalid input.'];
+            }
+            break;
 
         case 'deleteStatus':
             if (!empty($_POST['id'])) {
