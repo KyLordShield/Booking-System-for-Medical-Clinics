@@ -69,6 +69,18 @@ class Appointment {
         }
     }
 
+    /* ---------- ADMIN DELETE ---------- */
+    public function delete($id) {
+        try {
+            $sql = "DELETE FROM {$this->table} WHERE APPT_ID = :id";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([':id' => $id]);
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            error_log("Delete appointment error: " . $e->getMessage());
+            return false;
+        }
+    }
     /* ---------- EXISTING METHODS BELOW ---------- */
 
     public function getAppointmentsByPatient($pat_id) {
