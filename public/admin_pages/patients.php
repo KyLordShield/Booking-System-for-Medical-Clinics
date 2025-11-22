@@ -3,27 +3,21 @@ session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// ---------- 1. AUTH CHECK ----------
+// ---------- AUTH CHECK ----------
 if (
     empty($_SESSION['USER_IS_SUPERADMIN']) ||
     $_SESSION['USER_IS_SUPERADMIN'] != 1 ||
     $_SESSION['role'] !== 'admin'
 ) {
-   header("Location: ../../index.php");
+    header("Location: ../../index.php");
     exit;
 }
 
 require_once dirname(__DIR__, 2) . '/classes/Patient.php';
-require_once dirname(__DIR__, 2) . '/classes/User.php';          // NEW
+require_once dirname(__DIR__, 2) . '/classes/User.php';
 
 $patientObj = new Patient();
-$userObj    = new User();                                       // NEW
-
-$loggedRole = $_SESSION['role'] ?? "";
-if ($loggedRole !== "admin" && $loggedRole !== "superadmin") {
-    header("Location: ../index.php");
-    exit;
-}
+$userObj    = new User();
 
 /* ---------- AJAX INSERT / UPDATE ---------- */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
@@ -31,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 
     $action = $_POST['action'] ?? '';
 
-    /* ---------- CREATE PATIENT USER (NEW ENDPOINT) ---------- */
+    /* ---------- CREATE PATIENT USER ---------- */
     if ($action === 'createPatientUser') {
         $pat_id   = (int)($_POST['pat_id'] ?? 0);
         $username = trim($_POST['username'] ?? '');
@@ -69,11 +63,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 
             // 4. Create the user
             $result = $userObj->createForEntity('Patient', $pat_id, $username, $password, 0);
-            $ok = str_starts_with($result, 'User created successfully!');
+            
+            // Check if creation was successful (handle emoji prefix)
+            $ok = (strpos($result, 'User created successfully!') !== false);
 
             echo json_encode([
                 'success' => $ok,
-                'message' => $ok ? 'User account created!' : $result
+                'message' => $ok ? 'User account created successfully!' : $result
             ]);
         } catch (Exception $e) {
             echo json_encode(['success' => false, 'message' => $e->getMessage()]);
@@ -81,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
         exit;
     }
 
-    /* ---------- ORIGINAL INSERT / UPDATE ---------- */
+    /* ---------- PATIENT INSERT / UPDATE ---------- */
     $id = $_POST['PAT_ID'] ?? "";
     $data = [
         'first'   => trim($_POST['PAT_FIRST_NAME'] ?? ''),
@@ -101,7 +97,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
     if ($data['dob'] === '')   $errors[] = 'Date of birth required';
     if ($data['gender'] === '') $errors[] = 'Gender required';
     if ($data['contact'] === '') $errors[] = 'Contact required';
-    if ($data['email'] === '' || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) $errors[] = 'Valid email required';
+    if ($data['email'] === '' || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+        $errors[] = 'Valid email required';
+    }
     if ($data['address'] === '') $errors[] = 'Address required';
 
     if (!empty($errors)) {
@@ -111,6 +109,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 
     try {
         if ($id === "") {
+            // INSERT - Check for duplicates using Patient methods
+            if (method_exists($patientObj, 'checkDuplicateEmail')) {
+                if ($patientObj->checkDuplicateEmail($data['email'])) {
+                    echo json_encode(['success' => false, 'message' => 'Email is already in use!']);
+                    exit;
+                }
+            }
+            
+            if (method_exists($patientObj, 'checkDuplicateContact')) {
+                if ($patientObj->checkDuplicateContact($data['contact'])) {
+                    echo json_encode(['success' => false, 'message' => 'Contact number is already in use!']);
+                    exit;
+                }
+            }
+
             $newId = $patientObj->insertPatient($data);
             if ($newId) {
                 $fullName = trim("{$data['first']} " . ($data['middle'] ? $data['middle'].'. ' : '') . $data['last']);
@@ -124,6 +137,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
                 echo json_encode(['success' => false, 'message' => 'Insert failed']);
             }
         } else {
+            // UPDATE - Check for duplicates (excluding current patient)
+            if (method_exists($patientObj, 'checkDuplicateEmail')) {
+                if ($patientObj->checkDuplicateEmail($data['email'], $id)) {
+                    echo json_encode(['success' => false, 'message' => 'Email is already in use by another patient!']);
+                    exit;
+                }
+            }
+            
+            if (method_exists($patientObj, 'checkDuplicateContact')) {
+                if ($patientObj->checkDuplicateContact($data['contact'], $id)) {
+                    echo json_encode(['success' => false, 'message' => 'Contact number is already in use by another patient!']);
+                    exit;
+                }
+            }
+
             $ok = $patientObj->updatePatient($id, $data);
             echo json_encode(['success' => (bool)$ok, 'message' => $ok ? 'Patient updated' : 'Update failed']);
         }
@@ -157,7 +185,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Admin — Patient Management</title>
+<title>Admin – Patient Management</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 <style>
@@ -167,6 +195,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
     .error { color: #d00; margin-top: 5px; font-size: 0.9rem; }
     #userModalErrors { margin-top: 10px; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
@@ -253,10 +282,10 @@ $name = esc($p['PAT_FIRST_NAME']).' '.$midDot.esc($p['PAT_LAST_NAME']);
 </select>
 
 <label>Contact</label>
-<input type="text" id="PAT_CONTACT_NUM" name="PAT_CONTACT_NUM" required>
+<input type="text" id="PAT_CONTACT_NUM" name="PAT_CONTACT_NUM" pattern="\d{11}" maxlength="11" required>
 
 <label>Email</label>
-<input type="email" id="PAT_EMAIL" name="PAT_EMAIL" required>
+<input type="email" id="PAT_EMAIL" name="PAT_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 
 <label>Address</label>
 <input type="text" id="PAT_ADDRESS" name="PAT_ADDRESS" required>
@@ -315,31 +344,48 @@ function openEditModal(p){
 document.getElementById('patientForm').addEventListener('submit', async e => {
     e.preventDefault();
     const form = new FormData(e.target);
-    const res = await fetch(location.pathname, {
-        method: "POST",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        body: form
-    });
-    const json = await res.json();
+    
+    try {
+        const res = await fetch(location.pathname, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: form
+        });
+        const json = await res.json();
 
-    if (json.errors) {
-        alert(json.errors.join("\n"));
-        return;
-    }
-
-    alert(json.message);
-    if (json.success) {
-        closeModal('patientModal');
-        if (json.newPatId) {
-            // Open user creation modal
-            document.getElementById('patFullName').innerText = json.patName;
-            document.getElementById('userPatId').value = json.newPatId;
-            document.getElementById('userForm').reset();
-            document.getElementById('userModalErrors').innerHTML = '';
-            showModal('userModal');
-        } else {
-            location.reload();
+        if (json.errors) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                html: json.errors.join("<br>")
+            });
+            return;
         }
+
+        Swal.fire({
+            icon: json.success ? 'success' : 'error',
+            title: json.success ? 'Success' : 'Error',
+            text: json.message
+        }).then(() => {
+            if (json.success) {
+                closeModal('patientModal');
+                if (json.newPatId) {
+                    document.getElementById('patFullName').innerText = json.patName;
+                    document.getElementById('userPatId').value = json.newPatId;
+                    document.getElementById('userForm').reset();
+                    document.getElementById('userModalErrors').innerHTML = '';
+                    showModal('userModal');
+                } else {
+                    location.reload();
+                }
+            }
+        });
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred: ' + error.message
+        });
     }
 });
 
@@ -347,42 +393,79 @@ document.getElementById('patientForm').addEventListener('submit', async e => {
 document.getElementById('userForm').addEventListener('submit', async e => {
     e.preventDefault();
     const form = new FormData(e.target);
-    const res = await fetch(location.pathname, {
-        method: "POST",
-        headers: { "X-Requested-With": "XMLHttpRequest" },
-        body: form
-    });
-    const json = await res.json();
-
-    const errDiv = document.getElementById('userModalErrors');
-    errDiv.innerHTML = '';
-
-    if (json.errors) {
-        json.errors.forEach(msg => {
-            const p = document.createElement('p');
-            p.className = 'error';
-            p.textContent = msg;
-            errDiv.appendChild(p);
+    
+    try {
+        const res = await fetch(location.pathname, {
+            method: "POST",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+            body: form
         });
-        return;
-    }
+        const json = await res.json();
 
-    alert(json.message);
-    if (json.success) {
-        closeModal('userModal');
-        location.reload();
+        const errDiv = document.getElementById('userModalErrors');
+        errDiv.innerHTML = '';
+
+        if (json.errors) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Validation Error',
+                html: json.errors.join("<br>")
+            });
+            return;
+        }
+
+        Swal.fire({
+            icon: json.success ? 'success' : 'error',
+            title: json.success ? 'Success' : 'Error',
+            text: json.message
+        }).then(() => {
+            if (json.success) {
+                closeModal('userModal');
+                location.reload();
+            }
+        });
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred: ' + error.message
+        });
     }
 });
 
-/* ---------- DELETE ---------- */
+/* ---------- DELETE PATIENT ---------- */
 async function deletePatient(id){
-    if(!confirm("Delete this patient?")) return;
-    const res = await fetch(`?delete=${id}`, {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
+    const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "Delete this patient?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
     });
-    const json = await res.json();
-    alert(json.message);
-    if(json.success) location.reload();
+
+    if(!result.isConfirmed) return;
+
+    try {
+        const res = await fetch(`?delete=${id}`, {
+            headers: { "X-Requested-With": "XMLHttpRequest" }
+        });
+        const json = await res.json();
+
+        Swal.fire({
+            icon: json.success ? 'success' : 'error',
+            title: json.success ? 'Deleted!' : 'Error',
+            text: json.message
+        }).then(() => {
+            if(json.success) location.reload();
+        });
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'An error occurred: ' + error.message
+        });
+    }
 }
 </script>
 
