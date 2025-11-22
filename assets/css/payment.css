@@ -1,0 +1,154 @@
+/* payment.css - improved clickable pill-style payment cards (robust vs. other site CSS) */
+
+.payment-modal {
+    display: none;
+    position: fixed;
+    z-index: 3000;
+    left: 0; top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.45);
+    justify-content: center;
+    align-items: center;
+    padding: 30px;
+    pointer-events: auto; /* ← add this */
+}
+
+
+.payment-modal[aria-hidden="false"] {
+    display: flex;
+}
+
+.payment-modal-content {
+    background: var(--white);
+    border-radius: 18px;
+    width: 820px;
+    max-width: 98%;
+    padding: 26px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    position: relative;
+    z-index: 3100;
+}
+
+/* Close button */
+.payment-close {
+    position: absolute;
+    right: 18px;
+    top: 12px;
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+/* Heading */
+.payment-modal-content h2 {
+    color: var(--primary);
+    font-size: 22px;
+    margin-bottom: 18px;
+    text-align: left;
+}
+
+/* Grid */
+.payment-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+/* CARD (pill / oval) - made explicit to avoid overrides */
+.payment-card {
+   display: flex !important;            /* ensure button-like layout */
+    width: 100% !important;                     /* ensure full card width */
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+    white-space: nowrap !important;
+
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px;
+    min-height: 64px;
+    padding: 14px 22px !important;
+    background: var(--light) !important;
+    border-radius: 999px !important;            /* pill / oval */
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    user-select: none;
+    -webkit-user-select: none;
+    border: 2px solid transparent !important;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease, background .12s ease;
+    text-align: center;
+    outline: none;
+}
+.payment-card span {
+    pointer-events: none !important;
+    user-select: none !important;
+}
+
+
+/* Hover and active */
+.payment-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+}
+.payment-card:active {
+    transform: translateY(-1px) scale(.998);
+}
+
+/* Selected state */
+.payment-card.selected {
+    border-color: var(--primary) !important;
+    box-shadow: 0 12px 30px rgba(0,35,57,0.12) !important;
+    transform: translateY(-6px) scale(1.01);
+    background: #ffffff !important;
+}
+
+/* Focus visible for keyboard users */
+.payment-card:focus {
+    box-shadow: 0 0 0 4px rgba(109,169,198,0.12);
+    border-color: var(--primary);
+}
+
+/* Payment method name */
+.payment-card .pm-name {
+    font-weight: 800;
+    color: var(--primary);
+    letter-spacing: .2px;
+    font-size: 15px;
+}
+
+/* fallback / single column message */
+.pm-fallback {
+    color: #666;
+}
+
+/* Actions row */
+.payment-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* Buttons */
+.payment-actions .confirm-btn {
+    padding: 12px 22px;
+}
+.payment-actions .btn {
+    padding: 10px 18px;
+}
+
+/* Responsive */
+@media (max-width: 800px) {
+    .payment-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .payment-grid { grid-template-columns: 1fr; }
+    .payment-modal-content { padding: 16px; }
+    .payment-close { top: 8px; right: 8px; font-size: 24px; }
+}
