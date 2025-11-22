@@ -101,6 +101,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 
     try {
         if ($id === "") {
+            // Check duplicate email
+$stmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE STAFF_EMAIL = ?");
+$stmt->execute([$data['email']]);
+if ($stmt->fetch()) {
+    echo json_encode(['success' => false, 'message' => 'Email is already in use!']);
+    exit;
+}
+
+// Check duplicate contact number
+$stmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE STAFF_CONTACT_NUM = ?");
+$stmt->execute([$data['contact']]);
+if ($stmt->fetch()) {
+    echo json_encode(['success' => false, 'message' => 'Contact number is already in use!']);
+    exit;
+}
+
             $stmt = $conn->prepare("INSERT INTO staff 
                 (STAFF_FIRST_NAME, STAFF_MIDDLE_INIT, STAFF_LAST_NAME, STAFF_CONTACT_NUM, STAFF_EMAIL, STAFF_CREATED_AT, STAFF_UPDATED_AT)
                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())");
@@ -116,6 +132,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
                 'staffName' => $fullName
             ]);
         } else {
+            // Duplicate email (excluding current staff)
+$stmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE STAFF_EMAIL = ? AND STAFF_ID != ?");
+$stmt->execute([$data['email'], $id]);
+if ($stmt->fetch()) {
+    echo json_encode(['success' => false, 'message' => 'Email is already in use by another staff!']);
+    exit;
+}
+
+// Duplicate contact (excluding current staff)
+$stmt = $conn->prepare("SELECT STAFF_ID FROM staff WHERE STAFF_CONTACT_NUM = ? AND STAFF_ID != ?");
+$stmt->execute([$data['contact'], $id]);
+if ($stmt->fetch()) {
+    echo json_encode(['success' => false, 'message' => 'Contact number is already in use by another staff!']);
+    exit;
+}
+
             $stmt = $conn->prepare("UPDATE staff SET
                 STAFF_FIRST_NAME=?, STAFF_MIDDLE_INIT=?, STAFF_LAST_NAME=?,
                 STAFF_CONTACT_NUM=?, STAFF_EMAIL=?, STAFF_UPDATED_AT=NOW()
@@ -245,16 +277,16 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <input type="text" id="STAFF_FIRST_NAME" name="STAFF_FIRST_NAME" required>
 
 <label>Middle Initial</label>
-<input type="text" id="STAFF_MIDDLE_INIT" name="STAFF_MIDDLE_INIT" maxlength="2">
+<input type="text" id="STAFF_MIDDLE_INIT" name="STAFF_MIDDLE_INIT" maxlength="1">
 
 <label>Last Name</label>
 <input type="text" id="STAFF_LAST_NAME" name="STAFF_LAST_NAME" required>
 
 <label>Contact</label>
-<input type="text" id="STAFF_CONTACT_NUM" name="STAFF_CONTACT_NUM" required>
+<input type="text" id="STAFF_CONTACT_NUM" name="STAFF_CONTACT_NUM" pattern="\d{11}" maxlength="11" required>
 
 <label>Email</label>
-<input type="email" id="STAFF_EMAIL" name="STAFF_EMAIL" required>
+<input type="email" id="STAFF_EMAIL" name="STAFF_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 
 <button class="btn" type="submit">Save</button>
 </form>
@@ -285,6 +317,8 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 </div>
 
 <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 /* ---------- MODAL HELPERS ---------- */
@@ -321,25 +355,45 @@ document.getElementById("staffForm").addEventListener("submit", async e => {
     const data = await res.json();
 
     if (data.errors) {
-        alert(data.errors.join("\n"));
+        Swal.fire({
+            icon: "error",
+            title: "Validation Error",
+            html: data.errors.join("<br>")
+        });
         return;
     }
 
-    alert(data.message);
-    if (data.success) {
-        closeModal('staffModal');
-        if (data.newStaffId) {
-            // Open user creation modal
-            document.getElementById('staffFullName').innerText = data.staffName;
-            document.getElementById('userStaffId').value = data.newStaffId;
-            document.getElementById('userForm').reset();
-            document.getElementById('userModalErrors').innerHTML = '';
-            showModal('userModal');
-        } else {
-            location.reload();
-        }
+    if (!data.success) {
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: data.message
+        });
+        return;
+    }
+
+    // Only show success if success === true
+    Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: data.message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+
+    closeModal('staffModal');
+
+    if (data.newStaffId) {
+        document.getElementById('staffFullName').innerText = data.staffName;
+        document.getElementById('userStaffId').value = data.newStaffId;
+        document.getElementById('userForm').reset();
+        document.getElementById('userModalErrors').innerHTML = '';
+        showModal('userModal');
+    } else {
+        setTimeout(() => location.reload(), 1500);
     }
 });
+
 
 /* ---------- USER FORM SUBMIT ---------- */
 document.getElementById("userForm").addEventListener("submit", async e => {
@@ -363,23 +417,73 @@ document.getElementById("userForm").addEventListener("submit", async e => {
             p.textContent = msg;
             errDiv.appendChild(p);
         });
+
+        Swal.fire({
+            icon: "error",
+            title: "Validation Error",
+            html: data.errors.join("<br>")
+        });
         return;
     }
 
-    alert(data.message);
-    if (data.success) {
-        closeModal('userModal');
-        location.reload();
-    }
+    if (!data.success && !data.message.includes("created")) {
+    Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: data.message
+    });
+    return;
+}
+
+
+    Swal.fire({
+        icon: "success",
+        title: "Account Created!",
+        text: data.message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+
+    closeModal('userModal');
+    setTimeout(() => location.reload(), 1500);
 });
 
 /* ---------- DELETE ---------- */
 async function deleteStaff(id) {
-    if (!confirm("Delete this staff?")) return;
-    const res = await fetch(`?delete=${id}`, { headers: { "X-Requested-With": "XMLHttpRequest" } });
+    const confirmDelete = await Swal.fire({
+        icon: "warning",
+        title: "Delete Staff?",
+        text: "This action cannot be undone.",
+        showCancelButton: true,
+        confirmButtonText: "Delete",
+        cancelButtonText: "Cancel"
+    });
+
+    if (!confirmDelete.isConfirmed) return;
+
+    const res = await fetch(`?delete=${id}`, {
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    });
     const data = await res.json();
-    alert(data.message);
-    if (data.success) location.reload();
+
+    if (!data.success) {
+        Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: data.message
+        });
+        return;
+    }
+
+    Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: data.message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+
+    setTimeout(() => location.reload(), 1500);
 }
 </script>
 

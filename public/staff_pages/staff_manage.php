@@ -202,7 +202,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <label>Email</label>
 <input type="email" id="email" name="STAFF_EMAIL" pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" placeholder="example@gmail.com" required>
 
-<button class="btn" type="submit">Save</button>
+<button class="btn" type="submit" onclick ="closeModal()">Save</button>
 </form>
 </div>
 </div>
