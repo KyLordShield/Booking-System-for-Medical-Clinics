@@ -89,8 +89,8 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
           <div class="muted">Patient ID: <strong class="patient-meta"><?= htmlspecialchars($pat_id) ?></strong></div>
 
           <div class="patient-actions">
-            <button id="openUpdate" class="btn" aria-haspopup="dialog">🖋 Update Profile</button>
-            <a href="patient_pages/create_appointment.php" class="btn create-btn">➕ Create Appointment</a>
+            <button id="openUpdate" class="btn" aria-haspopup="dialog">Update Profile</button>
+            <a href="patient_pages/create_appointment.php" class="btn ">Create Appointment</a>
           </div>
         </div>
       </div>
@@ -98,7 +98,7 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
       <!-- Cards: quick stats -->
       <div class="dashboard-cards" style="max-width:520px; width:100%;">
         <div class="card">
-          <div class="small">Upcoming Appointments</div>
+          <div class="small">Active/Missed Appointments</div>
           <h2><?= count(array_filter($appointments, function($a){ return !in_array($a['STAT_NAME'], ['Cancelled','Completed']); })) ?></h2>
           <p class="small">Appointments that require your attention</p>
         </div>
@@ -227,7 +227,7 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
           <input type="date" name="PAT_DOB" value="<?= htmlspecialchars($patient['PAT_DOB'] ?? '') ?>" required>
         </label>
 
-        <button type="submit" name="update_info" class="create-btn">💾 Save Changes</button>
+        <button type="submit" name="update_info" class="create-btn">Save Changes</button>
       </form>
     </div>
   </div>
