@@ -10,36 +10,82 @@ if (
     exit;
 }
 
-
 require_once dirname(__DIR__, 2) . "/config/Database.php";
 $db = new Database();
 $conn = $db->connect();
 
-// Add or update specialization
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $specName = trim($_POST['SPEC_NAME']);
+// AJAX: Add or update specialization
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+    header('Content-Type: application/json');
+    
+    $specName = trim($_POST['SPEC_NAME'] ?? '');
     $specId = $_POST['SPEC_ID'] ?? '';
 
-    if ($specId == "") {
-        $stmt = $conn->prepare("INSERT INTO specialization (SPEC_NAME, SPEC_CREATED_AT, SPEC_UPDATED_AT)
-                                VALUES (?, NOW(), NOW())");
-        $stmt->execute([$specName]);
-    } else {
-        $stmt = $conn->prepare("UPDATE specialization
-                                SET SPEC_NAME=?, SPEC_UPDATED_AT=NOW()
-                                WHERE SPEC_ID=?");
-        $stmt->execute([$specName, $specId]);
+    if (empty($specName)) {
+        echo json_encode(['success' => false, 'message' => 'Specialization name is required']);
+        exit;
     }
-    header("Location: specialization.php");
+
+    try {
+        if ($specId == "") {
+            // Check for duplicate
+            $check = $conn->prepare("SELECT SPEC_ID FROM specialization WHERE SPEC_NAME = ?");
+            $check->execute([$specName]);
+            if ($check->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'This specialization already exists!']);
+                exit;
+            }
+
+            $stmt = $conn->prepare("INSERT INTO specialization (SPEC_NAME, SPEC_CREATED_AT, SPEC_UPDATED_AT)
+                                    VALUES (?, NOW(), NOW())");
+            $stmt->execute([$specName]);
+            echo json_encode(['success' => true, 'message' => 'Specialization added successfully!']);
+        } else {
+            // Check for duplicate (excluding current)
+            $check = $conn->prepare("SELECT SPEC_ID FROM specialization WHERE SPEC_NAME = ? AND SPEC_ID != ?");
+            $check->execute([$specName, $specId]);
+            if ($check->fetch()) {
+                echo json_encode(['success' => false, 'message' => 'This specialization already exists!']);
+                exit;
+            }
+
+            $stmt = $conn->prepare("UPDATE specialization
+                                    SET SPEC_NAME=?, SPEC_UPDATED_AT=NOW()
+                                    WHERE SPEC_ID=?");
+            $stmt->execute([$specName, $specId]);
+            echo json_encode(['success' => true, 'message' => 'Specialization updated successfully!']);
+        }
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+    }
     exit;
 }
 
-// Delete specialization
-if (isset($_GET['delete'])) {
+// AJAX: Delete specialization
+if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+    header('Content-Type: application/json');
     $id = intval($_GET['delete']);
-    $stmt = $conn->prepare("DELETE FROM specialization WHERE SPEC_ID=?");
-    $stmt->execute([$id]);
-    header("Location: specialization.php");
+    
+    try {
+        // Check if there are doctors with this specialization
+        $check = $conn->prepare("SELECT COUNT(*) FROM doctor WHERE SPEC_ID = ?");
+        $check->execute([$id]);
+        $count = $check->fetchColumn();
+        
+        if ($count > 0) {
+            echo json_encode([
+                'success' => false, 
+                'message' => "Cannot delete! There are {$count} doctor(s) with this specialization."
+            ]);
+            exit;
+        }
+
+        $stmt = $conn->prepare("DELETE FROM specialization WHERE SPEC_ID=?");
+        $stmt->execute([$id]);
+        echo json_encode(['success' => true, 'message' => 'Specialization deleted successfully!']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error deleting specialization']);
+    }
     exit;
 }
 
@@ -69,44 +115,44 @@ function esc($v) {
 
 <head>
   <meta charset="UTF-8" />
-  <title>Specialization | Staff Dashboard</title>
+  <title>Specialization | Admin Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .modal { display: none; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 1000; }
+    .modal-content { background: #fff; padding: 20px; border-radius: 8px; max-width: 500px; width: 90%; position: relative; max-height: 90vh; overflow-y: auto; }
+    .close-btn { position: absolute; top: 8px; right: 12px; font-size: 24px; cursor: pointer; }
+  </style>
 </head>
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-  
-  <!-- NAVBAR -->
-<!-- ✅ HEADER LINK -->
   <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-<!-- ✅ HEADER LINK -->
 
-  <!-- ✅ MAIN -->
   <main class="px-10 py-10 flex-1">
     <h2 class="text-[36px] font-bold text-[var(--primary)] mb-6">Specialization Management</h2>
 
-    <!-- ✅ Search + Add button -->
+    <!-- Search + Add button -->
     <div class="flex justify-between mb-5">
       <form method="get" class="flex items-center gap-2">
-  <input type="text" name="q" placeholder="Search specialization..."
-    value="<?= esc($search) ?>"
-    class="px-4 py-2 rounded-full w-60 border focus:outline-none" />
+        <input type="text" name="q" placeholder="Search specialization..."
+          value="<?= esc($search) ?>"
+          class="px-4 py-2 rounded-full w-60 border focus:outline-none" />
 
-  <button class="bg-[var(--primary)] text-white px-5 py-2 rounded-full hover:opacity-90 transition">
-    Search
-  </button>
+        <button class="bg-[var(--primary)] text-white px-5 py-2 rounded-full hover:opacity-90 transition">
+          Search
+        </button>
 
-  <?php if ($search !== ""): ?>
-  <a href="specialization.php"
-    class="bg-gray-400 text-white px-5 py-2 rounded-full hover:opacity-80 transition">
-    Reset
-  </a>
-  <?php endif; ?>
-</form>
-
+        <?php if ($search !== ""): ?>
+        <a href="specialization.php"
+          class="bg-gray-400 text-white px-5 py-2 rounded-full hover:opacity-80 transition">
+          Reset
+        </a>
+        <?php endif; ?>
+      </form>
 
       <button onclick="openAddModal()"
         class="bg-[var(--primary)] text-white px-6 py-2 rounded-full hover:opacity-90">
@@ -114,7 +160,7 @@ function esc($v) {
       </button>
     </div>
 
-    <!-- ✅ Table -->
+    <!-- Table -->
     <div class="bg-[var(--light)] p-6 rounded-[25px] shadow-md">
       <table class="w-full">
         <thead>
@@ -145,9 +191,8 @@ function esc($v) {
                 Browse Doctors
               </button>
 
-              <a href="?delete=<?= $s['SPEC_ID'] ?>"
-                onclick="return confirm('Delete specialization?')"
-                class="btn bg-[var(--primary)] text-white px-6 py-2 rounded-full ml-2">Delete</a>
+              <button class="btn bg-red-600 text-white px-6 py-2 rounded-full ml-2"
+                onclick="deleteSpec(<?= $s['SPEC_ID'] ?>)">Delete</button>
 
             </td>
           </tr>
@@ -157,30 +202,27 @@ function esc($v) {
     </div>
   </main>
 
-
-<!-- ✅ FOOTER LINK -->
   <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
-
-  <!-- ✅ Modal: Add/Edit Specialization -->
-  <div id="specModal" class="modal hidden">
+  <!-- Modal: Add/Edit Specialization -->
+  <div id="specModal" class="modal">
     <div class="modal-content p-6">
       <span class="close-btn" onclick="closeModal()">&times;</span>
       <h2 id="modalTitle" class="text-xl font-bold mb-4">Add Specialization</h2>
 
-      <form method="POST">
+      <form id="specForm">
         <input type="hidden" id="SPEC_ID" name="SPEC_ID">
         <label class="block mb-1 font-semibold">Specialization Name</label>
         <input id="SPEC_NAME" name="SPEC_NAME" required
           class="border rounded-lg px-4 py-2 w-full mb-4">
 
-        <button class="bg-[var(--primary)] text-white px-6 py-2 rounded-full">Save</button>
+        <button type="submit" class="bg-[var(--primary)] text-white px-6 py-2 rounded-full">Save</button>
       </form>
     </div>
   </div>
 
-  <!-- ✅ Modal: Doctors -->
-  <div id="doctorModal" class="modal hidden">
+  <!-- Modal: Doctors -->
+  <div id="doctorModal" class="modal">
     <div class="modal-content p-6 max-w-3xl w-full">
       <span class="close-btn" onclick="closeDoctorsModal()">&times;</span>
       <h2 id="doctorModalTitle" class="text-xl font-bold mb-4"></h2>
@@ -197,7 +239,6 @@ function esc($v) {
     </div>
   </div>
 
-  <!-- ✅ JS -->
   <script>
     function openAddModal() {
       document.getElementById("SPEC_ID").value = "";
@@ -217,6 +258,73 @@ function esc($v) {
       document.getElementById("specModal").style.display = "none";
     }
 
+    // Form submit with AJAX
+    document.getElementById('specForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      try {
+        const formData = new FormData(this);
+        const res = await fetch(location.pathname, {
+          method: 'POST',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+          body: formData
+        });
+        const json = await res.json();
+
+        Swal.fire({
+          icon: json.success ? 'success' : 'error',
+          title: json.success ? 'Success' : 'Error',
+          text: json.message
+        }).then(() => {
+          if (json.success) {
+            closeModal();
+            location.reload();
+          }
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'An error occurred: ' + error.message
+        });
+      }
+    });
+
+    // Delete with confirmation
+    async function deleteSpec(id) {
+      const result = await Swal.fire({
+        title: 'Are you sure?',
+        text: "Delete this specialization?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+      });
+
+      if (!result.isConfirmed) return;
+
+      try {
+        const res = await fetch(`?delete=${id}`, {
+          headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        });
+        const json = await res.json();
+
+        Swal.fire({
+          icon: json.success ? 'success' : 'error',
+          title: json.success ? 'Deleted!' : 'Error',
+          text: json.message
+        }).then(() => {
+          if (json.success) location.reload();
+        });
+      } catch (error) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Network error occurred'
+        });
+      }
+    }
+
     async function browseDoctors(specId, specName) {
       const res = await fetch(`?browse=${specId}`);
       const doctors = await res.json();
@@ -229,8 +337,9 @@ function esc($v) {
         html = `<tr><td colspan="2" class='text-center py-3 opacity-70'>No doctors found</td></tr>`;
       } else {
         doctors.forEach(d => {
+          const middleInit = d.DOC_MIDDLE_INIT ? d.DOC_MIDDLE_INIT + '. ' : '';
           html += `<tr class='border-b hover:bg-gray-50'>
-                    <td class='py-2'>${d.DOC_FIRST_NAME} ${d.DOC_LAST_NAME}</td>
+                    <td class='py-2'>${d.DOC_FIRST_NAME} ${middleInit}${d.DOC_LAST_NAME}</td>
                     <td class='py-2'>${d.DOC_EMAIL}</td>
                    </tr>`;
         });
@@ -243,6 +352,15 @@ function esc($v) {
     function closeDoctorsModal() {
       document.getElementById("doctorModal").style.display = "none";
     }
+
+    // Close modal on backdrop click
+    document.getElementById('specModal').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+    
+    document.getElementById('doctorModal').addEventListener('click', function(e) {
+      if (e.target === this) closeDoctorsModal();
+    });
   </script>
 
 </body>
