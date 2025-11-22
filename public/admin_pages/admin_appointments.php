@@ -55,11 +55,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SERVER['HTTP_X_REQUESTED_WI
 }
 
 /* ---------- 3. DELETE ---------- */
-if (isset($_GET['delete']) && isset($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+if (isset($_GET['delete'])) {
+    // Clean output buffer to prevent any stray output
+    if (ob_get_level()) ob_clean();
+    
     header('Content-Type: application/json');
+    
     $id = $_GET['delete'] ?? '';
-    $ok = $appt->delete($id);
-    echo json_encode(['success' => $ok, 'message' => $ok ? 'Deleted successfully.' : 'Delete failed.']);
+    
+    if (empty($id)) {
+        echo json_encode(['success' => false, 'message' => 'Invalid appointment ID.']);
+        exit;
+    }
+    
+    try {
+        $ok = $appt->delete($id);
+        echo json_encode(['success' => $ok, 'message' => $ok ? 'Deleted successfully.' : 'Delete failed.']);
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
+    }
     exit;
 }
 
@@ -79,6 +93,11 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
 <title>Admin Appointments | Medicina</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+
+<!-- ✅ SweetAlert2 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 </head>
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col">
@@ -223,6 +242,9 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
 const modal = document.getElementById('apptModal');
 const modalForm = document.getElementById('modalForm');
 
+// ✅ Get CSS variable for primary color
+const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#1976d2';
+
 function openModal() {
   modalForm.reset();
   document.getElementById('MODAL_DOC_ID').innerHTML = '<option value="">Select Doctor</option>';
@@ -284,27 +306,93 @@ document.getElementById('MODAL_APPT_DATE').addEventListener('change', function()
   loadAvailableTimesForDoctorDate(document.getElementById('MODAL_DOC_ID').value, this.value);
 });
 
+// ✅ FORM SUBMIT WITH SWEETALERT
 modalForm.onsubmit = async e => {
   e.preventDefault();
   const data = new FormData(modalForm);
-  const res = await fetch(location.pathname, {
-    method: 'POST',
-    body: data,
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
-  });
-  const json = await res.json();
-  alert(json.message);
-  if (json.success) { closeModal(); location.reload(); }
+  
+  try {
+    const res = await fetch(location.pathname, {
+      method: 'POST',
+      body: data,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const json = await res.json();
+    
+    if (json.success) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: json.message,
+        confirmButtonColor: primaryColor,
+        timer: 2000,
+        showConfirmButton: true
+      });
+      closeModal();
+      location.reload();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: json.message,
+        confirmButtonColor: primaryColor
+      });
+    }
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Something went wrong!',
+      confirmButtonColor: primaryColor
+    });
+  }
 };
 
+// ✅ DELETE WITH SWEETALERT
 async function deleteAppt(id) {
-  if (!confirm('Delete this appointment?')) return;
-  const res = await fetch(location.pathname + '?delete=' + encodeURIComponent(id), {
-    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+  const result = await Swal.fire({
+    title: 'Are you sure?',
+    text: "You won't be able to revert this!",
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#c0392b',
+    cancelButtonColor: '#95a5a6',
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel'
   });
-  const json = await res.json();
-  alert(json.message);
-  if (json.success) location.reload();
+
+  if (!result.isConfirmed) return;
+
+  try {
+    const res = await fetch(location.pathname + '?delete=' + encodeURIComponent(id));
+    const json = await res.json();
+    
+    if (json.success) {
+      await Swal.fire({
+        icon: 'success',
+        title: 'Deleted!',
+        text: json.message,
+        confirmButtonColor: primaryColor,
+        showConfirmButton: true
+      });
+      location.reload();
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Failed',
+        text: json.message || 'Delete operation failed',
+        confirmButtonColor: primaryColor
+      });
+    }
+  } catch (err) {
+    console.error('Delete error:', err);
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to delete appointment: ' + err.message,
+      confirmButtonColor: primaryColor
+    });
+  }
 }
 
 async function editAppt(a) {
@@ -327,24 +415,51 @@ async function editAppt(a) {
     timeSelect.value = a.APPT_TIME;
   }
 }
+
+// ✅ MARK AS COMPLETED WITH SWEETALERT
 async function markAsCompleted(id) {
-  if (!confirm("Mark this appointment as COMPLETED?")) return;
+  const result = await Swal.fire({
+    title: 'Mark as Completed?',
+    text: "This appointment will be marked as completed",
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonColor: '#27ae60',
+    cancelButtonColor: '#95a5a6',
+    confirmButtonText: 'Yes, complete it!',
+    cancelButtonText: 'Cancel'
+  });
+
+  if (!result.isConfirmed) return;
 
   const formData = new FormData();
-formData.append("appt_id", id);       // lowercase to match PHP
-formData.append("status", "Completed");
+  formData.append("appt_id", id);
+  formData.append("status", "Completed");
 
-
-  const res = await fetch('../../ajax/update_appointment_status.php', {
-    method: 'POST',
-    body: formData
-});
-const text = await res.text();
-alert(text);
-location.reload();
-
+  try {
+    const res = await fetch('../../ajax/update_appointment_status.php', {
+      method: 'POST',
+      body: formData
+    });
+    const text = await res.text();
+    
+    await Swal.fire({
+      icon: 'success',
+      title: 'Completed!',
+      text: text,
+      confirmButtonColor: primaryColor,
+      timer: 2000,
+      showConfirmButton: true
+    });
+    location.reload();
+  } catch (err) {
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: 'Failed to update appointment status',
+      confirmButtonColor: primaryColor
+    });
+  }
 }
-
 
 /* ✅ FILTER + SEARCH */
 document.addEventListener('DOMContentLoaded', function() {
@@ -354,45 +469,44 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentFilter = 'all';
 
   function applyFilters() {
-  const now = new Date();
-  const today = now.getFullYear() + '-' + 
-                String(now.getMonth() + 1).padStart(2, '0') + '-' +
-                String(now.getDate()).padStart(2, '0');
+    const now = new Date();
+    const today = now.getFullYear() + '-' + 
+                  String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                  String(now.getDate()).padStart(2, '0');
 
-  const term = searchInput.value.toLowerCase();
+    const term = searchInput.value.toLowerCase();
 
-  rows.forEach(row => {
-    const status = row.dataset.status;
-    const date = row.dataset.date;
-    const patient = row.dataset.patient;
-    const doctor = row.dataset.doctor;
-    const service = row.dataset.service;
+    rows.forEach(row => {
+      const status = row.dataset.status;
+      const date = row.dataset.date;
+      const patient = row.dataset.patient;
+      const doctor = row.dataset.doctor;
+      const service = row.dataset.service;
 
-    let show = true;
+      let show = true;
 
-    if (currentFilter === 'today') {
+      if (currentFilter === 'today') {
         show = (date === today);
-    } 
-    else if (currentFilter === 'upcoming') {
+      } 
+      else if (currentFilter === 'upcoming') {
         show = (date > today && !['completed','cancelled','missed'].includes(status));
-    } 
-    else if (currentFilter === 'missed') {
+      } 
+      else if (currentFilter === 'missed') {
         show = (status === 'missed');
-    }
-    else if (currentFilter !== 'all') {
+      }
+      else if (currentFilter !== 'all') {
         show = (status === currentFilter);
-    }
+      }
 
-    // SEARCH
-    const combined = (patient + ' ' + doctor + ' ' + service).toLowerCase();
-    const matchesSearch = combined.includes(term);
+      // SEARCH
+      const combined = (patient + ' ' + doctor + ' ' + service).toLowerCase();
+      const matchesSearch = combined.includes(term);
 
-    if (!matchesSearch) show = false;
+      if (!matchesSearch) show = false;
 
-    row.style.display = show ? '' : 'none';
- });
-}
-
+      row.style.display = show ? '' : 'none';
+    });
+  }
 
   // Filter button clicks
   filterButtons.forEach(btn => {
@@ -413,5 +527,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
-
-
