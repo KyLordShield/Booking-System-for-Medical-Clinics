@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-$base_url = '/Booking-System-For-Medical-Clinics';
+$base_url = '';
 
 // Helper: add ' active' if current file matches
 function isActive(string $filename): string
