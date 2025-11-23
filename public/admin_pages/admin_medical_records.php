@@ -203,7 +203,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
       <input name="q" placeholder="Search diagnosis or prescription" value="<?= esc($search) ?>" class="px-3 py-2 border rounded-lg">
       <button class="btn bg-[var(--primary)] text-white px-3 py-2 rounded-lg">Search</button>
       <?php if (!empty($search)): ?>
-        <a href="medical_records.php" class="btn" style="background:#777;">Reset</a>
+        <a href="admin_medical_records.php" class="btn" style="background:#777;">Reset</a>
       <?php endif; ?>
     </form>
 

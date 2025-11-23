@@ -44,7 +44,7 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Use existing global CSS (your palette and rules) -->
-    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
     <style>
       /* Small page-specific tweaks to enhance corporate feel without changing your palette */
       .dashboard-wrapper { max-width: 1200px; margin: 0 auto; }

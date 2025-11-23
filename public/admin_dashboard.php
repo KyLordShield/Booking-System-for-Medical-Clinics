@@ -348,7 +348,7 @@ try {
           <span class="action-btn-icon">👔</span>
           Manage Staff
         </a>
-        <a href="appointment_manage.php" class="action-btn">
+        <a href="/../../admin_pages/appointment_manage.php" class="action-btn">
           <span class="action-btn-icon">📅</span>
           View Appointments
         </a>

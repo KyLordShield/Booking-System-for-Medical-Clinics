@@ -41,7 +41,7 @@ $fullName = "$first $middle$last";
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- ✅ Global Custom CSS -->
-  <link rel="stylesheet" href="../../assets/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
