@@ -2,30 +2,43 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 date_default_timezone_set('Asia/Manila');
+
 class Database {
-    // Database credentials
-    private $host = "localhost";
-    private $dbname = "medical_booking";
-    private $username = "root";
-    private $password = "";
+
     private $conn;
 
-    // Connect to the database
     public function connect() {
+
+        // Get environment variables for Heroku
+        $host = getenv('DB_HOST');
+        $port = getenv('DB_PORT');
+        $dbname = getenv('DB_NAME');
+        $username = getenv('DB_USER');
+        $password = getenv('DB_PASS');
+
+        // Fallback to localhost (XAMPP)
+        if (!$host || !$dbname || !$username || !$password) {
+            $host = "localhost";
+            $dbname = "medical_booking";
+            $username = "root";
+            $password = "";
+            $port = 3306; // ADD THIS
+        }
+
+        // Ensure port is ALWAYS set
+        if (!$port) {
+            $port = 3306;
+        }
+
         if ($this->conn === null) {
             try {
-                // Create a PDO connection
-                $this->conn = new PDO(
-                    "mysql:host={$this->host};dbname={$this->dbname};charset=utf8mb4",
-                    $this->username,
-                    $this->password
-                );
+                $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
 
-                // Set PDO error mode to exception
+                $this->conn = new PDO($dsn, $username, $password);
                 $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
             } catch (PDOException $e) {
-                echo "Connection failed: " . $e->getMessage();
+                die("Database connection failed: " . $e->getMessage());
             }
         }
 
