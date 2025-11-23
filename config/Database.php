@@ -5,7 +5,7 @@ date_default_timezone_set('Asia/Manila');
 class Database {
     // Database credentials
     private $host = "localhost";
-    private $dbname = "medicina";
+    private $dbname = "medical_booking";
     private $username = "root";
     private $password = "";
     private $conn;

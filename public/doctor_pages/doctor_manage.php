@@ -112,7 +112,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <head>
 <meta charset="UTF-8">
 <title>Doctor Management</title>
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -246,7 +246,7 @@ document.getElementById('doctorForm').addEventListener('submit', async function(
                 closeModal();
                 // Redirect only if a new doctor was added
                 if (resData.newId) {
-                    window.location.href = "/Booking-System-For-Medical-Clinics/public/register/register_doctor.php?doc=" + resData.newId;
+                    window.location.href = "../../public/register/register_doctor.php?doc=" + resData.newId;
                 } else {
                     // Otherwise reload page to refresh table
                     location.reload();

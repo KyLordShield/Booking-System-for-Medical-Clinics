@@ -41,7 +41,7 @@ $fullName = "$first $middle$last";
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- ✅ Global Custom CSS -->
-  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
@@ -61,7 +61,7 @@ $fullName = "$first $middle$last";
       <p class="text-[20px] mt-1 text-gray-800"><?= $fullName ?></p>
       <p class="text-[18px] mt-1 text-gray-700">Doctor ID: <?= $doc_id ?></p>
 
-      <a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/update_info.php">
+      <a href="../../public/doctor_pages/update_info.php">
         <button class="btn-update mt-5 bg-[var(--light)] px-8 py-2 rounded-full font-semibold hover:bg-[#bfe1eb] transition">
           UPDATE INFO
         </button>

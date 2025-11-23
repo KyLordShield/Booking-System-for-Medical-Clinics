@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../classes/Appointment.php';
 require_once __DIR__ . '/../../config/Database.php';
 
 if (!isset($_SESSION['DOC_ID']) || $_SESSION['role'] !== 'doctor') {
-    header("Location: /Booking-System-For-Medical-Clinics/index.php");
+    header("Location: ../index.php");
     exit;
 }
 
@@ -87,7 +87,7 @@ foreach ($appointments as $appt) {
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/style.css">
     <style>
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: white; margin: 5% auto; padding: 30px; width: 90%; max-width: 700px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
@@ -352,7 +352,7 @@ foreach ($appointments as $appt) {
     // === SAVE MEDICAL RECORD ===
     $('#medicalRecordForm').on('submit', function(e) {
         e.preventDefault();
-        $.post('/Booking-System-For-Medical-Clinics/ajax/add_medical_record.php', $(this).serialize())
+        $.post('../../ajax/add_medical_record.php', $(this).serialize())
         .done(function(res) {
             if (res.trim() === 'success') {
                 Swal.fire({
@@ -394,7 +394,7 @@ foreach ($appointments as $appt) {
 
         btn.prop('disabled', true).text('Completing...');
 
-        $.post('/Booking-System-For-Medical-Clinics/ajax/update_appointment_status.php', {
+        $.post('../../ajax/update_appointment_status.php', {
             appt_id: apptId,
             status: 'Completed'
         })

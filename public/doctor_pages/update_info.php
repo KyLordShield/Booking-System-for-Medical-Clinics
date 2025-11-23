@@ -91,7 +91,7 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 <meta charset="UTF-8">
 <title>Doctor Profile - Medical Clinic System</title>
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
 
 <!-- ✅ SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
