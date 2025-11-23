@@ -34,7 +34,7 @@ $fullName = "$first $middle$last";
 <title>Staff Dashboard | Medicina</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../assets/css/style.css">
 </head>
 
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
@@ -52,7 +52,7 @@ $fullName = "$first $middle$last";
     <p class="text-[20px] mt-1 text-gray-800"><?= $fullName ?></p>
     <p class="text-[18px] mt-1 text-gray-700">Staff ID: <?= $staff_id ?></p>
 
-    <a href="/Booking-System-For-Medical-Clinics/public/staff_pages/staff_update.php">
+    <a href="./staff_pages/staff_update.php">
       <button class="btn-update mt-5 bg-[var(--light)] px-8 py-2 rounded-full font-semibold hover:bg-[#bfe1eb] transition">
         UPDATE INFO
       </button>

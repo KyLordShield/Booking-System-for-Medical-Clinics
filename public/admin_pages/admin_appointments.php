@@ -92,7 +92,7 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
 <meta charset="UTF-8">
 <title>Admin Appointments | Medicina</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
 
 <!-- ✅ SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

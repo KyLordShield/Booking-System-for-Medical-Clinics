@@ -126,9 +126,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
 <title>Create Appointment | Medicina</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/appointment.css">
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/payment.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/appointment.css">
+<link rel="stylesheet" href="../../assets/css/payment.css">
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">

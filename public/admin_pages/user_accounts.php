@@ -35,7 +35,7 @@ $staffs = $staffObj->getAllWithUsers();
   <title>Manage Users | Medicina Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+  <link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 
 <body class="font-serif bg-[var(--secondary)] flex flex-col min-h-screen">

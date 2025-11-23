@@ -90,7 +90,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
 <title>Register Doctor User</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
 </head>
 <body class="p-6">
 
@@ -172,7 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
     </form>
     <!-- Back Button at the bottom -->
-<a href="/Booking-System-For-Medical-Clinics/public/doctor_pages/doctor_manage.php"
+<a href="../../public/doctor_pages/doctor_manage.php"
    class="inline-block mt-6 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">
    &larr; Back
 </a>
