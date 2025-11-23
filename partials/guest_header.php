@@ -1,6 +1,6 @@
 <?php
-// Relative path from this file to root
-$base_url = '..'; // up one folder from partials/
+// Base URL relative to web root
+$base_url = ''; // empty string means root of the site
 ?>
 
 <!-- ===== HEADER ===== -->
