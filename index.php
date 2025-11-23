@@ -6,7 +6,7 @@
   <title>Medicina — Smart Medical Appointment Platform</title>
 
   <!-- ONLY ONE CSS FILE -->
-  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/landing.css">
+  <link rel="stylesheet" href="assets/css/landing.css">
 
   <!-- AOS Animation -->
   <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
@@ -25,12 +25,12 @@
         Empower your clinic with automated scheduling, organized patient records, 
         and real-time doctor availability — built for faster, safer, and smarter healthcare.
       </p>
-      <a href="/Booking-System-For-Medical-Clinics/login_page.php" class="cta-btn">Get Started</a>
+      <a href="login_page.php" class="cta-btn">Get Started</a>
     </div>
 
     <div class="hero-media" data-aos="fade-left">
       <video autoplay muted loop playsinline class="doctor-video">
-        <source src="/Booking-System-For-Medical-Clinics/assets/images/doctor_video.mp4" type="video/mp4" />
+        <source src="assets/images/doctor_video.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
     </div>
@@ -154,7 +154,7 @@
     <div class="team-grid">
 
       <div class="team-card" data-aos="zoom-in">
-        <img src="/Booking-System-For-Medical-Clinics/assets/images/profile3.png" alt="Francis Kyle">
+        <img src="assets/images/profile3.png" alt="Francis Kyle">
         <div class="overlay">
           <h3>Lumayaga, Francis Kyle</h3>
           <p>Planning / Full Stack</p>
@@ -162,7 +162,7 @@
       </div>
 
       <div class="team-card" data-aos="zoom-in" data-aos-delay="100">
-        <img src="/Booking-System-For-Medical-Clinics/assets/images/profile2.png" alt="Patrich">
+        <img src="assets/images/profile2.png" alt="Patrich">
         <div class="overlay">
           <h3>Olaran, Patrich</h3>
           <p>Back-End Developer</p>
@@ -170,7 +170,7 @@
       </div>
 
       <div class="team-card" data-aos="zoom-in" data-aos-delay="200">
-        <img src="/Booking-System-For-Medical-Clinics/assets/images/profile1.png" alt="Rejean Mae">
+        <img src="assets/images/profile1.png" alt="Rejean Mae">
         <div class="overlay">
           <h3>Libando, Rejean Mae A.</h3>
           <p>Web Designer / Front End</p>
@@ -184,7 +184,7 @@
   <section class="cta-section" data-aos="fade-up">
     <h2>Start Managing Your Clinic Smarter</h2>
     <p>Experience a modern approach to healthcare management.</p>
-    <a href="/Booking-System-For-Medical-Clinics/login_page.php" class="cta-btn cta-white">Join Medicina Now</a>
+    <a href="login_page.php" class="cta-btn cta-white">Join Medicina Now</a>
   </section>
 
   <!-- ================= FOOTER ================= -->
