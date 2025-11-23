@@ -1,5 +1,6 @@
 <?php
-$base_url = '/Booking-System-For-Medical-Clinics';
+// Relative path from this file to root
+$base_url = '..'; // up one folder from partials/
 ?>
 
 <!-- ===== HEADER ===== -->
