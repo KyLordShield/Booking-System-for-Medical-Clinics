@@ -136,7 +136,7 @@ footer {
       Medicina
     </div>
     <div class="nav-links">
-      <a href="/Booking-System-For-Medical-Clinics/public/staff_dashboard.php">Home</a>
+      <a href="../public/staff_dashboard.php">Home</a>
       <a href="staff_manage.php">Staff</a>
       <a class="active" href="#">Users</a>
       <a href="services.php">Services</a>
@@ -144,7 +144,7 @@ footer {
       <a href="payments.php">Payments</a>
       <a href="specialization.php">Specialization</a>
       <a href="smedical_records.php">Medical Records</a>
-      <a href="/Booking-System-For-Medical-Clinics/index.php">Log out</a>
+      <a href="../index.php">Log out</a>
     </div>
 </div>
 

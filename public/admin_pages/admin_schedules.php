@@ -164,7 +164,7 @@ function esc($v) { return htmlspecialchars($v ?? '', ENT_QUOTES); }
 <meta charset="UTF-8">
 <title>Admin | Doctor Schedules</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 

@@ -43,8 +43,8 @@ try {
   <title>Admin Dashboard - Medical Clinic System</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/public/css/style.css">
-  <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+  <link rel="stylesheet" href="../public/css/style.css">
+  <link rel="stylesheet" href="../assets/css/style.css">
 
   <style>
 /* FORMAL ADMIN DASHBOARD STYLES */
@@ -336,19 +336,19 @@ try {
     <div class="quick-actions-section">
       <h3 class="section-title">Quick Actions</h3>
       <div class="quick-actions-grid">
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/doctors.php" class="action-btn">
+        <a href="./admin_pages/doctors.php" class="action-btn">
           <span class="action-btn-icon">👨‍⚕️</span>
           Manage Doctors
         </a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/patients.php" class="action-btn">
+        <a href="./admin_pages/patients.php" class="action-btn">
           <span class="action-btn-icon">👥</span>
           Manage Patients
         </a>
-        <a href="/Booking-System-For-Medical-Clinics/public/admin_pages/staff.php" class="action-btn">
+        <a href="./admin_pages/staff.php" class="action-btn">
           <span class="action-btn-icon">👔</span>
           Manage Staff
         </a>
-        <a href="/../../admin_pages/appointment_manage.php" class="action-btn">
+        <a href="./admin_pages/admin_appointments.php" class="action-btn">
           <span class="action-btn-icon">📅</span>
           View Appointments
         </a>

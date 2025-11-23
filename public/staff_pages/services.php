@@ -130,7 +130,7 @@ $specializations = $specializationObj->getAll();
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/style.css">
     <style>
         .modal { display: none; justify-content: center; align-items: center; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,.5); z-index: 1000; }
         .modal-content { background: #fff; padding: 20px; border-radius: 12px; max-width: 500px; width: 90%; position: relative; max-height: 90vh; overflow-y: auto; }

@@ -28,7 +28,7 @@ $myself = $stmt->fetch(PDO::FETCH_ASSOC);
 <head>
 <meta charset="UTF-8">
 <title>Staff Profile - Medical Clinic System</title>
-<link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+<link rel="stylesheet" href="../../assets/css/style.css">
 
 <!-- ✅ SweetAlert2 CDN -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

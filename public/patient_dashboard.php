@@ -15,6 +15,7 @@ $patientObj = new Patient();
 $appointmentObj = new Appointment();
 
 $message = "";
+$messageType = "";
 
 // Handle update form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_info'])) {
@@ -28,6 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_info'])) {
     $address = trim($_POST['PAT_ADDRESS']);
 
     $message = $patientObj->updatePatient($pat_id, $fname, $mname, $lname, $dob, $gender, $contact, $email, $address);
+    $messageType = (strpos($message, 'success') !== false) ? 'success' : 'error';
     $patient = $patientObj->getPatientById($pat_id);
 } else {
     $patient = $patientObj->getPatientById($pat_id);
@@ -45,6 +47,11 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
 
     <!-- Use existing global CSS (your palette and rules) -->
     <link rel="stylesheet" href="../assets/css/style.css">
+    
+    <!-- ✅ SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    
     <style>
       /* Small page-specific tweaks to enhance corporate feel without changing your palette */
       .dashboard-wrapper { max-width: 1200px; margin: 0 auto; }
@@ -70,12 +77,6 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
   <?php include dirname(__DIR__) . "/partials/header.php"; ?>
 
   <main class="dashboard-wrapper" style="padding:40px 20px 80px;">
-
-    <?php if ($message): ?>
-        <div class="message p-4 mb-6 rounded-lg bg-light text-[var(--primary)] font-medium" role="status">
-            <?= htmlspecialchars($message) ?>
-        </div>
-    <?php endif; ?>
 
     <!-- TOP ROW: Profile + Quick Actions -->
     <section class="top-row mb-8">
@@ -199,7 +200,7 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="updateTitle">
       <span class="close-btn" id="closeModal">×</span>
       <h2 id="updateTitle">Update Profile</h2>
-      <form method="post" action="">
+      <form method="post" action="" id="updateForm">
         <label>First Name
           <input type="text" name="PAT_FIRST_NAME" value="<?= htmlspecialchars($patient['PAT_FIRST_NAME'] ?? '') ?>" required>
         </label>
@@ -234,12 +235,25 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
   </div>
 
 <script>
+// ✅ Get primary color from CSS variable
+const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#002339';
+
+// ✅ Show SweetAlert if there's a message from PHP
+<?php if ($message): ?>
+Swal.fire({
+  icon: '<?= $messageType === "success" ? "success" : "error" ?>',
+  title: '<?= $messageType === "success" ? "Profile Updated!" : "Update Failed" ?>',
+  text: '<?= addslashes($message) ?>',
+  confirmButtonColor: primaryColor
+});
+<?php endif; ?>
+
 // Modal controls
 const openBtn = document.getElementById('openUpdate');
 const modal = document.getElementById('updateModal');
-const closeModal = document.getElementById('closeModal');
+const closeModalBtn = document.getElementById('closeModal');
 openBtn && openBtn.addEventListener('click', () => { modal.style.display = 'flex'; modal.setAttribute('aria-hidden', 'false'); });
-closeModal && closeModal.addEventListener('click', () => { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); });
+closeModalBtn && closeModalBtn.addEventListener('click', () => { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); });
 window.addEventListener('click', (e) => { if (e.target === modal) { modal.style.display = 'none'; modal.setAttribute('aria-hidden', 'true'); } });
 
 // Disable actions for completed/cancelled rows on load
@@ -257,31 +271,58 @@ document.querySelectorAll('tbody tr').forEach(row => {
   }
 });
 
-// Cancel appointment (keeps original ajax endpoint)
+// ✅ Cancel appointment with SweetAlert
 document.querySelectorAll('.appt-cancel').forEach(btn => {
-  btn.addEventListener('click', function() {
+  btn.addEventListener('click', async function() {
     const row = btn.closest('tr');
     const apptId = btn.getAttribute('data-appt-id');
-    if (!confirm('Are you sure you want to cancel appointment ID ' + apptId + '?')) return;
+    
+    const result = await Swal.fire({
+      title: 'Cancel Appointment?',
+      text: `Are you sure you want to cancel appointment ID ${apptId}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#c0392b',
+      cancelButtonColor: '#95a5a6',
+      confirmButtonText: 'Yes, cancel it!',
+      cancelButtonText: 'No, keep it'
+    });
 
-    fetch('../ajax/cancel_appointment.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'APPT_ID=' + encodeURIComponent(apptId)
-    })
-    .then(res => res.text())
-    .then(msg => {
-      alert(msg);
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch('../ajax/cancel_appointment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'APPT_ID=' + encodeURIComponent(apptId)
+      });
+      const msg = await res.text();
+      
+      await Swal.fire({
+        icon: 'success',
+        title: 'Cancelled!',
+        text: msg,
+        confirmButtonColor: primaryColor,
+        timer: 2000
+      });
+      
       const statusCell = row.querySelector('td:nth-child(6)');
       if (statusCell) statusCell.textContent = 'Cancelled';
       btn.disabled = true; btn.style.opacity = 0.5; btn.style.cursor = 'not-allowed';
-      const updateBtn = row.querySelector('.appt-update'); if (updateBtn) { updateBtn.disabled = true; updateBtn.style.opacity = 0.5; updateBtn.style.cursor = 'not-allowed'; }
-    })
-    .catch(() => alert('Error cancelling appointment.'));
+      const updateBtn = row.querySelector('.appt-update'); 
+      if (updateBtn) { updateBtn.disabled = true; updateBtn.style.opacity = 0.5; updateBtn.style.cursor = 'not-allowed'; }
+    } catch(err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Error cancelling appointment.',
+        confirmButtonColor: primaryColor
+      });
+    }
   });
 });
 
-// Reschedule flow (keeps original ajax endpoints)
+// ✅ Reschedule flow with SweetAlert
 document.querySelectorAll('.appt-update').forEach(btn => {
   btn.addEventListener('click', function() {
     if (btn.disabled) return;
@@ -322,20 +363,58 @@ document.querySelectorAll('.appt-update').forEach(btn => {
 
     resRow.querySelector('#cancelRes').addEventListener('click', () => resRow.remove());
 
-    form.addEventListener('submit', e => {
+    form.addEventListener('submit', async e => {
       e.preventDefault();
-      const newDate = dateInput.value; const newTime = timeSelect.value;
-      if (!newDate || !newTime) return alert('Please select new date and time.');
-      if (!confirm('Confirm reschedule to ' + newDate + ' at ' + newTime + '?')) return;
+      const newDate = dateInput.value; 
+      const newTime = timeSelect.value;
+      
+      if (!newDate || !newTime) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Missing Information',
+          text: 'Please select new date and time.',
+          confirmButtonColor: primaryColor
+        });
+        return;
+      }
+      
+      const result = await Swal.fire({
+        title: 'Confirm Reschedule',
+        text: `Reschedule to ${newDate} at ${newTime}?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: primaryColor,
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Yes, reschedule it!',
+        cancelButtonText: 'Cancel'
+      });
 
-      fetch('../ajax/reschedule_appointment.php', {
-        method: 'POST',
-        headers: {'Content-Type':'application/x-www-form-urlencoded'},
-        body: `APPT_ID=${apptId}&APPT_DATE=${newDate}&APPT_TIME=${newTime}`
-      })
-      .then(res => res.text())
-      .then(msg => { alert(msg); location.reload(); })
-      .catch(() => alert('Error updating appointment.'));
+      if (!result.isConfirmed) return;
+
+      try {
+        const res = await fetch('../ajax/reschedule_appointment.php', {
+          method: 'POST',
+          headers: {'Content-Type':'application/x-www-form-urlencoded'},
+          body: `APPT_ID=${apptId}&APPT_DATE=${newDate}&APPT_TIME=${newTime}`
+        });
+        const msg = await res.text();
+        
+        await Swal.fire({
+          icon: 'success',
+          title: 'Rescheduled!',
+          text: msg,
+          confirmButtonColor: primaryColor,
+          timer: 2000
+        });
+        location.reload();
+      } catch(err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error updating appointment.',
+          confirmButtonColor: primaryColor
+        });
+      }
     });
   });
 });

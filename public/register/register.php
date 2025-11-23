@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width , initial-scale=1.0">
     <title>Patient Registration</title>
     <link rel="stylesheet" href="register.css">
-    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+    <link rel="stylesheet" href="../../assets/css/style.css">
     <style>
         /* fallback message styles if not included in CSS file */
         .message {
