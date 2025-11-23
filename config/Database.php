@@ -7,13 +7,13 @@ class Database {
     private $conn;
 
     public function connect() {
-        // Get environment variables for Heroku / Aiven
+
         $host = getenv('DB_HOST') ?: 'localhost';
         $port = getenv('DB_PORT') ?: 3306;
         $dbname = getenv('DB_NAME') ?: 'medicina';
         $username = getenv('DB_USER') ?: 'root';
         $password = getenv('DB_PASS') ?: '';
-        $useSSL = getenv('DB_SSL') ?: false;
+        $useSSL = getenv('DB_SSL') == "1";  // SSL enabled only when DB_SSL=1
 
         if ($this->conn === null) {
             try {
@@ -23,10 +23,10 @@ class Database {
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 ];
 
-                // Add SSL options if required
+                // Use SSL only when connecting to Aiven
                 if ($useSSL) {
-                    // Make sure you downloaded Aiven's CA certificate
-                    $options[PDO::MYSQL_ATTR_SSL_CA] = __DIR__ . '/aiven-ca.pem';
+                    $options[PDO::MYSQL_ATTR_SSL_CA] = __DIR__ . "/aiven-ca.pem";
+                    $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
                 }
 
                 $this->conn = new PDO($dsn, $username, $password, $options);
@@ -39,4 +39,3 @@ class Database {
         return $this->conn;
     }
 }
-?>
