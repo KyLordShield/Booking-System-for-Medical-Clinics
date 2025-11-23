@@ -26,37 +26,36 @@ if ($search) {
     <!-- ✅ Custom CSS -->
     <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
 </head>
-<!-- Applying staff dashboard body styles -->
+
 <body class="bg-[var(--secondary)] min-h-screen flex flex-col font-[Georgia]">
 
-    <!-- ✅ NAVBAR (Mock Staff Navbar for consistency) -->
-        <!-- ✅ HEADER LINK -->
-        <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
-        <!-- ✅ HEADER LINK -->
+    <!-- ✅ HEADER LINK -->
+    <?php include dirname(__DIR__, 2) . "/partials/header.php"; ?>
 
     <!-- ✅ MAIN CONTENT -->
     <main class="flex-1 px-10 py-10">
         <h2 class="text-[36px] font-bold text-[var(--primary)] mb-6 text-center">All Registered Patients</h2>
 
-        <!-- Table Container - Styled to match the dashboard card look -->
         <div class="table-container bg-[var(--light)] p-6 rounded-[25px] shadow-xl max-w-7xl mx-auto">
             
             <!-- 🔍 Search Bar -->
             <form method="get" action="" class="flex flex-col sm:flex-row gap-4 mb-6 items-center justify-center">
-                <input type="text" name="search" placeholder="Search by name" value="<?= htmlspecialchars($search) ?>"
+                <input type="text" name="search" placeholder="Search by name" 
+                    value="<?= htmlspecialchars($search ?? '') ?>"
                     class="w-full sm:w-[350px] px-4 py-2 rounded-full border-none focus:ring-2 focus:ring-[var(--primary)] outline-none text-[16px]">
                 
                 <button type="submit" 
                     class="px-6 py-2 rounded-full text-white bg-[var(--primary)] font-medium hover:bg-sky-600 transition shadow-md w-full sm:w-auto">
                     Search
                 </button>
+
                 <a href="view_patients.php" 
                     class="px-6 py-2 rounded-full text-white bg-gray-500 font-medium hover:bg-gray-600 transition shadow-md w-full sm:w-auto text-center">
                     Reset
                 </a>
             </form>
 
-            <!-- 🧾 Patient Table - Styled to match the previous table updates -->
+            <!-- 🧾 Patient Table -->
             <div class="overflow-x-auto">
                 <table class="w-full border-collapse text-[var(--primary)] min-w-[1000px]">
                     <thead>
@@ -70,17 +69,39 @@ if ($search) {
                             <th class="py-3 px-4 text-left text-[var(--primary)]">Address</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         <?php if (!empty($patients)): ?>
                             <?php foreach ($patients as $pat): ?>
                                 <tr class="border-b border-gray-300 hover:bg-gray-50">
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_ID']) ?></td>
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_FIRST_NAME'] . ' ' . $pat['PAT_MIDDLE_INIT'] . ' ' . $pat['PAT_LAST_NAME']) ?></td>
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_EMAIL']) ?></td>
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_CONTACT_NUM']) ?></td>
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_GENDER']) ?></td>
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_DOB']) ?></td>
-                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_ADDRESS']) ?></td>
+
+                                    <!-- PATIENT ID -->
+                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_ID'] ?? '') ?></td>
+
+                                    <!-- FULL NAME (NULL-SAFE) -->
+                                    <td class="py-3 px-4">
+                                        <?= htmlspecialchars(
+                                            ($pat['PAT_FIRST_NAME'] ?? '') . ' ' .
+                                            ($pat['PAT_MIDDLE_INIT'] ?? '') . ' ' .
+                                            ($pat['PAT_LAST_NAME'] ?? '')
+                                        ) ?>
+                                    </td>
+
+                                    <!-- EMAIL -->
+                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_EMAIL'] ?? '') ?></td>
+
+                                    <!-- CONTACT NUMBER -->
+                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_CONTACT_NUM'] ?? '') ?></td>
+
+                                    <!-- GENDER -->
+                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_GENDER'] ?? '') ?></td>
+
+                                    <!-- DATE OF BIRTH -->
+                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_DOB'] ?? '') ?></td>
+
+                                    <!-- ADDRESS -->
+                                    <td class="py-3 px-4"><?= htmlspecialchars($pat['PAT_ADDRESS'] ?? '') ?></td>
+
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
@@ -102,8 +123,7 @@ if ($search) {
     </main>
 
     <!-- ✅ FOOTER -->
-  <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
-
+    <?php include dirname(__DIR__, 2) . "/partials/footer.php"; ?>
 
 </body>
 </html>

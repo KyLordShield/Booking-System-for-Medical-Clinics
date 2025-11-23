@@ -81,7 +81,8 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
     <section class="top-row mb-8">
       <div class="profile-summary">
         <div class="profile-avatar">
-          <img src="https://cdn-icons-png.flaticon.com/512/3304/3304567.png" alt="Patient Avatar">
+          <img src="https://cdn-icons-png.flaticon.com/512/3177/3177440.png" alt="Patient Avatar">
+
         </div>
         <div>
           <div class="welcome">Welcome back,</div>
