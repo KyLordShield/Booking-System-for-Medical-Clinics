@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/Database.php';
 
 class Appointment {
     private $conn;
-    private $table = "APPOINTMENT";
+    private $table = "appointment";
 
     public function __construct() {
         $database = new Database();
@@ -95,7 +95,7 @@ class Appointment {
                         CONCAT(D.DOC_FIRST_NAME, ' ', D.DOC_LAST_NAME) AS DOCTOR_NAME
                     FROM {$this->table} A
                     LEFT JOIN SERVICE S ON A.SERV_ID = S.SERV_ID
-                    LEFT JOIN STATUS ST ON A.STAT_ID = ST.STAT_ID
+                    LEFT JOIN status ST ON A.STAT_ID = ST.STAT_ID
                     LEFT JOIN DOCTOR D ON A.DOC_ID = D.DOC_ID
                     WHERE A.PAT_ID = :pat_id
                     ORDER BY A.APPT_DATE DESC, A.APPT_TIME DESC";
@@ -134,7 +134,7 @@ class Appointment {
             $appt_id = $yearMonth . '-' . str_pad($seq, 7, '0', STR_PAD_LEFT);
 
             // 3. Get STAT_ID for Scheduled
-            $sqlStatus = "SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Scheduled' LIMIT 1";
+            $sqlStatus = "SELECT STAT_ID FROM status WHERE STAT_NAME = 'Scheduled' LIMIT 1";
             $stmtStatus = $this->conn->prepare($sqlStatus);
             $stmtStatus->execute();
             $status = $stmtStatus->fetch(PDO::FETCH_ASSOC);
@@ -169,7 +169,7 @@ class Appointment {
  // Checks if the doctor in that time is booked or not
    public function isTimeBooked($doc_id, $date, $time) {
     $time = date('H:i', strtotime($time));
-    $sql = "SELECT 1 FROM APPOINTMENT WHERE DOC_ID = :doc_id AND APPT_DATE = :date AND APPT_TIME = :time AND STAT_ID != 3";
+    $sql = "SELECT 1 FROM appointment WHERE DOC_ID = :doc_id AND APPT_DATE = :date AND APPT_TIME = :time AND STAT_ID != 3";
     $stmt = $this->conn->prepare($sql);
     $stmt->execute([
         ':doc_id' => $doc_id,
@@ -197,7 +197,7 @@ public function cancelAppointment($appt_id, $pat_id) {
             return "Cannot cancel an appointment that is {$statusName}.";
         }
 
-        $sqlStatus = "SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Cancelled' LIMIT 1";
+        $sqlStatus = "SELECT STAT_ID FROM status WHERE STAT_NAME = 'Cancelled' LIMIT 1";
         $stmtStatus = $this->conn->query($sqlStatus);
         $cancelStat = $stmtStatus->fetch(PDO::FETCH_ASSOC);
 
@@ -214,7 +214,7 @@ public function cancelAppointment($appt_id, $pat_id) {
 }
 
 private function getStatusName($stat_id) {
-    $stmt = $this->conn->prepare("SELECT STAT_NAME FROM STATUS WHERE STAT_ID = :id LIMIT 1");
+    $stmt = $this->conn->prepare("SELECT STAT_NAME FROM status WHERE STAT_ID = :id LIMIT 1");
     $stmt->execute([':id' => $stat_id]);
     $res = $stmt->fetch(PDO::FETCH_ASSOC);
     return $res['STAT_NAME'] ?? null;
@@ -227,7 +227,7 @@ public function rescheduleAppointment($appt_id, $new_date, $new_time, $pat_id) {
         $sql = "UPDATE {$this->table}
                 SET APPT_DATE = :new_date,
                     APPT_TIME = :new_time,
-                    STAT_ID = (SELECT STAT_ID FROM STATUS WHERE STAT_NAME = 'Scheduled')
+                    STAT_ID = (SELECT STAT_ID FROM status WHERE STAT_NAME = 'Scheduled')
                 WHERE APPT_ID = :appt_id AND PAT_ID = :pat_id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':new_date', $new_date);
@@ -266,9 +266,9 @@ public function getAppointmentsByService($serv_id) {
                     CONCAT(d.DOC_FIRST_NAME, ' ', d.DOC_LAST_NAME) AS DOCTOR_NAME,
                     s.STAT_NAME AS APPT_STATUS
                 FROM {$this->table} a
-                LEFT JOIN PATIENT p ON a.PAT_ID = p.PAT_ID
-                LEFT JOIN DOCTOR d ON a.DOC_ID = d.DOC_ID
-                LEFT JOIN STATUS s ON a.STAT_ID = s.STAT_ID
+                LEFT JOIN patient p ON a.PAT_ID = p.PAT_ID
+                LEFT JOIN doctor d ON a.DOC_ID = d.DOC_ID
+                LEFT JOIN status s ON a.STAT_ID = s.STAT_ID
                 WHERE a.SERV_ID = :serv_id
                 ORDER BY a.APPT_DATE DESC, a.APPT_TIME DESC";
         $stmt = $this->conn->prepare($sql);

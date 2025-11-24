@@ -3,8 +3,8 @@ require_once __DIR__ . '/../config/Database.php';
 
 class User {
     private $conn;
-    private $user_table = "USERS";
-    private $patient_table = "PATIENT";
+    private $user_table = "users";
+    private $patient_table = "patient";
 
     public function __construct() {
         $database = new Database();
@@ -78,7 +78,7 @@ class User {
 
             $pat_id = $this->conn->lastInsertId();
 
-            // Plain text password insert (temporary)
+            // INSERT USER TABLE
             $sql2 = "INSERT INTO {$this->user_table}
                 (USER_NAME, USER_PASSWORD, PAT_ID, USER_IS_SUPERADMIN, USER_CREATED_AT)
                 VALUES (:username, :password, :pat_id, 0, NOW())";
@@ -92,9 +92,12 @@ class User {
             $this->conn->commit();
             return "✅ Registration successful!";
         } catch (PDOException $e) {
-            $this->conn->rollBack();
+            if ($this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
             return "❌ Registration failed: " . $e->getMessage();
         }
+
     }
 
 
@@ -155,14 +158,14 @@ public function createForEntity($role, $entity_id, $username, $password, $is_sup
 
 // Delete user by USER_ID
 public function delete($user_id) {
-    $stmt = $this->conn->prepare("DELETE FROM USERS WHERE USER_ID = ?");
+    $stmt = $this->conn->prepare("DELETE FROM users WHERE USER_ID = ?");
     return $stmt->execute([$user_id]);
 }
 
 // Update user by USER_ID
 public function updateUser($user_id, $username, $password) {
     $stmt = $this->conn->prepare("
-        UPDATE USERS SET USER_NAME = ?, USER_PASSWORD = ? WHERE USER_ID = ?
+        UPDATE users SET USER_NAME = ?, USER_PASSWORD = ? WHERE USER_ID = ?
     ");
     return $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT), $user_id]);
 

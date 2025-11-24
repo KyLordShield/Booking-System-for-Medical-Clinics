@@ -11,7 +11,7 @@ class Login {
 
     public function authenticate($username, $password) {
         try {
-            $sql = "SELECT * FROM USERS WHERE USER_NAME = :username LIMIT 1";
+            $sql = "SELECT * FROM users WHERE USER_NAME = :username LIMIT 1";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':username', $username);
             $stmt->execute();
@@ -23,7 +23,7 @@ class Login {
                  if (password_verify($password, $user['USER_PASSWORD'])) {
 
                     // Update last login
-                    $update = $this->conn->prepare("UPDATE USERS SET USER_LAST_LOGIN = NOW() WHERE USER_ID = :id");
+                    $update = $this->conn->prepare("UPDATE users SET USER_LAST_LOGIN = NOW() WHERE USER_ID = :id");
                     $update->bindParam(':id', $user['USER_ID']);
                     $update->execute();
 

@@ -11,7 +11,7 @@ class Doctor {
 
     /* ==================== PRIVATE HELPERS ==================== */
     private function contactExists($contact, $excludeId = null) {
-        $sql = "SELECT DOC_ID FROM DOCTOR WHERE DOC_CONTACT_NUM = :contact";
+        $sql = "SELECT DOC_ID FROM doctor WHERE DOC_CONTACT_NUM = :contact";
         if ($excludeId) $sql .= " AND DOC_ID != :id";
 
         $stmt = $this->conn->prepare($sql);
@@ -22,7 +22,7 @@ class Doctor {
     }
 
     private function emailExists($email, $excludeId = null) {
-        $sql = "SELECT DOC_ID FROM DOCTOR WHERE DOC_EMAIL = :email";
+        $sql = "SELECT DOC_ID FROM doctor WHERE DOC_EMAIL = :email";
         if ($excludeId) $sql .= " AND DOC_ID != :id";
 
         $stmt = $this->conn->prepare($sql);
@@ -64,7 +64,7 @@ class Doctor {
     // DONT DELETE THIS FUNCTION — FOR FILTERING DOCTOR BY SERVICE
     public function getDoctorsByService($serv_id) {
         try {
-            $sql = "SELECT SPEC_ID FROM SERVICE WHERE SERV_ID = :serv_id";
+            $sql = "SELECT SPEC_ID FROM service WHERE SERV_ID = :serv_id";
             $stmt = $this->conn->prepare($sql);
             $stmt->bindParam(':serv_id', $serv_id, PDO::PARAM_INT);
             $stmt->execute();
@@ -75,7 +75,7 @@ class Doctor {
             $spec_id = $service['SPEC_ID'];
 
             $sql = "SELECT D.DOC_ID, D.DOC_FIRST_NAME, D.DOC_LAST_NAME, S.SPEC_NAME
-                    FROM DOCTOR D
+                    FROM doctor D
                     JOIN SPECIALIZATION S ON D.SPEC_ID = S.SPEC_ID
                     WHERE D.SPEC_ID = :spec_id
                     ORDER BY D.DOC_LAST_NAME ASC";

@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/Database.php';
 
 class Patient {
     private $conn;
-    private $table = "PATIENT";
+    private $table = "patient";
 
     public function __construct() {
         $database = new Database();
@@ -142,8 +142,8 @@ class Patient {
    // 🟩 Takes all Patients with user accounts for admin page manage user
    public function getAllWithUsers() {
     $sql = "SELECT p.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD, u.USER_LAST_LOGIN, u.USER_CREATED_AT
-            FROM PATIENT p
-            LEFT JOIN USERS u ON p.PAT_ID = u.PAT_ID
+            FROM patient p
+            LEFT JOIN users u ON p.PAT_ID = u.PAT_ID
             ORDER BY p.PAT_ID DESC";
     $stmt = $this->conn->prepare($sql);
     $stmt->execute();
@@ -153,8 +153,8 @@ class Patient {
 // Get all patients who don't have a user account yet
 public function getPatientsWithoutUser() {
     $sql = "SELECT p.*
-            FROM PATIENT p
-            LEFT JOIN USERS u ON p.PAT_ID = u.PAT_ID
+            FROM patient p
+            LEFT JOIN users u ON p.PAT_ID = u.PAT_ID
             WHERE u.USER_ID IS NULL
             ORDER BY p.PAT_ID ASC";
     $stmt = $this->conn->prepare($sql);
