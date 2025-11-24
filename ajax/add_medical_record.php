@@ -22,14 +22,14 @@ $visit_date   = date('Y-m-d');
 
 try {
     // Prevent duplicate medical records
-    $check = $conn->prepare("SELECT MED_REC_ID FROM MEDICAL_RECORD WHERE APPT_ID = ?");
+    $check = $conn->prepare("SELECT MED_REC_ID FROM medical_record WHERE APPT_ID = ?");
     $check->execute([$appt_id]);
     if ($check->rowCount() > 0) {
         echo "Record already exists";
         exit;
     }
 
-    $sql = "INSERT INTO MEDICAL_RECORD 
+    $sql = "INSERT INTO medical_record 
             (APPT_ID, MED_REC_DIAGNOSIS, MED_REC_PRESCRIPTION, MED_REC_VISIT_DATE) 
             VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);

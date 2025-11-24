@@ -7,7 +7,7 @@ if (isset($_POST['appt_id'], $_POST['status'])) {
     $status  = $_POST['status'];
 
     // Get the status ID
-    $stmt = $conn->prepare("SELECT STAT_ID FROM STATUS WHERE STAT_NAME = :status LIMIT 1");
+    $stmt = $conn->prepare("SELECT STAT_ID FROM status WHERE STAT_NAME = :status LIMIT 1");
     $stmt->bindParam(':status', $status);
     $stmt->execute();
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -19,7 +19,7 @@ if (isset($_POST['appt_id'], $_POST['status'])) {
     }
 
     // Update the appointment
-    $update = $conn->prepare("UPDATE APPOINTMENT SET STAT_ID = :statusId WHERE APPT_ID = :appt_id");
+    $update = $conn->prepare("UPDATE appointment SET STAT_ID = :statusId WHERE APPT_ID = :appt_id");
     $update->execute([':statusId' => $statusId, ':appt_id' => $appt_id]);
 
     // Check if the update actually affected any row
