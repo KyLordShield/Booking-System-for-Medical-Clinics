@@ -101,7 +101,12 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
       <div class="dashboard-cards" style="max-width:520px; width:100%;">
         <div class="card">
           <div class="small">Active/Missed Appointments</div>
-          <h2><?= count(array_filter($appointments, function($a){ return !in_array($a['STAT_NAME'], ['Cancelled','Completed']); })) ?></h2>
+         <h2>
+<?= count(array_filter($appointments, function($a){
+    return is_array($a) && !in_array($a['STAT_NAME'], ['Cancelled','Completed']);
+})) ?>
+</h2>
+
           <p class="small">Appointments that require your attention</p>
         </div>
         <div class="card">
