@@ -13,7 +13,7 @@ $conn = (new Database())->connect();
 $today = date('Y-m-d');
 
 // GET STATUS IDs
-$statusRows = $conn->query("SELECT STAT_NAME, STAT_ID FROM STATUS")->fetchAll(PDO::FETCH_KEY_PAIR);
+$statusRows = $conn->query("SELECT STAT_NAME, STAT_ID FROM status")->fetchAll(PDO::FETCH_KEY_PAIR);
 $scheduledId = $statusRows['Scheduled'] ?? null;
 $pendingId   = $statusRows['Pending'] ?? null;
 $completedId = $statusRows['Completed'] ?? null;
