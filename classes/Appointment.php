@@ -94,9 +94,9 @@ class Appointment {
                         ST.STAT_NAME,
                         CONCAT(D.DOC_FIRST_NAME, ' ', D.DOC_LAST_NAME) AS DOCTOR_NAME
                     FROM {$this->table} A
-                    LEFT JOIN SERVICE S ON A.SERV_ID = S.SERV_ID
+                    LEFT JOIN service S ON A.SERV_ID = S.SERV_ID
                     LEFT JOIN status ST ON A.STAT_ID = ST.STAT_ID
-                    LEFT JOIN DOCTOR D ON A.DOC_ID = D.DOC_ID
+                    LEFT JOIN doctor D ON A.DOC_ID = D.DOC_ID
                     WHERE A.PAT_ID = :pat_id
                     ORDER BY A.APPT_DATE DESC, A.APPT_TIME DESC";
             $stmt = $this->conn->prepare($sql);
