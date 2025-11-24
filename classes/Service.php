@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/Database.php';
 
 class Service {
     private $conn;
-    private $table = "SERVICE";
+    private $table = "service";
 
     public function __construct() {
         $db = new Database();

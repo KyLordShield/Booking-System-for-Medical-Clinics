@@ -18,8 +18,8 @@ class Staff {
                 s.STAFF_EMAIL,
                 s.STAFF_CONTACT_NUM,
                 u.USER_NAME
-            FROM STAFF s
-            LEFT JOIN USERS u ON s.STAFF_ID = u.STAFF_ID
+            FROM staff s
+            LEFT JOIN users u ON s.STAFF_ID = u.STAFF_ID
             ORDER BY s.STAFF_ID DESC";
     
     $stmt = $this->conn->prepare($sql);
@@ -31,7 +31,7 @@ class Staff {
 
     // ✅ Get single staff by ID
     public function getById($id) {
-        $sql = "SELECT * FROM STAFF WHERE STAFF_ID = ?";
+        $sql = "SELECT * FROM staff WHERE STAFF_ID = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -39,7 +39,7 @@ class Staff {
 
     // ✅ Add new staff
     public function create($firstName, $lastName, $role) {
-        $sql = "INSERT INTO STAFF (STAFF_FIRST_NAME, STAFF_LAST_NAME, STAFF_ROLE) 
+        $sql = "INSERT INTO staff (STAFF_FIRST_NAME, STAFF_LAST_NAME, STAFF_ROLE) 
                 VALUES (?, ?, ?)";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([$firstName, $lastName, $role]);
@@ -47,7 +47,7 @@ class Staff {
 
     // ✅ Update staff info
     public function update($id, $firstName, $lastName, $role) {
-        $sql = "UPDATE STAFF 
+        $sql = "UPDATE staff 
                 SET STAFF_FIRST_NAME = ?, STAFF_LAST_NAME = ?, STAFF_ROLE = ?
                 WHERE STAFF_ID = ?";
         $stmt = $this->conn->prepare($sql);
@@ -56,7 +56,7 @@ class Staff {
 
     // ✅ Delete staff
     public function delete($id) {
-        $sql = "DELETE FROM STAFF WHERE STAFF_ID = ?";
+        $sql = "DELETE FROM staff WHERE STAFF_ID = ?";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([$id]);
     }
@@ -67,8 +67,8 @@ class Staff {
     //GET ALL STAFF WHO ALREADY HAVE A USER ACCOUNTS FOR THE ADMIN USER MANAGE PAGE
    public function getAllWithUsers() {
     $sql = "SELECT st.*, u.USER_ID, u.USER_NAME, u.USER_PASSWORD, u.USER_LAST_LOGIN, u.USER_CREATED_AT
-            FROM STAFF st
-            LEFT JOIN USERS u ON st.STAFF_ID = u.STAFF_ID
+            FROM staff st
+            LEFT JOIN users u ON st.STAFF_ID = u.STAFF_ID
             ORDER BY st.STAFF_ID DESC";
     $stmt = $this->conn->prepare($sql);
     $stmt->execute();
@@ -79,8 +79,8 @@ class Staff {
 // Get all staff who don't have a user account yet
 public function getStaffWithoutUser() {
     $sql = "SELECT st.*
-            FROM STAFF st
-            LEFT JOIN USERS u ON st.STAFF_ID = u.STAFF_ID
+            FROM staff st
+            LEFT JOIN users u ON st.STAFF_ID = u.STAFF_ID
             WHERE u.USER_ID IS NULL
             ORDER BY st.STAFF_ID ASC";
     $stmt = $this->conn->prepare($sql);

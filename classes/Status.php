@@ -11,7 +11,7 @@ class Status {
 
     // ✅ READ: Fetch all statuses
     public function getAll() {
-        $sql = "SELECT * FROM STATUS ORDER BY STAT_ID DESC";
+        $sql = "SELECT * FROM status ORDER BY STAT_ID DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -19,7 +19,7 @@ class Status {
 
     // ✅ CREATE: Add new status
     public function create($name) {
-        $sql = "INSERT INTO STATUS (STAT_NAME) VALUES (:name)";
+        $sql = "INSERT INTO status (STAT_NAME) VALUES (:name)";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':name', $name);
         return $stmt->execute();
@@ -27,7 +27,7 @@ class Status {
 
     // ✅ UPDATE: Edit existing status
     public function update($id, $name) {
-        $sql = "UPDATE STATUS SET STAT_NAME = :name WHERE STAT_ID = :id";
+        $sql = "UPDATE status SET STAT_NAME = :name WHERE STAT_ID = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->bindParam(':name', $name);
@@ -36,7 +36,7 @@ class Status {
 
     // ✅ DELETE: Remove status
     public function delete($id) {
-        $sql = "DELETE FROM STATUS WHERE STAT_ID = :id";
+        $sql = "DELETE FROM status WHERE STAT_ID = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
         return $stmt->execute();
@@ -44,7 +44,7 @@ class Status {
 
     // ✅ FIND: Get one status by ID
     public function getById($id) {
-        $sql = "SELECT * FROM STATUS WHERE STAT_ID = :id";
+        $sql = "SELECT * FROM status WHERE STAT_ID = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
