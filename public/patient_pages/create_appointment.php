@@ -25,7 +25,7 @@ $conn = $db->connect(); // PDO connection
 // Load payment methods for the modal
 $paymentMethods = [];
 try {
-    $stmtPm = $conn->query("SELECT PYMT_METH_ID, PYMT_METH_NAME FROM PAYMENT_METHOD ORDER BY PYMT_METH_NAME ASC");
+    $stmtPm = $conn->query("SELECT PYMT_METH_ID, PYMT_METH_NAME FROM payment_method ORDER BY PYMT_METH_NAME ASC");
     $paymentMethods = $stmtPm->fetchAll(PDO::FETCH_ASSOC);
 } catch (Exception $e) {
     // keep empty if error - JS will show fallback
@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
             if (strpos($result, '✅') !== false) {
                 // Attempt to retrieve the newly created APPT_ID
                 try {
-                    $sql = "SELECT APPT_ID FROM APPOINTMENT 
+                    $sql = "SELECT APPT_ID FROM appointment 
                             WHERE PAT_ID = :pat AND APPT_DATE = :adate AND APPT_TIME = :atime
                             ORDER BY APPT_CREATED_AT DESC LIMIT 1";
                     $pst = $conn->prepare($sql);
@@ -78,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
                         // Get service price (if exists) to set payment amount (default 0.00)
                         $amount = 0.00;
                         try {
-                            $pst2 = $conn->prepare("SELECT SERV_PRICE FROM SERVICE WHERE SERV_ID = :sid LIMIT 1");
+                            $pst2 = $conn->prepare("SELECT SERV_PRICE FROM service WHERE SERV_ID = :sid LIMIT 1");
                             $pst2->execute([':sid' => $serv_id]);
                             $sRow = $pst2->fetch(PDO::FETCH_ASSOC);
                             if ($sRow && isset($sRow['SERV_PRICE'])) {
@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['create_appt'])) {
 
                         // Insert PAYMENT
                         try {
-                            $ins = $conn->prepare("INSERT INTO PAYMENT (PYMT_AMOUNT_PAID, PYMT_DATE, PYMT_METH_ID, PYMT_STAT_ID, APPT_ID)
+                            $ins = $conn->prepare("INSERT INTO payment (PYMT_AMOUNT_PAID, PYMT_DATE, PYMT_METH_ID, PYMT_STAT_ID, APPT_ID)
                                                    VALUES (:amount, CURDATE(), :meth, :stat, :appt)");
                             $ins->execute([
                                 ':amount' => $amount,

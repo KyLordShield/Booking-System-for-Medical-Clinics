@@ -18,13 +18,13 @@ $conn = $db->connect();
 
 // ---------- 3. FETCH DASHBOARD COUNTS ----------
 try {
-    $stmt_doctors = $conn->query("SELECT COUNT(*) AS total FROM DOCTOR");
-    $stmt_patients = $conn->query("SELECT COUNT(*) AS total FROM PATIENT");
-    $stmt_staff = $conn->query("SELECT COUNT(*) AS total FROM STAFF");
+    $stmt_doctors = $conn->query("SELECT COUNT(*) AS total FROM doctor");
+    $stmt_patients = $conn->query("SELECT COUNT(*) AS total FROM patient");
+    $stmt_staff = $conn->query("SELECT COUNT(*) AS total FROM staff");
     $stmt_pending = $conn->query("
         SELECT COUNT(*) AS total 
-        FROM APPOINTMENT a
-        JOIN STATUS s ON a.STAT_ID = s.STAT_ID
+        FROM appointment a
+        JOIN status s ON a.STAT_ID = s.STAT_ID
         WHERE s.STAT_NAME = 'Scheduled'
     ");
 

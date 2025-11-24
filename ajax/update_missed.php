@@ -23,7 +23,7 @@ try {
     // Update past appointments
     // -----------------------------
     $updateMissedSQL = "
-        UPDATE APPOINTMENT
+        UPDATE appointment
         SET STAT_ID = :missedId
         WHERE DATE(APPT_DATE) < :today
           AND STAT_ID IN (:scheduledId, :pendingId)
@@ -33,7 +33,7 @@ try {
 
     // PDO doesn’t allow binding an array directly for IN(), so we can use separate query
     $stmt = $conn->prepare("
-        UPDATE APPOINTMENT
+        UPDATE appointment
         SET STAT_ID = :missedId
         WHERE DATE(APPT_DATE) < :today
           AND (STAT_ID = :scheduledId OR STAT_ID = :pendingId)
