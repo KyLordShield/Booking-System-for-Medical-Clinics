@@ -100,15 +100,22 @@ $appointments = $appointmentObj->getAppointmentsByPatient($pat_id);
       <!-- Cards: quick stats -->
       <div class="dashboard-cards" style="max-width:520px; width:100%;">
         <div class="card">
-          <div class="small">Active/Missed Appointments</div>
-         <h2>
-<?= count(array_filter($appointments, function($a){
-    return is_array($a) && !in_array($a['STAT_NAME'], ['Cancelled','Completed']);
-})) ?>
+  <div class="small">Active/Missed Appointments</div>
+ <h2>
+<?php
+$activeCount = 0;
+if (is_array($appointments)) {
+    foreach ($appointments as $a) {
+        if (isset($a['STAT_NAME']) && !in_array($a['STAT_NAME'], ['Cancelled','Completed'])) {
+            $activeCount++;
+        }
+    }
+}
+echo $activeCount;
+?>
 </h2>
-
-          <p class="small">Appointments that require your attention</p>
-        </div>
+  <p class="small">Appointments that require your attention</p>
+</div>
         <div class="card">
           <div class="small">Total Appointments</div>
           <h2><?= count($appointments) ?></h2>
