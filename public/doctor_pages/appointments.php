@@ -26,7 +26,7 @@ if ($pendingId)   $idsToCheck[] = $pendingId;
 // AUTO-UPDATE MISSED
 if ($missedId && !empty($idsToCheck)) {
     $placeholders = implode(',', array_fill(0, count($idsToCheck), '?'));
-    $updateMissedSQL = "UPDATE APPOINTMENT SET STAT_ID = ? WHERE APPT_DATE < ? AND STAT_ID IN ($placeholders)";
+    $updateMissedSQL = "UPDATE appointment SET STAT_ID = ? WHERE APPT_DATE < ? AND STAT_ID IN ($placeholders)";
     $stmt = $conn->prepare($updateMissedSQL);
     $params = array_merge([$missedId, $today], $idsToCheck);
     $stmt->execute($params);
