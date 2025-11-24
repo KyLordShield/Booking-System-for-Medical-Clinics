@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     <link href="https://fonts.googleapis.com/css2?family=Kalnia:wght@400;600;700&display=swap" rel="stylesheet">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/Booking-System-For-Medical-Clinics/assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/style.css">
     <title>Medicina - Booking System</title>
 <style>
 :root {
