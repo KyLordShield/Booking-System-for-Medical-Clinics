@@ -15,9 +15,9 @@ class Payment extends Database
                 m.PYMT_METH_NAME,
                 p.PYMT_STAT_ID,
                 s.PYMT_STAT_NAME
-            FROM PAYMENT p
-            LEFT JOIN PAYMENT_METHOD m ON p.PYMT_METH_ID = m.PYMT_METH_ID
-            LEFT JOIN PAYMENT_STATUS s ON p.PYMT_STAT_ID = s.PYMT_STAT_ID
+            FROM payment p
+            LEFT JOIN payment_method m ON p.PYMT_METH_ID = m.PYMT_METH_ID
+            LEFT JOIN payment_status s ON p.PYMT_STAT_ID = s.PYMT_STAT_ID
             ORDER BY p.PYMT_ID DESC";
     
     $stmt = $this->connect()->prepare($sql);
@@ -37,20 +37,20 @@ class Payment extends Database
         $conn = $this->connect(); // ✅ get PDO connection
 
         // ✅ Check appointment existence (Varchar ID like 2025-11-0000002)
-        $check = $conn->prepare("SELECT APPT_ID FROM APPOINTMENT WHERE APPT_ID = ?");
+        $check = $conn->prepare("SELECT APPT_ID FROM appointment WHERE APPT_ID = ?");
         $check->execute([$appt_id]);
         if ($check->rowCount() === 0) {
             return ['success' => false, 'message' => 'Invalid Appointment ID: ' . $appt_id];
         }
 
         // ✅ Check foreign keys (optional)
-        $methCheck = $conn->prepare("SELECT PYMT_METH_ID FROM PAYMENT_METHOD WHERE PYMT_METH_ID = ?");
+        $methCheck = $conn->prepare("SELECT PYMT_METH_ID FROM payment_method WHERE PYMT_METH_ID = ?");
         $methCheck->execute([$method_id]);
         if ($methCheck->rowCount() === 0) {
             return ['success' => false, 'message' => 'Invalid Payment Method ID.'];
         }
 
-        $statCheck = $conn->prepare("SELECT PYMT_STAT_ID FROM PAYMENT_STATUS WHERE PYMT_STAT_ID = ?");
+        $statCheck = $conn->prepare("SELECT PYMT_STAT_ID FROM payment_status WHERE PYMT_STAT_ID = ?");
         $statCheck->execute([$status_id]);
         if ($statCheck->rowCount() === 0) {
             return ['success' => false, 'message' => 'Invalid Payment Status ID.'];
@@ -58,7 +58,7 @@ class Payment extends Database
 
         // ✅ Insert payment
         $stmt = $conn->prepare("
-            INSERT INTO PAYMENT (PYMT_AMOUNT_PAID, PYMT_DATE, PYMT_METH_ID, PYMT_STAT_ID, APPT_ID)
+            INSERT INTO payment (PYMT_AMOUNT_PAID, PYMT_DATE, PYMT_METH_ID, PYMT_STAT_ID, APPT_ID)
             VALUES (?, ?, ?, ?, ?)
         ");
         $success = $stmt->execute([$amount, $date, $method_id, $status_id, $appt_id]);
@@ -82,7 +82,7 @@ class Payment extends Database
     // Update payment
 public function updatePayment($id, $amount, $date, $method_id, $status_id)
 {
-    $sql = "UPDATE PAYMENT 
+    $sql = "UPDATE payment 
             SET PYMT_AMOUNT_PAID = :amount, 
                 PYMT_DATE = :date,
                 PYMT_METH_ID = :method_id, 
@@ -103,7 +103,7 @@ public function updatePayment($id, $amount, $date, $method_id, $status_id)
     // Delete payment
     public function deletePayment($id)
     {
-        $sql = "DELETE FROM PAYMENT WHERE PYMT_ID = :id";
+        $sql = "DELETE FROM payment WHERE PYMT_ID = :id";
         $stmt = $this->connect()->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
@@ -111,7 +111,7 @@ public function updatePayment($id, $amount, $date, $method_id, $status_id)
     // Get single payment
     public function getPaymentById($id)
     {
-        $sql = "SELECT * FROM PAYMENT WHERE PYMT_ID = :id";
+        $sql = "SELECT * FROM payment WHERE PYMT_ID = :id";
         $stmt = $this->connect()->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

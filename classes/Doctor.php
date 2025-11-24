@@ -76,7 +76,7 @@ class Doctor {
 
             $sql = "SELECT D.DOC_ID, D.DOC_FIRST_NAME, D.DOC_LAST_NAME, S.SPEC_NAME
                     FROM doctor D
-                    JOIN SPECIALIZATION S ON D.SPEC_ID = S.SPEC_ID
+                    JOIN specialization S ON D.SPEC_ID = S.SPEC_ID
                     WHERE D.SPEC_ID = :spec_id
                     ORDER BY D.DOC_LAST_NAME ASC";
             $stmt = $this->conn->prepare($sql);
@@ -182,9 +182,9 @@ class Doctor {
    // TAKES ALL DOCTORS WHO ALREADY HAVE A USER ACCOUNT FOR ADMIN USER MANAGE
     public function getAllWithUsers() {
         $sql = "SELECT d.*, s.SPEC_NAME, u.USER_ID, u.USER_NAME, u.USER_PASSWORD, u.USER_LAST_LOGIN, u.USER_CREATED_AT
-                FROM DOCTOR d
-                LEFT JOIN SPECIALIZATION s ON d.SPEC_ID = s.SPEC_ID
-                LEFT JOIN USERS u ON d.DOC_ID = u.DOC_ID
+                FROM doctor d
+                LEFT JOIN specialization s ON d.SPEC_ID = s.SPEC_ID
+                LEFT JOIN users u ON d.DOC_ID = u.DOC_ID
                 ORDER BY d.DOC_ID DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
@@ -194,9 +194,9 @@ class Doctor {
     // Get all doctors who don't have a user account yet
     public function getDoctorsWithoutUser() {
         $sql = "SELECT d.*, s.SPEC_NAME
-                FROM DOCTOR d
-                LEFT JOIN USERS u ON d.DOC_ID = u.DOC_ID
-                LEFT JOIN SPECIALIZATION s ON d.SPEC_ID = s.SPEC_ID
+                FROM doctor d
+                LEFT JOIN users u ON d.DOC_ID = u.DOC_ID
+                LEFT JOIN specialization s ON d.SPEC_ID = s.SPEC_ID
                 WHERE u.USER_ID IS NULL
                 ORDER BY d.DOC_ID ASC";
         $stmt = $this->conn->prepare($sql);

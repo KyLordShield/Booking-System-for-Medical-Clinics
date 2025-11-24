@@ -10,7 +10,7 @@ class PaymentStatus {
 
     // ✅ Fetch all statuses
     public function getAllStatuses() {
-        $sql = "SELECT * FROM PAYMENT_STATUS ORDER BY PYMT_STAT_ID ASC";
+        $sql = "SELECT * FROM payment_status ORDER BY PYMT_STAT_ID ASC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -18,14 +18,14 @@ class PaymentStatus {
 
     // ✅ Add new status
     public function addStatus($name) {
-        $sql = "INSERT INTO PAYMENT_STATUS (PYMT_STAT_NAME) VALUES (:name)";
+        $sql = "INSERT INTO payment_status (PYMT_STAT_NAME) VALUES (:name)";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([':name' => $name]);
     }
 
     // ✅ Update existing status
     public function updateStatus($id, $name) {
-        $sql = "UPDATE PAYMENT_STATUS 
+        $sql = "UPDATE payment_status 
                 SET PYMT_STAT_NAME = :name 
                 WHERE PYMT_STAT_ID = :id";
         $stmt = $this->conn->prepare($sql);
@@ -37,14 +37,14 @@ class PaymentStatus {
 
     // ✅ Delete status
     public function deleteStatus($id) {
-        $sql = "DELETE FROM PAYMENT_STATUS WHERE PYMT_STAT_ID = :id";
+        $sql = "DELETE FROM payment_status WHERE PYMT_STAT_ID = :id";
         $stmt = $this->conn->prepare($sql);
         return $stmt->execute([':id' => $id]);
     }
 
     // ✅ Get single status by ID (optional helper)
     public function getStatusById($id) {
-        $sql = "SELECT * FROM PAYMENT_STATUS WHERE PYMT_STAT_ID = :id";
+        $sql = "SELECT * FROM payment_status WHERE PYMT_STAT_ID = :id";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);

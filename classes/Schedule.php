@@ -3,7 +3,7 @@ require_once __DIR__ . '/../config/Database.php';
 
 class Schedule {
     private $conn;
-    private $table = "SCHEDULE";
+    private $table = "schedule";
 
     public function __construct() {
         $db = new Database();
@@ -60,7 +60,7 @@ class Schedule {
         if (!$withinSchedule) return false;
 
         // ✅ Check if doctor already has appointment in same hour
-        $sql = "SELECT * FROM APPOINTMENT
+        $sql = "SELECT * FROM appointment
                 WHERE DOC_ID = :doc_id
                 AND APPT_DATE = :date
                 AND HOUR(APPT_TIME) = :hour
