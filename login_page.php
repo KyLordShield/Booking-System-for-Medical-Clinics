@@ -3,15 +3,19 @@ session_start();
 require_once 'classes/Login.php';
 
 $login = new Login();
+$error_message = "";
 
+// PROCESS LOGIN
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     $auth = $login->authenticate($_POST['username'], $_POST['password']);
 
     if ($auth) {
+        // STORE SESSION DATA
         $_SESSION['role'] = $auth['role'];
         $_SESSION['USER_ID'] = $auth['USER_ID'];
         $_SESSION['USER_IS_SUPERADMIN'] = $auth['USER_IS_SUPERADMIN'];
 
+        // ROLE REDIRECTS
         switch ($auth['role']) {
             case 'admin':
                 header("Location: public/admin_dashboard.php");
@@ -33,17 +37,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
                 exit;
 
             default:
-                echo "<script>alert('Unknown role detected!'); window.location.href='login_page.php';</script>";
-                exit;
+                $error_message = "Unknown role detected!";
         }
     } else {
-        echo "<script>alert('Invalid username or password!'); window.location.href='login_page.php';</script>";
-        exit;
+        // LOGIN FAILED — SHOW ERROR
+        $error_message = "Invalid username or password!";
     }
 }
 ?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['login_submit'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="assets/css/style.css">
     <title>Medicina - Booking System</title>
+
 <style>
 :root {
     --color-dark-blue: #1C334A;
@@ -71,7 +73,6 @@ body {
     min-height: 100vh;
 }
 
-
 /* MAIN CONTAINER */
 .main-container {
     flex-grow: 1;
@@ -87,7 +88,7 @@ body {
     max-width: 300px;
     background: var(--color-light-blue);
     padding: 20px;
-    margin-top: 50px; /* move the entire login section up */
+    margin-top: 50px;
     margin-left: 100px;
 }
 
@@ -96,6 +97,18 @@ body {
     font-size: 40px;
     margin-bottom: 20px;
     color: var(--color-dark-blue);
+}
+
+/* ERROR BOX */
+.error-box {
+    background-color: #ffcccc;
+    color: #b30000;
+    padding: 12px;
+    border: 1px solid #b30000;
+    border-radius: 6px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-align: center;
 }
 
 .login-form label {
@@ -118,7 +131,7 @@ body {
 .remember-me {
     display: flex;
     align-items: center;
-    gap: 4px; /* smaller spacing between checkbox and text */
+    gap: 4px;
     margin: 15px 0 25px 0;
     color: var(--color-dark-blue);
     font-size: 14px;
@@ -127,17 +140,9 @@ body {
 .remember-me input[type="checkbox"] {
     width: 16px;
     height: 16px;
-    accent-color: var(--color-dark-blue); /* modern browsers */
-    margin: 0; /* remove weird spacing */
-    vertical-align: middle;
+    accent-color: var(--color-dark-blue);
+    margin: 0;
 }
-
-.remember-me label {
-    cursor: pointer;
-    user-select: none;
-    line-height: 1; /* keeps it tight vertically */
-}
-
 
 .login-button {
     width: 100%;
@@ -161,44 +166,34 @@ body {
     text-align: center;
     margin-top: 15px;
     color: var(--color-dark-blue);
-    text-decoration: underline; /* ← add this */
+    text-decoration: underline;
     font-weight: bold;
-}
-
-
-.error-message {
-    color: red;
-    text-align: center;
-    margin-bottom: 10px;
 }
 
 .marketing-column {
     flex: 1 1 400px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start; /* move text upward */
-    padding-left: 170px; /* space from login */
+    justify-content: flex-start;
+    padding-left: 170px;
     padding-right: 40px;
-    margin-top: 0px; /* lift the text slightly upward */
 }
 
 .marketing-headline {
     font-family: var(--font-serif);
-    font-weight: 600; /* make it normal instead of bold */
-    font-size: 56px; /* larger title font */
-    line-height: 1.1; /* tighter line spacing */
+    font-weight: 600;
+    font-size: 56px;
+    line-height: 1.1;
     color: var(--color-dark-blue);
     margin-bottom: 20px;
 }
 
 .marketing-subtext {
-    
-    font-size: 20px; /* slightly larger subtitle */
+    font-size: 20px;
     color: var(--color-dark-blue);
     line-height: 1.6;
     margin-bottom: 40px;
 }
-
 
 .browse-button {
     display: inline-block;
@@ -219,20 +214,23 @@ body {
     background-color: var(--color-dark-blue);
     color: white;
 }
-
-
 </style>
 </head>
+
 <body>
 
-<?php
-// Include the guest header at the very top
-include __DIR__ . '/partials/guest_header.php';
-?>
+<?php include __DIR__ . '/partials/guest_header.php'; ?>
 
 <div class="main-container">
     <div class="login-column">
         <h1 class="login-title">Log in</h1>
+
+        <!-- SHOW ERROR IF EXISTS -->
+        <?php if (!empty($error_message)): ?>
+            <div class="error-box">
+                <?= htmlspecialchars($error_message) ?>
+            </div>
+        <?php endif; ?>
 
         <form method="POST" class="login-form">
             <label for="username">Username</label>
@@ -263,7 +261,7 @@ include __DIR__ . '/partials/guest_header.php';
     </div>
 </div>
 
-<?php include __DIR__ . "/partials/footer.php"?>
+<?php include __DIR__ . "/partials/footer.php"; ?>
 
 </body>
 </html>
