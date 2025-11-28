@@ -78,15 +78,14 @@ $stmt_pending = $conn->prepare("
 $stmt_pending->execute();
 $pending_payments = $stmt_pending->fetchAll(PDO::FETCH_ASSOC);
 
-    // Monthly appointments (last 6 months)
-    $stmt_monthly = $conn->query("
+        $stmt_monthly = $conn->query("
         SELECT 
-            DATE_FORMAT(APPT_DATE, '%b %Y') as month,
-            COUNT(*) as count
+            DATE_FORMAT(APPT_DATE, '%b %Y') AS month,
+            COUNT(*) AS count
         FROM appointment
         WHERE APPT_DATE >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
         GROUP BY YEAR(APPT_DATE), MONTH(APPT_DATE)
-        ORDER BY YEAR(APPT_DATE), MONTH(APPT_DATE)
+        ORDER BY YEAR(APPT_DATE) DESC, MONTH(APPT_DATE) DESC
     ");
     $monthly_appointments = $stmt_monthly->fetchAll(PDO::FETCH_ASSOC);
 
