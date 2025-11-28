@@ -78,15 +78,22 @@ $stmt_pending = $conn->prepare("
 $stmt_pending->execute();
 $pending_payments = $stmt_pending->fetchAll(PDO::FETCH_ASSOC);
 
-        $stmt_monthly = $conn->query("
+          // MONTTLY
+    $stmt_monthly = $conn->prepare("
         SELECT 
             DATE_FORMAT(APPT_DATE, '%b %Y') AS month,
             COUNT(*) AS count
         FROM appointment
         WHERE APPT_DATE >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-        GROUP BY YEAR(APPT_DATE), MONTH(APPT_DATE)
-        ORDER BY YEAR(APPT_DATE) DESC, MONTH(APPT_DATE) DESC
+        GROUP BY 
+            YEAR(APPT_DATE),
+            MONTH(APPT_DATE),
+            DATE_FORMAT(APPT_DATE, '%b %Y')
+        ORDER BY 
+            YEAR(APPT_DATE) DESC, 
+            MONTH(APPT_DATE) DESC
     ");
+    $stmt_monthly->execute();
     $monthly_appointments = $stmt_monthly->fetchAll(PDO::FETCH_ASSOC);
 
     // Specialization distribution
