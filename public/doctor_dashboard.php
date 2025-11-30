@@ -3,7 +3,7 @@ session_start();
 
 // ✅ Only allow logged-in doctors
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'doctor') {
-    header("Location: ../index.php");
+    header("Location: /index.php");
     exit;
 }
 

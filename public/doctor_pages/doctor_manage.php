@@ -11,7 +11,7 @@ $loggedRole = $_SESSION['role'] ?? "";
 $loggedDocId = $_SESSION['DOC_ID'] ?? null;
 
 if ($loggedRole !== "doctor") {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit;
 }
 

@@ -7,7 +7,7 @@ if (
     $_SESSION['role'] !== 'admin' ||
     empty($_SESSION['USER_IS_SUPERADMIN'])
 ) {
-    header("Location: ../index.php");
+    header("Location: /index.php");
     exit;
 }
 

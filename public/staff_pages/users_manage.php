@@ -1,7 +1,8 @@
 <?php
 session_start();
+/* ---------- 1. AUTH CHECK ---------- */
 if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'staff') {
-    header("Location: ../index.php");
+    header("Location: ../../index.php");
     exit;
 }
 ?>

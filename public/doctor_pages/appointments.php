@@ -3,8 +3,9 @@ session_start();
 require_once __DIR__ . '/../../classes/Appointment.php';
 require_once __DIR__ . '/../../config/Database.php';
 
-if (!isset($_SESSION['DOC_ID']) || $_SESSION['role'] !== 'doctor') {
-    header("Location: ../index.php");
+// AUTH CHECK ONLY DOCTORS ALLOWED
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'doctor') {
+    header("Location: ../../index.php");
     exit;
 }
 

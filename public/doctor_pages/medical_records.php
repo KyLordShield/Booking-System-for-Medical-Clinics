@@ -3,6 +3,12 @@ session_start();
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+// AUTH CHECK ONLY DOCTORS ALLOWED
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'doctor') {
+    header("Location: ../../index.php");
+    exit;
+}
+
 /*
   medical_records.php
   - Uses classes/MedicalRecord.php
