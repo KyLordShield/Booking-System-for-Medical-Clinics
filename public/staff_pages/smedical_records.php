@@ -29,7 +29,7 @@ $records = $recordObj->getAll();
     <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
         <div>
             <h1 class="text-[36px] font-bold text-[var(--primary)]">Medical Records</h1>
-            <p class="text-gray-600 mt-2">View patient records — Read Only</p>
+            <p class="text-gray-600 mt-2">View patient records </p>
         </div>
         <img src="https://cdn-icons-png.flaticon.com/512/2965/2965567.png" class="w-32 h-32">
     </div>

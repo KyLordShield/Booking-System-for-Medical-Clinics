@@ -1,6 +1,12 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-$base_url = '';
+// Auto-detect environment: Heroku vs Localhost
+if (strpos($_SERVER['HTTP_HOST'], 'herokuapp.com') !== false) {
+    $base_url = ''; // Heroku root path
+} else {
+    $base_url = '/Booking-System-for-Medical-Clinics'; // Local folder path
+}
+
 
 // Helper: add ' active' if current file matches
 function isActive(string $filename): string
