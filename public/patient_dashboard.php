@@ -5,7 +5,7 @@ require_once __DIR__ . '/../classes/Appointment.php';
 
 // Verify patient session
 if (!isset($_SESSION['PAT_ID']) || $_SESSION['role'] !== 'patient') {
-    header("Location: ../index.php");
+    header("Location: /index.php");
     exit;
 }
 

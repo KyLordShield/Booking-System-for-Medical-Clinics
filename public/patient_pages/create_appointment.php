@@ -6,11 +6,11 @@ require_once __DIR__ . '/../../classes/Service.php';
 require_once __DIR__ . '/../../classes/Schedule.php';
 require_once dirname(__DIR__, 2) . '/config/Database.php';
 
-// Verify login
-if (!isset($_SESSION['PAT_ID']) || $_SESSION['role'] !== 'patient') {
-    header("Location: ../index.php");
-    exit;
-}
+    // Verify login
+    if (!isset($_SESSION['PAT_ID']) || $_SESSION['role'] !== 'patient') {
+        header("Location: /index.php");
+        exit;
+    }
 
 $pat_id = $_SESSION['PAT_ID'];
 
