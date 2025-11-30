@@ -105,7 +105,12 @@ try {
           <?php foreach ($payments as $p): ?>
             <tr class="border-b border-gray-300 hover:bg-gray-50">
               <td class="py-3 px-4"><?= htmlspecialchars($p['PYMT_ID']) ?></td>
-              <td class="py-3 px-4">Appt#<?= htmlspecialchars($p['APPT_ID']) ?></td>
+              <td class="py-3 px-4">
+              <div class="font-medium">Appt#<?= htmlspecialchars($p['APPT_ID']) ?></div>
+              <div class="text-sm text-gray-600">
+              <?= $p['patient_name'] ? htmlspecialchars($p['patient_name']) : '<em class="text-gray-400">No patient</em>' ?>
+              </div>
+              </td>
               <td class="py-3 px-4">₱<?= number_format($p['PYMT_AMOUNT_PAID'], 2) ?></td>
               <td class="py-3 px-4"><?= htmlspecialchars($p['PYMT_DATE']) ?></td>
               <td class="py-3 px-4"><?= htmlspecialchars($p['PYMT_METH_NAME']) ?></td>
@@ -118,9 +123,8 @@ try {
                 <button class="editPayment text-blue-600 mr-3 hover:underline" 
                   data-id="<?= $p['PYMT_ID'] ?>" 
                   data-appt="<?= $p['APPT_ID'] ?>" 
-                  data-amount="<?= $p['PYMT_AMOUNT_PAID'] ?>" 
-                  data-method="<?= $p['PYMT_METH_ID'] ?>" 
-                  data-status="<?= $p['PYMT_STAT_ID'] ?>">Edit</button>
+                  data-patient="<?= htmlspecialchars($p['patient_name']) ?>"
+                  ... >Edit</button>
                 <button class="deletePayment text-red-600 hover:underline" data-id="<?= $p['PYMT_ID'] ?>">Delete</button>
               </td>
             </tr>
@@ -326,7 +330,8 @@ $(function(){
   $(".editPayment").click(function(){
     const modal = $("#modalEditPayment");
     modal.find("[name='id']").val($(this).data("id"));
-    modal.find("[name='appt_display']").val("Appt#" + $(this).data("appt"));
+    modal.find("[name='appt_display']").val(
+    "Appt#" + $(this).data("appt") + " — " + $(this).data("patient"));
     modal.find("[name='amount']").val($(this).data("amount"));
     modal.find("[name='method_id']").val($(this).data("method"));
     modal.find("[name='status_id']").val($(this).data("status"));

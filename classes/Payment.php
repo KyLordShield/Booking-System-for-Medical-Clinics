@@ -1,26 +1,32 @@
 <?php
 require_once __DIR__ . '/../config/Database.php';
 
+
 class Payment extends Database
 {
     // Fetch all payments (joins with appointment, patient, doctor, method, status)
-    public function getAllPayments()
-{
-    $sql = "SELECT 
-                p.PYMT_ID,
-                p.APPT_ID,
-                p.PYMT_AMOUNT_PAID,
-                p.PYMT_DATE,
-                p.PYMT_METH_ID,
-                m.PYMT_METH_NAME,
-                p.PYMT_STAT_ID,
-                s.PYMT_STAT_NAME
-            FROM payment p
-            LEFT JOIN payment_method m ON p.PYMT_METH_ID = m.PYMT_METH_ID
-            LEFT JOIN payment_status s ON p.PYMT_STAT_ID = s.PYMT_STAT_ID
-            ORDER BY p.PYMT_ID DESC";
-    
-    $stmt = $this->connect()->prepare($sql);
+    // In classes/Payment.php -> getAllPayments()
+public function getAllPayments() {
+    $query = "
+        SELECT 
+            py.PYMT_ID,
+            py.APPT_ID,
+            py.PYMT_AMOUNT_PAID,
+            py.PYMT_DATE,
+            pm.PYMT_METH_NAME,
+            pm.PYMT_METH_ID,
+            ps.PYMT_STAT_NAME,
+            ps.PYMT_STAT_ID,
+            CONCAT(p.PAT_FIRST_NAME, ' ', p.PAT_LAST_NAME) AS patient_name
+        FROM payment py
+        LEFT JOIN payment_method pm ON py.PYMT_METH_ID = pm.PYMT_METH_ID
+        LEFT JOIN payment_status ps ON py.PYMT_STAT_ID = ps.PYMT_STAT_ID
+        LEFT JOIN appointment a ON py.APPT_ID = a.APPT_ID
+        LEFT JOIN patient p ON a.PAT_ID = p.PAT_ID
+        ORDER BY py.PYMT_DATE DESC
+    ";
+
+    $stmt = $this->connect()->prepare($query);
     $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }

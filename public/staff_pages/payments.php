@@ -97,7 +97,12 @@ try {
           <?php foreach ($payments as $p): ?>
             <tr class="border-b border-gray-300 hover:bg-gray-50" data-payment='<?= json_encode($p, JSON_HEX_APOS|JSON_HEX_QUOT) ?>'>
               <td class="py-3 px-4"><?= htmlspecialchars($p['PYMT_ID']) ?></td>
-              <td class="py-3 px-4"><?= htmlspecialchars($p['APPT_ID']) ?></td>
+              <td class="py-3 px-4">
+              <div class="font-medium">Appt#<?= htmlspecialchars($p['APPT_ID']) ?></div>
+              <div class="text-sm text-gray-600">
+              <?= $p['patient_name'] ? htmlspecialchars($p['patient_name']) : '<em class="text-gray-400">No patient</em>' ?>
+              </div>
+              </td>
               <td class="py-3 px-4">₱<?= number_format($p['PYMT_AMOUNT_PAID'], 2) ?></td>
               <td class="py-3 px-4"><?= htmlspecialchars($p['PYMT_DATE']) ?></td>
               <td class="py-3 px-4"><?= htmlspecialchars($p['PYMT_METH_NAME']) ?></td>
