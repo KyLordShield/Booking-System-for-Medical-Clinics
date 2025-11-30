@@ -345,8 +345,10 @@ function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
           <tr class="border-b hover:bg-gray-50">
             <td class="py-3 px-3">#<?= esc($r['MED_REC_ID']) ?></td>
             <td class="py-3 px-3"><?= esc($r['patient_name'] ?? ('Appt#'.($r['APPT_ID'] ?? ''))) ?></td>
-            <td class="py-3 px-3"><?= esc($r['MED_REC_DIAGNOSIS']) ?></td>
-            <td class="py-3 px-3"><?= esc($r['MED_REC_PRESCRIPTION']) ?></td>
+            <td class="py-3 px-3">
+              <?= esc(strlen($r['MED_REC_DIAGNOSIS']) > 50 ? substr($r['MED_REC_DIAGNOSIS'], 0, 50) . '...' : $r['MED_REC_DIAGNOSIS']) ?> </td>
+            <td class="py-3 px-3">
+              <?= esc(strlen($r['MED_REC_PRESCRIPTION']) > 50 ? substr($r['MED_REC_PRESCRIPTION'], 0, 50) . '...' : $r['MED_REC_PRESCRIPTION']) ?> </td>
             <td class="py-3 px-3"><?= esc($r['MED_REC_VISIT_DATE']) ?></td>
             <td class="py-3 px-3">
               <div class="table-actions">
