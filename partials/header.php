@@ -26,7 +26,7 @@ function isDropdownActive(array $pages): string
     <!-- Logo -->
     <div class="logo">
         <a href="<?= $base_url ?>/index.php">
-            <img src="<?= $base_url ?>/assets/images/logo.png" alt="Medicina Logo">
+            <img src="https://res.cloudinary.com/dcgd4x4eo/image/upload/v1764521297/logo_qeoieu.png" alt="Medicina Logo">
         </a>
         <h1>Medicina</h1>
     </div>

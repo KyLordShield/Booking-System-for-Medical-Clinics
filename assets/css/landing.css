@@ -14,7 +14,7 @@ html {
 
 /* ============= BODY: FULL BLUE BACKGROUND ============= */
 html, body {
-  background: linear-gradient(135deg, #74B3CE 0%, #5A90B3 100%);
+  background: #70B8D9;
   background-attachment: fixed;
   min-height: 100vh;
   font-family: 'Kameron', serif;
@@ -103,7 +103,7 @@ body.landing-page {
 .hero-content h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #1a3c6e;
+  color: #f9f9fa;
   margin-bottom: 20px;
   font-family: 'Kalnia', serif;
 }
