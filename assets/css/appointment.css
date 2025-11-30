@@ -200,6 +200,171 @@
 
 
 
+/* SERVICE SELECTOR STYLES - FIXED HEIGHT */
+.service-display {
+    background: #d0edf5;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    height: 56px;
+    min-height: 56px;
+    max-height: 56px;
+}
+.service-display:hover { 
+    border-color: #002339; 
+}
+.service-display.selected { 
+    border-color: #002339; 
+    background: #f8fafc;
+}
+
+.service-display span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin-right: 12px;
+}
+
+.dropdown-icon { 
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+.service-display.selected .dropdown-icon { 
+    transform: rotate(180deg); 
+}
+.placeholder { 
+    color: #999; 
+}
+
+/* FORMAL SERVICE MODAL - NO GRADIENTS */
+.service-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.service-modal-content {
+    background: #d0edf5;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
+}
+
+.service-modal-header {
+    padding: 24px 28px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.service-modal h2 {
+    margin: 0;
+    color: #002339;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.service-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 28px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    line-height: 1;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.service-close:hover { 
+    background: #e2e8f0;
+    color: #002339; 
+}
+
+.service-grid {
+    display: grid;
+    gap: 12px;
+    padding: 24px 28px;
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 480px) { 
+    .service-grid { 
+        grid-template-columns: 1fr 1fr; 
+    } 
+}
+
+/* FORMAL SERVICE CARDS */
+.service-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.service-card:hover {
+    border-color: #002339;
+    box-shadow: 0 2px 8px rgba(0, 35, 57, 0.1);
+}
+
+.service-card h3 { 
+    margin: 0 0 8px; 
+    color: #002339; 
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.service-desc { 
+    margin: 8px 0; 
+    color: #64748b; 
+    font-size: 13px; 
+    line-height: 1.5; 
+}
+
+.service-price { 
+    margin: 12px 0 0; 
+    font-weight: 600; 
+    color: #002339; 
+    font-size: 18px; 
+}
+
+.service-empty {
+    text-align: center;
+    color: #64748b;
+    padding: 40px 20px;
+    font-size: 14px;
+}
+
+
 /* Responsive */
 @media (max-width: 992px) {
     .appt-grid {
