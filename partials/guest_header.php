@@ -1,6 +1,10 @@
 <?php
-// Base URL relative to web root
-$base_url = ''; // empty string means root of the site
+// Auto-detect: Heroku vs Localhost
+if (strpos($_SERVER['HTTP_HOST'], 'herokuapp.com') !== false) {
+    $base_url = ''; // Heroku root
+} else {
+    $base_url = '/Booking-System-for-Medical-Clinics'; // Local folder name
+}
 ?>
 
 <!-- ===== HEADER ===== -->
