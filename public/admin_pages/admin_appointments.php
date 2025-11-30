@@ -254,6 +254,7 @@ function openModal() {
 }
 function closeModal() { modal.classList.add('hidden'); }
 
+// ✅ Load doctors for selected service
 async function loadDoctorsForService(servId) {
   const docSelect = document.getElementById('MODAL_DOC_ID');
   docSelect.innerHTML = '<option>Loading...</option>';
@@ -272,6 +273,7 @@ async function loadDoctorsForService(servId) {
   }
 }
 
+// ✅ Load available times for selected doctor and date
 async function loadAvailableTimesForDoctorDate(docId, date) {
   const timeSelect = document.getElementById('MODAL_APPT_TIME');
   timeSelect.innerHTML = '<option>Loading...</option>';
@@ -294,6 +296,7 @@ async function loadAvailableTimesForDoctorDate(docId, date) {
   }
 }
 
+// ✅ Event listeners for dynamic selects
 document.getElementById('MODAL_SERV_ID').addEventListener('change', function() {
   if (!this.value) return;
   loadDoctorsForService(this.value);
@@ -395,6 +398,7 @@ async function deleteAppt(id) {
   }
 }
 
+// ✅ EDIT APPOINTMENT
 async function editAppt(a) {
   openModal();
   document.getElementById('APPT_ID').value = a.APPT_ID || '';

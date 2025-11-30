@@ -325,6 +325,7 @@ function esc($v) {
       }
     }
 
+    // Browse doctors modal
     async function browseDoctors(specId, specName) {
       const res = await fetch(`?browse=${specId}`);
       const doctors = await res.json();

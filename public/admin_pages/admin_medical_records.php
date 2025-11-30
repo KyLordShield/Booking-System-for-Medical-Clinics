@@ -173,6 +173,7 @@ try {
     }
 } catch (Exception $e) {}
 
+// Escape function
 function esc($s){ return htmlspecialchars($s ?? '', ENT_QUOTES, 'UTF-8'); }
 ?>
 <!doctype html>
@@ -324,6 +325,7 @@ function populateApptSelect(options, selectedId = null) {
   }
 }
 
+// Enable/disable form fields
 function setFormDisabled(disabled) {
   document.querySelectorAll('#recordForm input, #recordForm textarea, #recordForm select').forEach(el => {
     el.disabled = disabled;
@@ -396,6 +398,7 @@ apptSelect.addEventListener('change', function() {
   }
 });
 
+// Handle form submission
 recordForm.addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = document.getElementById('saveRecordBtn');
@@ -449,6 +452,7 @@ recordForm.addEventListener('submit', async function(e) {
   }
 });
 
+// Delete record
 async function deleteRecord(id) {
   const result = await Swal.fire({
     title: 'Are you sure?',
